@@ -500,14 +500,60 @@ input:checked + .toggle-slider:before {
   gap: var(--spacing-md);
 }
 
-.model-default-badge {
+/* Cost badges */
+.cost-badge {
   display: inline-block;
-  padding: 2px 8px;
-  background: var(--bg-tertiary);
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cost-badge-low {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.cost-badge-medium {
+  background: #FFF3CD;
+  color: #856404;
+}
+
+.cost-badge-high {
+  background: #F8D7DA;
+  color: #721C24;
+}
+
+[data-theme="dark"] .cost-badge-low {
+  background: #155724;
+  color: #D4EDDA;
+}
+
+[data-theme="dark"] .cost-badge-medium {
+  background: #856404;
+  color: #FFF3CD;
+}
+
+[data-theme="dark"] .cost-badge-high {
+  background: #721C24;
+  color: #F8D7DA;
+}
+
+.cost-details-detailed {
   font-size: var(--font-size-small);
   color: var(--text-secondary);
-  margin-left: var(--spacing-sm);
+  line-height: 1.6;
+}
+
+/* Models view controls */
+.models-view-controls {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
 }
 
 .empty-state {
