@@ -47,23 +47,31 @@ export class PromptsTab {
     promptEntries.forEach(([promptId, prompt], index) => {
       const isDefault = prompt.isDefault || false;
       const card = document.createElement('div');
-      card.className = 'item-card';
+      card.className = 'item-card draggable-card';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-prompt-id', promptId);
+      card.setAttribute('data-index', index.toString());
 
       const preview = this.getPromptPreview(prompt.text);
 
       card.innerHTML = `
-        <div class="item-card-header">
-          <div class="item-card-title">
-            ${this.escapeHtml(prompt.name)}
-            ${isDefault ? '<span class="lock-icon">🔒</span>' : ''}
-          </div>
-          <div class="item-card-actions">
-            <button class="btn btn-small btn-secondary" data-edit-id="${promptId}">Edit</button>
-            <button class="btn btn-small btn-secondary" data-duplicate-id="${promptId}">Duplicate</button>
-            ${!isDefault ? `<button class="btn btn-small btn-danger" data-delete-id="${promptId}">Delete</button>` : ''}
-          </div>
+        <div class="drag-handle-card" title="Drag to reorder">
+          <span>⋮⋮</span>
         </div>
-        <div class="item-card-preview">${this.escapeHtml(preview)}</div>
+        <div class="item-card-content">
+          <div class="item-card-header">
+            <div class="item-card-title">
+              ${this.escapeHtml(prompt.name)}
+              ${isDefault ? '<span class="lock-icon">🔒</span>' : ''}
+            </div>
+            <div class="item-card-actions">
+              <button class="btn btn-small btn-secondary" data-edit-id="${promptId}">Edit</button>
+              <button class="btn btn-small btn-secondary" data-duplicate-id="${promptId}">Duplicate</button>
+              ${!isDefault ? `<button class="btn btn-small btn-danger" data-delete-id="${promptId}">Delete</button>` : ''}
+            </div>
+          </div>
+          <div class="item-card-preview">${this.escapeHtml(preview)}</div>
+        </div>
       `;
 
       listContainer.appendChild(card);
@@ -71,6 +79,9 @@ export class PromptsTab {
 
     // Setup button listeners
     this.setupCardEventListeners();
+
+    // Setup drag-and-drop
+    this.setupDragAndDrop();
   }
 
   private setupEventListeners(): void {
@@ -110,6 +121,81 @@ export class PromptsTab {
       button.addEventListener('click', () => {
         const promptId = button.getAttribute('data-delete-id') || '';
         this.handleDelete(promptId);
+      });
+    });
+  }
+
+  private setupDragAndDrop(): void {
+    const cards = this.container.querySelectorAll<HTMLElement>('.draggable-card');
+    let draggedCard: HTMLElement | null = null;
+    let draggedPromptId: string = '';
+
+    cards.forEach((card) => {
+      card.addEventListener('dragstart', (e) => {
+        draggedCard = card;
+        draggedPromptId = card.getAttribute('data-prompt-id') || '';
+        card.classList.add('dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        // Remove all drag-over classes
+        cards.forEach(c => c.classList.remove('drag-over'));
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) {
+          e.dataTransfer.dropEffect = 'move';
+        }
+
+        // Add visual feedback
+        const targetCard = e.currentTarget as HTMLElement;
+        if (targetCard !== draggedCard) {
+          targetCard.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', (e) => {
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+
+        if (draggedCard && targetCard !== draggedCard) {
+          const targetPromptId = targetCard.getAttribute('data-prompt-id') || '';
+
+          if (draggedPromptId && targetPromptId) {
+            // Reorder the prompts by reconstructing the object with keys in new order
+            const promptEntries = Object.entries(this.config.prompts);
+            const draggedIndex = promptEntries.findIndex(([id]) => id === draggedPromptId);
+            const targetIndex = promptEntries.findIndex(([id]) => id === targetPromptId);
+
+            if (draggedIndex !== -1 && targetIndex !== -1) {
+              // Remove the dragged item
+              const [draggedEntry] = promptEntries.splice(draggedIndex, 1);
+              // Insert at new position
+              promptEntries.splice(targetIndex, 0, draggedEntry);
+
+              // Reconstruct the prompts object with new order
+              const reorderedPrompts: Record<string, Prompt> = {};
+              promptEntries.forEach(([id, prompt]) => {
+                reorderedPrompts[id] = prompt;
+              });
+
+              this.config.prompts = reorderedPrompts;
+              this.onConfigChange(this.config);
+              this.render();
+            }
+          }
+        }
       });
     });
   }

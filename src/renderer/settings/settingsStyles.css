@@ -791,3 +791,48 @@ input:checked + .toggle-slider:before {
 .draggable-row.drag-over {
   border-top: 2px solid var(--color-primary);
 }
+
+/* Card-based drag handle for prompts/tones/quick actions */
+.drag-handle-card {
+  cursor: grab;
+  color: var(--text-secondary);
+  font-size: 20px;
+  padding: var(--spacing-md);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.drag-handle-card:hover {
+  color: var(--color-primary);
+}
+
+.drag-handle-card:active {
+  cursor: grabbing;
+}
+
+/* Draggable card states */
+.draggable-card {
+  cursor: move;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.draggable-card .item-card-content {
+  flex: 1;
+}
+
+.draggable-card.dragging {
+  opacity: 0.5;
+  background-color: var(--bg-tertiary);
+}
+
+.draggable-card.drag-over {
+  border-left: 3px solid var(--color-primary);
+  margin-left: -3px;
+}
