@@ -25,10 +25,7 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.on(IPC_CHANNELS.WINDOW_CLOSE_SETTINGS, (event) => {
-    const window = BrowserWindow.fromWebContents(event.sender);
-    window?.close();
-  });
+  // Note: WINDOW_CLOSE_SETTINGS handler is in handlers.ts
 
   // Create application menu
   const menu = createApplicationMenu(() => {
