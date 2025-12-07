@@ -27,20 +27,29 @@ export class QuickActionsTab {
       const card = this.createComboCard(combo, index);
       this.container.appendChild(card);
     });
+
+    // Setup drag-and-drop
+    this.setupDragAndDrop();
   }
 
   private createComboCard(combo: QuickAction, index: number): HTMLElement {
     const card = document.createElement('div');
-    card.className = 'quick-action-config-card';
+    card.className = 'quick-action-config-card draggable-card';
+    card.setAttribute('draggable', 'true');
+    card.setAttribute('data-index', index.toString());
 
     const shortcut = this.getShortcutDisplay(index);
 
     card.innerHTML = `
-      <h3>
-        <span>${this.escapeHtml(combo.icon)}</span>
-        ${this.escapeHtml(combo.name)}
-        <span class="combo-shortcut">${shortcut}</span>
-      </h3>
+      <div class="drag-handle-card" title="Drag to reorder">
+        <span>⋮⋮</span>
+      </div>
+      <div class="quick-action-card-content">
+        <h3>
+          <span>${this.escapeHtml(combo.icon)}</span>
+          ${this.escapeHtml(combo.name)}
+          <span class="combo-shortcut">${shortcut}</span>
+        </h3>
 
       <div class="form-group">
         <label for="comboName${index}">Button Name</label>
@@ -104,6 +113,7 @@ export class QuickActionsTab {
           ${this.getToneOptions(combo.tone)}
         </select>
       </div>
+      </div>
     `;
 
     // Setup event listeners
@@ -163,6 +173,67 @@ export class QuickActionsTab {
     const isMac = navigator.platform.includes('Mac');
     const modifier = isMac ? 'Cmd' : 'Ctrl';
     return `${modifier}+${index + 1}`;
+  }
+
+  private setupDragAndDrop(): void {
+    const cards = this.container.querySelectorAll<HTMLElement>('.draggable-card');
+    let draggedCard: HTMLElement | null = null;
+    let draggedIndex: number = -1;
+
+    cards.forEach((card) => {
+      card.addEventListener('dragstart', (e) => {
+        draggedCard = card;
+        draggedIndex = parseInt(card.getAttribute('data-index') || '-1', 10);
+        card.classList.add('dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        // Remove all drag-over classes
+        cards.forEach(c => c.classList.remove('drag-over'));
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) {
+          e.dataTransfer.dropEffect = 'move';
+        }
+
+        // Add visual feedback
+        const targetCard = e.currentTarget as HTMLElement;
+        if (targetCard !== draggedCard) {
+          targetCard.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', (e) => {
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+
+        if (draggedCard && targetCard !== draggedCard) {
+          const targetIndex = parseInt(targetCard.getAttribute('data-index') || '-1', 10);
+
+          if (draggedIndex !== -1 && targetIndex !== -1) {
+            // Reorder the quick actions array
+            const movedAction = this.config.quickActions[draggedIndex];
+            this.config.quickActions.splice(draggedIndex, 1);
+            this.config.quickActions.splice(targetIndex, 0, movedAction);
+
+            this.onConfigChange(this.config);
+            this.render();
+          }
+        }
+      });
+    });
   }
 
   private escapeHtml(text: string): string {
