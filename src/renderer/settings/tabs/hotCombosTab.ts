@@ -142,10 +142,10 @@ export class HotCombosTab {
   }
 
   private getPromptOptions(selectedPrompt: string): string {
-    return this.config.prompts
+    return Object.values(this.config.prompts)
       .map(prompt => {
-        const selected = prompt.id === selectedPrompt ? 'selected' : '';
-        return `<option value="${this.escapeHtml(prompt.id)}" ${selected}>${this.escapeHtml(prompt.name)}</option>`;
+        const selected = prompt.name === selectedPrompt ? 'selected' : '';
+        return `<option value="${this.escapeHtml(prompt.name)}" ${selected}>${this.escapeHtml(prompt.name)}</option>`;
       })
       .join('');
   }
