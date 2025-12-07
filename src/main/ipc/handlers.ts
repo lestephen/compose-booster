@@ -5,6 +5,7 @@ import { ipcMain, clipboard, dialog } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
+import { closeSettingsWindow } from '../windows/settingsWindow';
 import { ProcessEmailRequest, IpcResponse, AppConfig } from '../../shared/types';
 import * as fs from 'fs';
 
@@ -23,6 +24,9 @@ export function registerIpcHandlers(): void {
 
   // Theme handlers
   registerThemeHandlers();
+
+  // Window handlers
+  registerWindowHandlers();
 }
 
 /**
@@ -322,5 +326,15 @@ function registerThemeHandlers(): void {
         },
       } as IpcResponse;
     }
+  });
+}
+
+/**
+ * Window IPC handlers
+ */
+function registerWindowHandlers(): void {
+  // Close settings window
+  ipcMain.on(IPC_CHANNELS.WINDOW_CLOSE_SETTINGS, () => {
+    closeSettingsWindow();
   });
 }
