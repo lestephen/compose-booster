@@ -29,6 +29,7 @@ export class ModelsTab {
         <table class="models-table">
           <thead>
             <tr>
+              <th style="width: 80px;">Order</th>
               <th>Model Name</th>
               <th>Model ID</th>
               <th>Cost</th>
@@ -77,6 +78,12 @@ export class ModelsTab {
 
       row.innerHTML = `
         <td>
+          <div class="model-reorder-buttons">
+            <button class="btn-icon" data-move-up="${index}" ${index === 0 ? 'disabled' : ''} title="Move up">▲</button>
+            <button class="btn-icon" data-move-down="${index}" ${index === this.config.models.length - 1 ? 'disabled' : ''} title="Move down">▼</button>
+          </div>
+        </td>
+        <td>
           <div class="model-name">${this.escapeHtml(model.name)}</div>
           ${isDefault ? '<span class="model-default-badge">Default</span>' : ''}
         </td>
@@ -92,7 +99,12 @@ export class ModelsTab {
           </label>
         </td>
         <td>
-          ${!isDefault ? `<button class="btn btn-small btn-danger" data-delete-index="${index}">Delete</button>` : ''}
+          <button
+            class="btn btn-small btn-danger"
+            data-delete-index="${index}"
+            ${isDefault ? 'disabled' : ''}
+            ${isDefault ? 'title="Default models cannot be deleted"' : ''}
+          >Delete</button>
         </td>
       `;
 
@@ -116,6 +128,24 @@ export class ModelsTab {
       button.addEventListener('click', () => {
         const index = parseInt(button.getAttribute('data-delete-index') || '0', 10);
         this.handleDeleteModel(index);
+      });
+    });
+
+    // Move up buttons
+    const moveUpButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-move-up]');
+    moveUpButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const index = parseInt(button.getAttribute('data-move-up') || '0', 10);
+        this.handleMoveModel(index, -1);
+      });
+    });
+
+    // Move down buttons
+    const moveDownButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-move-down]');
+    moveDownButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const index = parseInt(button.getAttribute('data-move-down') || '0', 10);
+        this.handleMoveModel(index, 1);
       });
     });
 
@@ -143,6 +173,23 @@ export class ModelsTab {
       this.config.models[index].enabled = enabled;
       this.onConfigChange(this.config);
     }
+  }
+
+  private handleMoveModel(index: number, direction: number): void {
+    const newIndex = index + direction;
+
+    // Validate bounds
+    if (newIndex < 0 || newIndex >= this.config.models.length) {
+      return;
+    }
+
+    // Swap models
+    const temp = this.config.models[index];
+    this.config.models[index] = this.config.models[newIndex];
+    this.config.models[newIndex] = temp;
+
+    this.onConfigChange(this.config);
+    this.render();
   }
 
   private handleDeleteModel(index: number): void {

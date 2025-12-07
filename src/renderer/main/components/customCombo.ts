@@ -58,11 +58,48 @@ export class CustomComboManager {
       this.toneSelect.appendChild(option);
     });
 
-    // Set last used values
+    // Set last used values, with fallbacks
     if (this.config.lastUsed) {
+      // Try to set last used model
       this.modelSelect.value = this.config.lastUsed.model;
+
+      // If model wasn't set (doesn't exist or not enabled), select first enabled model
+      if (!this.modelSelect.value && enabledModels.length > 0) {
+        this.modelSelect.value = enabledModels[0].id;
+      }
+
+      // Try to set last used prompt
       this.promptSelect.value = this.config.lastUsed.prompt;
+
+      // If prompt wasn't set, select first prompt
+      if (!this.promptSelect.value) {
+        const firstPromptKey = Object.keys(this.config.prompts)[0];
+        if (firstPromptKey) {
+          this.promptSelect.value = firstPromptKey;
+        }
+      }
+
+      // Try to set last used tone
       this.toneSelect.value = this.config.lastUsed.tone;
+
+      // If tone wasn't set, select first tone
+      if (!this.toneSelect.value && this.config.tones.length > 0) {
+        this.toneSelect.value = this.config.tones[0].id;
+      }
+    } else {
+      // No lastUsed data, select defaults
+      if (enabledModels.length > 0) {
+        this.modelSelect.value = enabledModels[0].id;
+      }
+
+      const firstPromptKey = Object.keys(this.config.prompts)[0];
+      if (firstPromptKey) {
+        this.promptSelect.value = firstPromptKey;
+      }
+
+      if (this.config.tones.length > 0) {
+        this.toneSelect.value = this.config.tones[0].id;
+      }
     }
   }
 

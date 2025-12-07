@@ -709,3 +709,32 @@ input:checked + .toggle-slider:before {
   font-family: 'Courier New', monospace;
   color: var(--text-secondary);
 }
+
+/* Model Reordering Buttons */
+.model-reorder-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.btn-icon {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  border-color: var(--color-primary);
+}
+
+.btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
