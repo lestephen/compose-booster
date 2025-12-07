@@ -103,8 +103,14 @@ export class AdvancedTab {
     this.config = updatedConfig;
     this.onConfigChange(updatedConfig);
 
-    // Rebuild the menu immediately to reflect the change
-    await window.electronAPI.rebuildMenu();
+    // Save the config immediately so the menu rebuild can read the new value
+    try {
+      await window.electronAPI.setConfig(updatedConfig);
+      // Rebuild the menu to reflect the change
+      await window.electronAPI.rebuildMenu();
+    } catch (error) {
+      console.error('Failed to update developer tools setting:', error);
+    }
   }
 
   private handleExport(): void {
