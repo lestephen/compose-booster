@@ -184,8 +184,7 @@ class AppController {
         this.textAreas.setInput(result.data);
         this.statusBar.setReady();
       }
-    } catch (error) {
-      console.error('Failed to paste from clipboard:', error);
+    } catch {
       this.statusBar.setError('Failed to paste from clipboard');
     }
   }
@@ -206,8 +205,7 @@ class AppController {
           this.copyConfirmation.classList.add('hidden');
         }, 2000);
       }
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } catch {
       this.statusBar.setError('Failed to copy to clipboard');
     }
   }
@@ -247,14 +245,8 @@ class AppController {
       } else if (response.error) {
         this.statusBar.setError(response.error.message);
 
-        // Handle special actions
-        if (response.error.action === 'OPEN_SETTINGS') {
-          // Could add a button to open settings
-          console.log('User should open settings to configure API key');
-        }
       }
-    } catch (error) {
-      console.error('Failed to process email:', error);
+    } catch {
       this.statusBar.setError('An unexpected error occurred');
     } finally {
       this.isProcessing = false;
@@ -302,13 +294,8 @@ class AppController {
       } else if (response.error) {
         this.statusBar.setError(response.error.message);
 
-        // Handle special actions
-        if (response.error.action === 'OPEN_SETTINGS') {
-          console.log('User should open settings to configure API key');
-        }
       }
-    } catch (error) {
-      console.error('Failed to process email:', error);
+    } catch {
       this.statusBar.setError('An unexpected error occurred');
     } finally {
       this.isProcessing = false;

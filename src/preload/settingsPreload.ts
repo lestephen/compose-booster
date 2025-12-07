@@ -59,6 +59,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeWindow: (): void => {
     ipcRenderer.send(IPC_CHANNELS.WINDOW_CLOSE_SETTINGS);
   },
+
+  // Shell
+  openExternal: (url: string): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, url),
 });
 
 // TypeScript declaration for window.electronAPI
@@ -78,6 +82,7 @@ declare global {
       onConfigUpdated: (callback: () => void) => void;
       rebuildMenu: () => Promise<IpcResponse>;
       closeWindow: () => void;
+      openExternal: (url: string) => Promise<IpcResponse>;
     };
   }
 }

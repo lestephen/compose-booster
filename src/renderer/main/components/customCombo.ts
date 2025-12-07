@@ -28,8 +28,8 @@ export class CustomComboManager {
         this.config = result.data;
         this.populateDropdowns();
       }
-    } catch (error) {
-      console.error('Failed to load config:', error);
+    } catch {
+      // Config load failed - dropdowns will remain empty
     }
   }
 

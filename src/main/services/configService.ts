@@ -8,8 +8,30 @@
 // Manages application configuration using electron-store
 
 import Store from 'electron-store';
+import { createHash } from 'crypto';
+import { homedir, hostname, userInfo } from 'os';
 import { AppConfig } from '../../shared/types';
 import { DEFAULT_CONFIG } from '../config/defaultConfig';
+
+/**
+ * Generate a machine-derived encryption key
+ * Uses a combination of machine-specific values to create a unique key per machine
+ * This provides better security than a hardcoded key while still being deterministic
+ */
+function generateMachineKey(): string {
+  // Combine multiple machine-specific identifiers
+  const machineIdentifiers = [
+    homedir(),           // User's home directory path
+    hostname(),          // Machine hostname
+    userInfo().username, // Current username
+    process.arch,        // CPU architecture
+    'compose-booster',   // App-specific salt
+  ].join(':');
+
+  // Create a SHA-256 hash of the combined identifiers
+  // This produces a consistent key for the same machine/user
+  return createHash('sha256').update(machineIdentifiers).digest('hex');
+}
 
 class ConfigService {
   private store: Store<AppConfig>;
@@ -18,8 +40,8 @@ class ConfigService {
     this.store = new Store<AppConfig>({
       name: 'config',
       defaults: DEFAULT_CONFIG,
-      // Encrypt sensitive data (API key)
-      encryptionKey: 'compose-booster-encryption-key',
+      // Encrypt sensitive data (API key) using machine-derived key
+      encryptionKey: generateMachineKey(),
     });
   }
 

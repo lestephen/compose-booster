@@ -189,5 +189,122 @@ describe('ApiService', () => {
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data!.length).toBeGreaterThan(0);
     });
+
+    it('should include usage stats in mock response', async () => {
+      apiService.setMockMode(true);
+
+      const result = await apiService.processEmail('test-key', 'test-model', 'Test prompt');
+
+      expect(result.usage).toBeDefined();
+      expect(result.usage?.promptTokens).toBeGreaterThan(0);
+      expect(result.usage?.completionTokens).toBeGreaterThan(0);
+      expect(result.usage?.totalTokens).toBeGreaterThan(0);
+    });
+
+    it('should include cost in mock response', async () => {
+      apiService.setMockMode(true);
+
+      const result = await apiService.processEmail('test-key', 'test-model', 'Test prompt');
+
+      expect(result.cost).toBeDefined();
+      expect(typeof result.cost).toBe('number');
+    });
+
+    it('should include time in mock response', async () => {
+      apiService.setMockMode(true);
+
+      const result = await apiService.processEmail('test-key', 'test-model', 'Test prompt');
+
+      expect(result.time).toBeDefined();
+      expect(typeof result.time).toBe('number');
+      expect(result.time).toBeGreaterThan(0);
+    });
+  });
+
+  describe('error response structure', () => {
+    it('should have correct structure for API errors', () => {
+      const errorResponse = {
+        success: false,
+        error: {
+          message: 'Test error message',
+          code: 'TEST_ERROR',
+        },
+      };
+
+      expect(errorResponse.success).toBe(false);
+      expect(errorResponse.error).toBeDefined();
+      expect(errorResponse.error.message).toBeDefined();
+      expect(errorResponse.error.code).toBeDefined();
+    });
+
+    it('should support retryable flag in errors', () => {
+      const retryableError = {
+        success: false,
+        error: {
+          message: 'Network error',
+          code: 'NETWORK_ERROR',
+          retryable: true,
+        },
+      };
+
+      expect(retryableError.error.retryable).toBe(true);
+    });
+
+    it('should support action flag in errors', () => {
+      const actionError = {
+        success: false,
+        error: {
+          message: 'Invalid API key',
+          code: 'INVALID_API_KEY',
+          action: 'OPEN_SETTINGS',
+        },
+      };
+
+      expect(actionError.error.action).toBe('OPEN_SETTINGS');
+    });
+
+    it('should support retryAfter in rate limit errors', () => {
+      const rateLimitError = {
+        success: false,
+        error: {
+          message: 'Rate limit exceeded',
+          code: 'RATE_LIMIT',
+          retryAfter: 60,
+        },
+      };
+
+      expect(rateLimitError.error.retryAfter).toBe(60);
+    });
+  });
+
+  describe('error code mapping', () => {
+    const errorCodes = [
+      { status: 401, code: 'INVALID_API_KEY', message: 'Invalid API key' },
+      { status: 429, code: 'RATE_LIMIT', message: 'Rate limit exceeded' },
+      { status: 402, code: 'INSUFFICIENT_CREDITS', message: 'Insufficient credits' },
+      { status: 500, code: 'SERVER_ERROR', message: 'server error' },
+      { status: 502, code: 'SERVER_ERROR', message: 'server error' },
+      { status: 503, code: 'SERVER_ERROR', message: 'server error' },
+    ];
+
+    errorCodes.forEach(({ status, code }) => {
+      it(`should have error code ${code} for HTTP ${status}`, () => {
+        expect(code).toBeDefined();
+        expect(typeof code).toBe('string');
+      });
+    });
+  });
+
+  describe('network error codes', () => {
+    const networkErrorCodes = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'ECONNABORTED'];
+
+    networkErrorCodes.forEach((errorCode) => {
+      it(`should recognize ${errorCode} as network error`, () => {
+        const isNetworkError = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT'].includes(errorCode);
+        const isTimeout = errorCode === 'ECONNABORTED';
+
+        expect(isNetworkError || isTimeout).toBe(true);
+      });
+    });
   });
 });

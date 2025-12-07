@@ -14,6 +14,7 @@ const config: ForgeConfig = {
     executableName: 'Compose Booster',
     icon: './assets/icons/win/icon', // Electron Forge will add .ico automatically
   },
+  buildIdentifier: process.arch,
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({

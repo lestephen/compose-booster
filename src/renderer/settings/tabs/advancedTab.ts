@@ -108,8 +108,8 @@ export class AdvancedTab {
       await window.electronAPI.setConfig(updatedConfig);
       // Rebuild the menu to reflect the change
       await window.electronAPI.rebuildMenu();
-    } catch (error) {
-      console.error('Failed to update developer tools setting:', error);
+    } catch {
+      alert('Failed to update developer tools setting. Please try again.');
     }
   }
 
@@ -135,8 +135,7 @@ export class AdvancedTab {
       URL.revokeObjectURL(url);
 
       alert('Settings exported successfully!');
-    } catch (error) {
-      console.error('Failed to export settings:', error);
+    } catch {
       alert('Failed to export settings. Please try again.');
     }
   }
@@ -172,8 +171,7 @@ export class AdvancedTab {
       this.onConfigChange(updatedConfig);
 
       alert('Settings imported successfully! Changes will be applied when you save.');
-    } catch (error) {
-      console.error('Failed to import settings:', error);
+    } catch {
       alert('Failed to import settings. Please check the file format.');
     } finally {
       // Clear the file input
@@ -209,8 +207,7 @@ export class AdvancedTab {
       } else {
         alert('Failed to reset settings. Please try again.');
       }
-    } catch (error) {
-      console.error('Failed to reset settings:', error);
+    } catch {
       alert('Failed to reset settings. Please try again.');
     }
   }

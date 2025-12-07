@@ -147,8 +147,7 @@ class SettingsController {
       if (result.success && result.data) {
         this.config = result.data;
       }
-    } catch (error) {
-      console.error('Failed to load config:', error);
+    } catch {
       this.showApiKeyStatus('Failed to load configuration', 'error');
     }
   }
@@ -166,8 +165,7 @@ class SettingsController {
     // OpenRouter link
     this.openRouterLink.addEventListener('click', (e) => {
       e.preventDefault();
-      // Open external link (would need shell.openExternal in main process)
-      console.log('Open https://openrouter.ai/dashboard');
+      window.electronAPI.openExternal('https://openrouter.ai/keys');
     });
 
     // Track changes
@@ -228,8 +226,7 @@ class SettingsController {
       } else {
         this.showApiKeyStatus(`✗ ${result.error?.message || 'Invalid API key'}`, 'error');
       }
-    } catch (error) {
-      console.error('Failed to test API key:', error);
+    } catch {
       this.showApiKeyStatus('Failed to test API key', 'error');
     } finally {
       this.testApiKeyBtn.disabled = false;
@@ -268,8 +265,7 @@ class SettingsController {
         this.saveBtn.disabled = false;
         this.saveBtn.textContent = 'Save Settings';
       }
-    } catch (error) {
-      console.error('Failed to save settings:', error);
+    } catch {
       this.showApiKeyStatus('Failed to save settings', 'error');
       this.saveBtn.disabled = false;
       this.saveBtn.textContent = 'Save Settings';

@@ -367,8 +367,7 @@ export class ModelsTab {
           loadingText.style.color = 'var(--error-color)';
         }
       }
-    } catch (error) {
-      console.error('Failed to load models:', error);
+    } catch {
       if (loadingText) {
         loadingText.textContent = 'Error loading models from OpenRouter';
         loadingText.style.color = 'var(--error-color)';

@@ -7,7 +7,7 @@
 // IPC Handlers
 // Central registration of all IPC handlers
 
-import { ipcMain, clipboard, dialog, BrowserWindow } from 'electron';
+import { ipcMain, clipboard, dialog, BrowserWindow, shell } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
@@ -33,6 +33,9 @@ export function registerIpcHandlers(): void {
 
   // Window handlers
   registerWindowHandlers();
+
+  // Shell handlers
+  registerShellHandlers();
 }
 
 /**
@@ -388,5 +391,34 @@ function registerWindowHandlers(): void {
   // Close settings window
   ipcMain.on(IPC_CHANNELS.WINDOW_CLOSE_SETTINGS, () => {
     closeSettingsWindow();
+  });
+}
+
+/**
+ * Shell IPC handlers
+ */
+function registerShellHandlers(): void {
+  // Open external URL in default browser
+  ipcMain.handle(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, async (event, url: string) => {
+    try {
+      // Validate URL to prevent arbitrary command execution
+      const parsedUrl = new URL(url);
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return {
+          success: false,
+          error: { message: 'Only HTTP and HTTPS URLs are allowed' },
+        } as IpcResponse;
+      }
+
+      await shell.openExternal(url);
+      return { success: true } as IpcResponse;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to open URL',
+        },
+      } as IpcResponse;
+    }
   });
 }

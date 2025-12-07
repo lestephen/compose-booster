@@ -35,6 +35,9 @@ export const IPC_CHANNELS = {
   THEME_GET: 'theme:get',
   THEME_SET: 'theme:set',
 
+  // Shell
+  SHELL_OPEN_EXTERNAL: 'shell:open-external',
+
   // Menu Events (Main → Renderer)
   MENU_UNDO: 'menu:undo',
   MENU_CLEAR_INPUT: 'menu:clear-input',
