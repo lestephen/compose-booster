@@ -10,6 +10,7 @@
 import Store from 'electron-store';
 import { createHash } from 'crypto';
 import { homedir, hostname, userInfo } from 'os';
+import { unlinkSync, existsSync } from 'fs';
 import { AppConfig } from '../../shared/types';
 import { DEFAULT_CONFIG } from '../config/defaultConfig';
 
@@ -33,16 +34,54 @@ function generateMachineKey(): string {
   return createHash('sha256').update(machineIdentifiers).digest('hex');
 }
 
+/**
+ * Create a store with error recovery
+ * If the config file is corrupted or encrypted with a different key,
+ * delete it and create a fresh one with defaults
+ */
+function createStoreWithRecovery(): Store<AppConfig> {
+  const storeOptions = {
+    name: 'config',
+    defaults: DEFAULT_CONFIG,
+    encryptionKey: generateMachineKey(),
+  };
+
+  try {
+    const store = new Store<AppConfig>(storeOptions);
+    // Test that we can actually read the store (this triggers decryption)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _ = store.store;
+    return store;
+  } catch (error) {
+    // Config file exists but can't be read (likely encrypted with different key)
+    // This can happen when:
+    // 1. Upgrading from a version with a different encryption key
+    // 2. Config file is corrupted
+    // 3. User copied config from another machine
+
+    // Create a temporary store just to get the path
+    const tempStore = new Store<AppConfig>({ name: 'config', defaults: DEFAULT_CONFIG });
+    const configPath = tempStore.path;
+
+    // Delete the corrupted config file
+    if (existsSync(configPath)) {
+      try {
+        unlinkSync(configPath);
+      } catch {
+        // If we can't delete, try to proceed anyway
+      }
+    }
+
+    // Create a fresh store with defaults
+    return new Store<AppConfig>(storeOptions);
+  }
+}
+
 class ConfigService {
   private store: Store<AppConfig>;
 
   constructor() {
-    this.store = new Store<AppConfig>({
-      name: 'config',
-      defaults: DEFAULT_CONFIG,
-      // Encrypt sensitive data (API key) using machine-derived key
-      encryptionKey: generateMachineKey(),
-    });
+    this.store = createStoreWithRecovery();
   }
 
   /**
