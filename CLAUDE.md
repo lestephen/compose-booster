@@ -222,7 +222,7 @@ npm run make
 - Models management tab
 - Prompts management tab
 - Tones management tab
-- Hot combos configuration tab
+- Quick Actions configuration tab
 - Advanced settings tab (export/import/reset)
 - Clipboard integration
 - Theme support (light/dark/system)

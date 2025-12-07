@@ -1,20 +1,32 @@
 # Application Icons
 
-## Required Icons
+## Status: ✅ COMPLETE
 
-For proper distribution, the application needs icons in the following formats:
+Application icons have been created and configured for Windows distribution. macOS .icns generation is deferred until Apple Developer account is available.
 
-### Windows (.ico)
-- **icon.ico** - 256x256, 128x128, 64x64, 48x48, 32x32, 16x16 (multi-resolution)
-- Place in: `assets/icons/win/icon.ico`
+## Implemented Icons
 
-### macOS (.icns)
-- **icon.icns** - 1024x1024, 512x512, 256x256, 128x128, 64x64, 32x32, 16x16
-- Place in: `assets/icons/mac/icon.icns`
+### ✅ Windows (.ico)
+- **icon.ico** - Multi-resolution (256x256, 128x128, 64x64, 48x48, 32x32, 16x16)
+- Location: `assets/icons/win/icon.ico`
+- Status: Generated and configured
 
-### Linux (.png)
-- **icon.png** - 512x512 PNG
-- Place in: `assets/icons/png/`
+### ✅ PNG Source Files
+- Multiple sizes: 256x256, 128x128, 64x64, 48x48, 32x32, 16x16
+- Location: `assets/icons/png/`
+- Status: Generated from SVG source
+
+### ✅ SVG Master File
+- **icon.svg** - Scalable master design
+- Location: `assets/icons/icon.svg`
+- Design: Blue envelope (#0078D4 gradient) with gold AI sparkle
+
+### 🔜 macOS (.icns)
+- Status: Deferred (requires Apple Developer account for signing)
+- Will be generated when macOS distribution is ready
+
+### 🔜 Linux (.png)
+- Status: Not needed (no Linux distribution planned currently)
 
 ## Icon Design Guidelines
 
@@ -30,66 +42,65 @@ For proper distribution, the application needs icons in the following formats:
 - Gradient or solid color background
 - Clear silhouette
 
-## Tools for Icon Generation
+## Automated Icon Generation
 
-### Online Tools
-- **IconKitchen** - https://icon.kitchen/
-- **App Icon Generator** - https://appicon.co/
-- **CloudConvert** - https://cloudconvert.com/ (format conversion)
+The project includes an automated icon generation script that creates all required formats from the SVG source.
 
-### Desktop Tools
-- **Figma** - Design the base icon
-- **Adobe Illustrator** - Vector design
-- **GIMP** - Free alternative
-- **ImageMagick** - Command-line conversion
+### Regenerating Icons
 
-## Example Generation Process
+To regenerate icons after editing `assets/icons/icon.svg`:
 
-1. **Create base design** at 1024x1024 in Figma/Illustrator
-2. **Export as PNG** at various sizes
-3. **Convert to .ico** using ImageMagick:
-   ```bash
-   convert icon-256.png icon-128.png icon-64.png icon-32.png icon-16.png icon.ico
-   ```
-4. **Convert to .icns** using `png2icns`:
-   ```bash
-   png2icns icon.icns icon-1024.png icon-512.png icon-256.png icon-128.png icon-64.png icon-32.png icon-16.png
-   ```
-
-## Update Forge Configuration
-
-Once icons are created, update `forge.config.ts`:
-
-```typescript
-{
-  makers: [
-    {
-      name: '@electron-forge/maker-squirrel',
-      config: {
-        setupIcon: 'assets/icons/win/icon.ico',
-        iconUrl: 'https://example.com/icon.ico'
-      }
-    },
-    {
-      name: '@electron-forge/maker-dmg',
-      config: {
-        icon: 'assets/icons/mac/icon.icns',
-        background: 'assets/dmg-background.png'
-      }
-    }
-  ]
-}
+```bash
+npm run icons
 ```
 
-## Temporary Placeholder
+This script (`scripts/generate-icons.js`) will:
+1. Convert SVG to multiple PNG sizes (256, 128, 64, 48, 32, 16)
+2. Generate Windows .ico file from PNGs
+3. Save all files to appropriate directories
 
-Until custom icons are created, Electron Forge will use default icons.
+### Dependencies
 
-## TODO
-- [ ] Design base icon concept
-- [ ] Create 1024x1024 master PNG
-- [ ] Generate Windows .ico file
-- [ ] Generate macOS .icns file
-- [ ] Generate Linux .png files
-- [ ] Update forge.config.ts with icon paths
-- [ ] Test builds with custom icons
+Icon generation uses:
+- **sharp** - SVG to PNG conversion
+- **png-to-ico** - PNG to .ico conversion
+
+These are included in devDependencies and installed automatically with `npm install`.
+
+## Forge Configuration
+
+The `forge.config.ts` file has been configured to use the custom icons:
+
+```typescript
+const config: ForgeConfig = {
+  packagerConfig: {
+    asar: true,
+    icon: './assets/icons/win/icon', // Electron Forge adds .ico automatically
+  },
+  makers: [
+    new MakerSquirrel({
+      setupIcon: './assets/icons/win/icon.ico',
+      iconUrl: 'https://raw.githubusercontent.com/lestephen/compose-booster/master/assets/icons/win/icon.ico',
+    }),
+    // ... other makers
+  ],
+};
+```
+
+## Icon Design
+
+The current icon design features:
+- **Base**: Blue gradient envelope (#0078D4 to #005A9E)
+- **Accent**: Gold AI sparkle/lightning bolt
+- **Style**: Modern, professional, easily recognizable
+- **Format**: SVG master file ensures crisp scaling at all sizes
+
+## Completed Tasks
+
+- ✅ Design base icon concept
+- ✅ Create SVG master file (better than 1024x1024 PNG - infinitely scalable)
+- ✅ Generate Windows .ico file
+- ✅ Generate PNG files at all required sizes
+- ✅ Update forge.config.ts with icon paths
+- ✅ Test Windows build with custom icons (127 MB installer created successfully)
+- 🔜 Generate macOS .icns file (deferred until Apple Developer account available)

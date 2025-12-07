@@ -4,7 +4,7 @@
 1. [Application Won't Start](#application-wont-start)
 2. [API Issues](#api-issues)
 3. [Settings Not Saving](#settings-not-saving)
-4. [Hot Combos Not Working](#hot-combos-not-working)
+4. [Quick Actions Not Working](#quick-actions-not-working)
 5. [Performance Issues](#performance-issues)
 6. [Development Issues](#development-issues)
 
@@ -196,9 +196,9 @@ If the app won't start, you can test the API service independently:
 
 ---
 
-## Hot Combos Not Working
+## Quick Actions Not Working
 
-### Hot Combo Button Does Nothing
+### Quick Action Button Does Nothing
 
 **Causes & Solutions:**
 1. **No input text** - Type or paste email into input area first
@@ -299,7 +299,7 @@ Fix any type errors shown, then rebuild.
    - Include your OS and version
    - Include error messages from console
    - Include steps to reproduce
-   - GitHub: https://github.com/your-repo/issues
+   - GitHub: https://github.com/lestephen/compose-booster/issues
 
 ---
 

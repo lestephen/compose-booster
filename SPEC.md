@@ -85,7 +85,7 @@ outlook-ai-assistant/
   - Copies output area to clipboard
   - Shows "Copied!" confirmation for 2 seconds
 
-**D. Hot Combo Buttons**
+**D. Quick Action Buttons**
 - Row of 3 pre-configured combo buttons (configurable in settings)
 - Each button displays:
   - Icon (emoji)
@@ -95,7 +95,7 @@ outlook-ai-assistant/
 - Visual styling to differentiate from other buttons
 
 **E. Custom Combo Section**
-Located below hot combo buttons, arranged horizontally:
+Located below quick action buttons, arranged horizontally:
 ```
 [Model Dropdown ▼] [Prompt Dropdown ▼] [Tone Dropdown ▼] [Process →] 
 ```
@@ -363,10 +363,10 @@ ${content}`
 ]
 ```
 
-#### E. Hot Combos Tab
+#### E. Quick Actions Tab
 
-**Hot Combo Configuration**
-- Configure 3 hot combo buttons
+**Quick Action Configuration**
+- Configure 3 quick action buttons
 - Each combo has:
   - **Name:** Text input (e.g., "Quick Polish")
   - **Icon:** Emoji picker (e.g., ✨, 👔, 💬, ⚡, 📝)
@@ -375,7 +375,7 @@ ${content}`
   - **Tone:** Dropdown of available tones
   - **Position:** 1, 2, or 3 (order on main window)
 
-**Default Hot Combos:**
+**Default Quick Actions:**
 ```javascript
 [
   {
@@ -473,7 +473,7 @@ ${content}`
     // ... more tones
   ],
   
-  "hotCombos": [
+  "quickActions": [
     {
       "name": "Quick Polish",
       "icon": "✨",
@@ -601,9 +601,9 @@ function buildPrompt(promptTemplate, tone, emailContent) {
 - `Ctrl/Cmd + V` or `Ctrl/Cmd + Shift + V` - Paste from clipboard
 - `Ctrl/Cmd + C` or `Ctrl/Cmd + Shift + C` - Copy to clipboard
 - `Ctrl/Cmd + Enter` - Process with custom combo
-- `Ctrl/Cmd + 1` - Execute Hot Combo 1
-- `Ctrl/Cmd + 2` - Execute Hot Combo 2
-- `Ctrl/Cmd + 3` - Execute Hot Combo 3
+- `Ctrl/Cmd + 1` - Execute Quick Action 1
+- `Ctrl/Cmd + 2` - Execute Quick Action 2
+- `Ctrl/Cmd + 3` - Execute Quick Action 3
 - `Ctrl/Cmd + Z` - Undo (restore previous input)
 - `Ctrl/Cmd + K` - Clear input
 - `Ctrl/Cmd + Shift + K` - Clear output
@@ -654,7 +654,7 @@ function buildPrompt(promptTemplate, tone, emailContent) {
 - ✅ Copy/paste functionality
 - ✅ Error handling
 
-**Phase 2: Hot Combos**
+**Phase 2: Quick Actions**
 - ✅ Hot combo buttons on main window
 - ✅ Hot combo configuration in settings
 - ✅ Default combos pre-configured
@@ -686,7 +686,7 @@ function buildPrompt(promptTemplate, tone, emailContent) {
 
 **Functional Tests**
 - [ ] API key validation works
-- [ ] All hot combos execute correctly
+- [ ] All quick actions execute correctly
 - [ ] Custom combo processes correctly
 - [ ] Settings persist across restarts
 - [ ] Keyboard shortcuts work
@@ -796,7 +796,7 @@ function buildPrompt(promptTemplate, tone, emailContent) {
 
 4. User pastes into input area (or clicks "Paste" button)
 
-5. User clicks "Quick Polish" hot combo button (GPT-4o + Improve + Neutral tone)
+5. User clicks "Quick Polish" quick action button (GPT-4o + Improve + Neutral tone)
 
 6. Application sends to OpenRouter API:
    ```

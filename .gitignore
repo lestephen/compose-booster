@@ -114,5 +114,8 @@ $RECYCLE.BIN/
 *.swo
 *~
 
+# Claude Code local settings (developer-specific)
+.claude/settings.local.json
+
 # Optional: Claude Code plans (if you don't want to commit them)
 # .claude/plans/

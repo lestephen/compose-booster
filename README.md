@@ -1,259 +1,175 @@
 # Compose Booster
 
-An AI-powered desktop application for improving and polishing email drafts using OpenRouter's API with access to multiple state-of-the-art language models.
+**AI-Powered Email Composition Assistant**
+
+Compose Booster helps you write better emails faster using advanced AI models. Polish your drafts, adjust tone, fix grammar, and more—all with simple one-click actions.
 
 ![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 
-## Features
+---
 
-### 🚀 Quick Actions (Hot Combos)
-- **⚡ Quick Polish** - Fast improvement with Claude 3.5 Haiku
-- **🎯 Professional** - Professional tone with GPT-4 Turbo
-- **✨ Friendly** - Warm, approachable tone with Claude 3.5 Sonnet
-- One-click processing with keyboard shortcuts (Ctrl/Cmd + 1/2/3)
+## ✨ Features
 
-### 🎯 Custom Processing
-- Select from 10 AI models (Claude, GPT-4, Gemini, and more)
-- 7 prompt templates (Improve, Fix Grammar, Shorten, etc.)
-- 10 tone options (Neutral, Professional, Friendly, etc.)
-- Full customization control
+### 🚀 Quick Actions
+- **One-click email improvements** with customizable quick action buttons
+- **Keyboard shortcuts** (Ctrl/Cmd + 1/2/3) for lightning-fast processing
+- **Configurable presets** - customize your quick actions to match your workflow
 
-### ⚙️ Smart Features
-- **Mock API Mode** - Test without consuming credits
-- **Clipboard Integration** - Quick paste and copy (Ctrl+Shift+V/C)
-- **Signature Control** - Option to include/exclude email signatures
-- **Dark Mode** - System, light, or dark theme support
-- **Cost Tracking** - Monitor API usage and costs
-- **Keyboard Shortcuts** - Efficient workflow with hotkeys
+### 🎯 Smart Email Processing
+- **Multiple AI models** - Choose from Claude, GPT-4, Gemini, and more
+- **Flexible prompts** - Improve tone, fix grammar, shorten, expand, or create custom prompts
+- **Tone control** - Switch between professional, friendly, neutral, and other tones
+- **Signature handling** - Option to preserve your existing email signature
 
-## Installation
+### ⚙️ Powerful Features
+- **Dark mode** - Easy on the eyes with light, dark, or system theme
+- **Clipboard integration** - Quick paste and copy with keyboard shortcuts
+- **History/Undo** - Restore previous inputs with Ctrl+Z
+- **Character counter** - Track your email length in real-time
+- **Fully customizable** - Configure models, prompts, tones, and quick actions
 
-### Prerequisites
-- Node.js 16+
-- npm or yarn
-- OpenRouter API key ([Get one here](https://openrouter.ai/keys))
+---
 
-### Setup
+## 📦 Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd compose-booster
-   ```
+### Download
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+**Windows:**
+- Download `compose-booster-1.0.0-Setup.exe` from [GitHub Releases](https://github.com/lestephen/compose-booster/releases)
+- Run the installer
+- **Note:** You may see a Windows SmartScreen warning (this is normal for unsigned software). Click "More info" → "Run anyway"
 
-3. **Start in development mode**
-   ```bash
-   npm start
-   ```
+**macOS:**
+Coming soon to the App Store
 
-4. **Configure your API key**
-   - Open the app
-   - Go to File → Settings (or press Ctrl/Cmd + ,)
-   - Enter your OpenRouter API key
-   - Click "Test Key" to verify
-   - Click "Save Settings"
+**Alternative:** Download the latest release from the [Releases page](https://github.com/lestephen/compose-booster/releases)
 
-## Usage
+### Requirements
 
-### Basic Workflow
+- **OpenRouter API Key** - [Sign up for free at OpenRouter](https://openrouter.ai/keys)
+  - OpenRouter provides access to multiple AI models through a single API
+  - Pay-as-you-go pricing (typical email costs: $0.001-0.01 per email)
 
-1. **Paste your email draft** into the input area (or press Ctrl+Shift+V)
-2. **Choose a processing method:**
-   - Click a Quick Action button (⚡ 🎯 ✨)
-   - OR select Model + Prompt + Tone and click "Process"
-3. **Review the AI response** in the output area
-4. **Copy the result** (Ctrl+Shift+C) and use in your email client
+---
 
-### Keyboard Shortcuts
+## 🚀 Getting Started
+
+### 1. Install and Launch
+
+Run the installer and launch Compose Booster.
+
+### 2. Configure API Key
+
+1. Open **Settings** (File → Settings or Ctrl/Cmd + ,)
+2. Enter your **OpenRouter API key**
+3. Click **Test Key** to verify
+4. Click **Save Settings**
+
+### 3. Start Composing!
+
+**Quick Actions Method:**
+1. Paste or type your email draft
+2. Click one of the quick action buttons (⚡ 🎯 ✨)
+3. Review the improved version
+4. Copy and use in your email client
+
+**Custom Processing Method:**
+1. Paste or type your email draft
+2. Select your preferred **Model**, **Prompt**, and **Tone**
+3. Click **Process** (or press Ctrl/Cmd + Enter)
+4. Copy the result
+
+---
+
+## ⌨️ Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl/Cmd + Enter` | Process with custom selection |
-| `Ctrl/Cmd + 1/2/3` | Quick Actions (Hot Combos) |
+| `Ctrl/Cmd + 1/2/3` | Quick Actions |
+| `Ctrl/Cmd + Enter` | Process with custom settings |
 | `Ctrl/Cmd + Shift + V` | Paste from clipboard |
 | `Ctrl/Cmd + Shift + C` | Copy to clipboard |
+| `Ctrl/Cmd + Z` | Undo (restore previous input) |
 | `Ctrl/Cmd + K` | Clear input |
 | `Ctrl/Cmd + Shift + K` | Clear output |
 | `Ctrl/Cmd + ,` | Open Settings |
 | `ESC` | Cancel processing |
 
-### Mock Mode (Development)
+---
 
-Test the application without using API credits:
+## ⚙️ Settings
 
-**Windows (PowerShell):**
-```powershell
-$env:MOCK_API="true"
-npm start
-```
-
-**Windows (CMD):**
-```cmd
-set MOCK_API=true
-npm start
-```
-
-**macOS/Linux:**
-```bash
-MOCK_API=true npm start
-```
-
-## Settings
+Access settings via **File → Settings** or press `Ctrl/Cmd + ,`
 
 ### General
-- **API Key** - Your OpenRouter API key
-- **Theme** - Light, Dark, or System
-- **Font Size** - Adjust text size (10-20px)
+- **API Key** - Configure your OpenRouter API key
+- **Theme** - Choose Light, Dark, or System theme
+- **Font Size** - Adjust interface text size (10-20px)
 
-### Preferences
-- **Save window position** - Remember window location
-- **Clear history on exit** - Privacy option
-- **Include closing and signature** - Control whether AI generates email closings
+### Models
+- Enable/disable AI models
+- Add custom models
+- Reorder your model list
 
-### Advanced (Planned)
-- Custom models configuration
-- Custom prompt templates
-- Custom tones
-- Hot combo customization
+### Prompts
+- Edit default prompt templates
+- Create custom prompts
+- Use variables like `${content}`, `${tone}`, `${date}`
 
-## Building for Production
+### Tones
+- Customize tone descriptions
+- Add your own tone options
 
-### Build the application
-```bash
-npm run package
-```
+### Quick Actions
+- Configure your 3 quick action buttons
+- Set model, prompt, tone, name, and icon for each
+- Reorder to match keyboard shortcuts (1/2/3)
 
-This creates distributable packages in the `out` directory.
+### Advanced
+- Export/import settings
+- Reset to defaults
+- Privacy settings
 
-### Platform-Specific Builds
+---
 
-**Windows:**
-```bash
-npm run make -- --platform=win32
-```
+## 💡 Tips & Tricks
 
-**macOS:**
-```bash
-npm run make -- --platform=darwin
-```
+### Efficient Workflow
+1. Set up your **Quick Actions** with your most common tasks
+2. Use **keyboard shortcuts** to process emails without touching the mouse
+3. Enable **Dark Mode** for comfortable extended use
 
-## Architecture
+### Cost Management
+- Different models have different prices
+- Haiku and GPT-4o Mini are most cost-effective
+- Check the **status bar** after processing to see cost estimates
 
-```
-compose-booster/
-├── src/
-│   ├── main/              # Electron main process
-│   │   ├── windows/       # Window managers
-│   │   ├── services/      # Core services (API, Config, Menu)
-│   │   ├── ipc/           # IPC handlers and channels
-│   │   └── config/        # Default configuration
-│   │
-│   ├── preload/           # Preload scripts (security bridge)
-│   │   ├── preload.ts     # Main window preload
-│   │   └── settingsPreload.ts
-│   │
-│   ├── renderer/          # Renderer processes (UI)
-│   │   ├── main/          # Main application window
-│   │   │   ├── components/
-│   │   │   ├── index.html
-│   │   │   ├── renderer.ts
-│   │   │   └── styles.css
-│   │   └── settings/      # Settings window
-│   │
-│   └── shared/            # Shared types and constants
-│
-├── forge.config.ts        # Electron Forge configuration
-├── vite.*.config.ts       # Vite build configs
-└── package.json
-```
+### Customization
+- Create **custom prompts** for specific email types (meeting requests, follow-ups, etc.)
+- Add **custom tones** that match your communication style
+- Reorder everything to put your most-used options first
 
-### Key Technologies
-- **Electron 39.2.6** - Cross-platform desktop framework
-- **TypeScript** - Type-safe development
-- **Vite** - Fast build tool and dev server
-- **Electron Forge** - Build and packaging
-- **electron-store** - Encrypted configuration storage
-- **Axios** - HTTP client for API calls
+---
 
-## API Models
+## 🆘 Support & Help
 
-The application supports 10+ AI models through OpenRouter:
+- **Documentation:** [Project Wiki](https://github.com/lestephen/compose-booster/wiki)
+- **Bug Reports:** [GitHub Issues](https://github.com/lestephen/compose-booster/issues)
+- **Troubleshooting:** See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
-| Model | Provider | Best For |
-|-------|----------|----------|
-| Claude 3.5 Sonnet | Anthropic | Balanced quality/speed |
-| Claude 3.5 Haiku | Anthropic | Fast, cost-effective |
-| GPT-4 Turbo | OpenAI | Complex tasks |
-| GPT-4o | OpenAI | Multimodal |
-| GPT-4o Mini | OpenAI | Fast, affordable |
-| Gemini Pro 1.5 | Google | Long context |
-| Llama 3.1 70B | Meta | Open source |
-| Mixtral 8x7B | Mistral | Cost-effective |
+---
 
-## Troubleshooting
+## 🔒 Privacy & Security
 
-### Application won't start
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed debugging steps.
+- **API keys stored securely** - Encrypted local storage only
+- **No data collection** - Your emails never leave your computer except to process via OpenRouter
+- **Open source** - Full source code available for review
 
-**Quick fixes:**
-```bash
-# Clean rebuild
-rm -rf .vite node_modules
-npm install
-npm start
-```
+---
 
-### API key not working
-1. Verify your key at https://openrouter.ai/keys
-2. Check you have credits in your OpenRouter account
-3. Use "Test Key" button in Settings
-4. Try mock mode to test app functionality
-
-### Window doesn't appear
-1. Check console for errors: `npm start 2>&1 | more`
-2. Try force showing window (see TROUBLESHOOTING.md)
-3. Clear app data and restart
-
-## Development
-
-### Project Scripts
-
-```bash
-npm start          # Start in development mode
-npm run package    # Package the application
-npm run make       # Create distributable
-npm run publish    # Publish release (requires setup)
-```
-
-### Hot Reload
-
-- **Renderer changes** (HTML, CSS, TS in renderer/) → Auto-reload ✅
-- **Main process changes** → Requires restart (Ctrl+C, npm start) ⚠️
-
-### Adding Features
-
-1. Update types in `src/shared/types.ts`
-2. Add IPC channels in `src/main/ipc/channels.ts`
-3. Implement handler in `src/main/ipc/handlers.ts`
-4. Expose via preload in `src/preload/preload.ts`
-5. Use in renderer components
-
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License & Legal
+## 📄 License & Legal
 
 ### Open Source License
 
@@ -285,7 +201,7 @@ The "Compose Booster" name and logo are trademarks of Stephen Le and may not be 
 ### Source Code Availability
 
 The complete source code for this application is available at:
-- GitHub Repository: [https://github.com/your-username/compose-booster](https://github.com/your-username/compose-booster)
+- GitHub Repository: [https://github.com/lestephen/compose-booster](https://github.com/lestephen/compose-booster)
 
 Under MPL 2.0, you have the right to:
 - View, download, and study the source code
@@ -293,18 +209,24 @@ Under MPL 2.0, you have the right to:
 - Distribute modified versions (with proper attribution and rebranding)
 - Use the code in commercial projects (following MPL 2.0 terms)
 
-## Credits
+---
 
-- Built with [Electron](https://www.electronjs.org/)
-- Powered by [OpenRouter](https://openrouter.ai/)
-- Uses AI models from Anthropic, OpenAI, Google, Meta, and Mistral
+## 🛠️ For Developers
 
-## Support
-
-- 📖 [Documentation](https://github.com/your-repo/wiki)
-- 🐛 [Report Issues](https://github.com/your-repo/issues)
-- 💬 [Discussions](https://github.com/your-repo/discussions)
+Interested in contributing or running from source? See:
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development setup and guidelines
+- [CLAUDE.md](CLAUDE.md) - AI development context and architecture
+- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) - Detailed implementation roadmap
 
 ---
 
-**Made with ⚡ by Compose Booster Team**
+## 🙏 Credits
+
+- Built with [Electron](https://www.electronjs.org/)
+- Powered by [OpenRouter](https://openrouter.ai/)
+- AI models from Anthropic, OpenAI, Google, Meta, and Mistral
+- Developed by Stephen Le
+
+---
+
+**Made with ⚡ and AI**
