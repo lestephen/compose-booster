@@ -7,7 +7,9 @@
       "Bash(git commit:*)",
       "Bash(timeout:*)",
       "Bash(npm install:*)",
-      "Bash(npm run test:run:*)"
+      "Bash(npm run test:run:*)",
+      "Bash(git branch:*)",
+      "Bash(gh repo edit:*)"
     ],
     "deny": [],
     "ask": []

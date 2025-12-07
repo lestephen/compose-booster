@@ -6,6 +6,7 @@ import { TextAreaManager } from './components/textAreas';
 import { StatusBarManager } from './components/statusBar';
 import { CustomComboManager } from './components/customCombo';
 import { HotCombosManager } from './components/hotCombos';
+import { HistoryManager } from './components/history';
 import { ThemeManager } from './utils/themeManager';
 import { ProcessEmailRequest } from '../../shared/types';
 
@@ -14,6 +15,7 @@ class AppController {
   private statusBar: StatusBarManager;
   private customCombo: CustomComboManager;
   private hotCombos: HotCombosManager;
+  private history: HistoryManager;
   private themeManager: ThemeManager;
   private isProcessing = false;
 
@@ -33,6 +35,7 @@ class AppController {
     this.statusBar = new StatusBarManager();
     this.customCombo = new CustomComboManager();
     this.hotCombos = new HotCombosManager();
+    this.history = new HistoryManager();
     this.themeManager = new ThemeManager();
 
     // Get UI elements
@@ -94,6 +97,12 @@ class AppController {
       const isMac = navigator.platform.includes('Mac');
       const modifier = isMac ? e.metaKey : e.ctrlKey;
 
+      // Ctrl/Cmd + Z - Undo
+      if (modifier && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        this.handleUndo();
+      }
+
       // Ctrl/Cmd + Shift + V - Paste
       if (modifier && e.shiftKey && e.key === 'v') {
         e.preventDefault();
@@ -148,10 +157,24 @@ class AppController {
     });
   }
 
+  private handleUndo(): void {
+    const previousText = this.history.pop();
+    if (previousText !== undefined) {
+      this.textAreas.setInput(previousText);
+      this.statusBar.setInfo('Undo successful');
+    } else {
+      this.statusBar.setWarning('Nothing to undo');
+    }
+  }
+
   private async handlePaste(): Promise<void> {
     try {
       const result = await window.electronAPI.readClipboard();
       if (result.success && result.data) {
+        // Save current state to history before pasting
+        const currentInput = this.textAreas.getInput();
+        this.history.push(currentInput);
+
         this.textAreas.setInput(result.data);
         this.statusBar.setReady();
       }
