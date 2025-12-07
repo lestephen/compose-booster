@@ -221,6 +221,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     checkUpdates: true,
     clearHistoryOnExit: false,
     includeClosingAndSignature: false,
+    showDeveloperTools: false,
   },
   windowBounds: {
     width: MAIN_WINDOW_DEFAULT_WIDTH,

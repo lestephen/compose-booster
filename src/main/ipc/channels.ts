@@ -43,6 +43,7 @@ export const IPC_CHANNELS = {
   MENU_FONT_SIZE_INCREASE: 'menu:font-size-increase',
   MENU_FONT_SIZE_DECREASE: 'menu:font-size-decrease',
   MENU_FONT_SIZE_RESET: 'menu:font-size-reset',
+  MENU_REBUILD: 'menu:rebuild',
 
   // Events (broadcasts)
   CONFIG_UPDATED: 'config:updated',

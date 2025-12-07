@@ -53,6 +53,7 @@ export interface Preferences {
   checkUpdates: boolean;
   clearHistoryOnExit: boolean;
   includeClosingAndSignature: boolean;
+  showDeveloperTools: boolean;
 }
 
 export interface WindowBounds {
