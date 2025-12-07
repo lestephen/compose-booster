@@ -37,7 +37,7 @@ export class ModelsTab {
         <table class="models-table">
           <thead>
             <tr>
-              <th style="width: 80px;">Order</th>
+              <th style="width: 50px;"></th>
               <th>Model Name</th>
               ${this.showDetailedView ? '<th>Model ID</th>' : ''}
               ${this.showDetailedView ? '<th>Cost Details</th>' : '<th>Cost</th>'}
@@ -97,11 +97,14 @@ export class ModelsTab {
         costCellContent = `<span class="cost-badge ${costBadgeClass}">${this.escapeHtml(model.cost || 'N/A')}</span>`;
       }
 
+      row.setAttribute('draggable', 'true');
+      row.setAttribute('data-index', index.toString());
+      row.classList.add('draggable-row');
+
       row.innerHTML = `
         <td>
-          <div class="model-reorder-buttons">
-            <button class="btn-icon" data-move-up="${index}" ${index === 0 ? 'disabled' : ''} title="Move up">▲</button>
-            <button class="btn-icon" data-move-down="${index}" ${index === this.config.models.length - 1 ? 'disabled' : ''} title="Move down">▼</button>
+          <div class="drag-handle" title="Drag to reorder">
+            <span>⋮⋮</span>
           </div>
         </td>
         <td>
@@ -157,23 +160,8 @@ export class ModelsTab {
       });
     });
 
-    // Move up buttons
-    const moveUpButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-move-up]');
-    moveUpButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const index = parseInt(button.getAttribute('data-move-up') || '0', 10);
-        this.handleMoveModel(index, -1);
-      });
-    });
-
-    // Move down buttons
-    const moveDownButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-move-down]');
-    moveDownButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const index = parseInt(button.getAttribute('data-move-down') || '0', 10);
-        this.handleMoveModel(index, 1);
-      });
-    });
+    // Setup drag-and-drop
+    this.setupDragAndDrop();
 
     // Model search input
     const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
@@ -201,21 +189,65 @@ export class ModelsTab {
     }
   }
 
-  private handleMoveModel(index: number, direction: number): void {
-    const newIndex = index + direction;
+  private setupDragAndDrop(): void {
+    const rows = this.container.querySelectorAll<HTMLTableRowElement>('.draggable-row');
+    let draggedRow: HTMLTableRowElement | null = null;
+    let draggedIndex: number = -1;
 
-    // Validate bounds
-    if (newIndex < 0 || newIndex >= this.config.models.length) {
-      return;
-    }
+    rows.forEach((row) => {
+      row.addEventListener('dragstart', (e) => {
+        draggedRow = row;
+        draggedIndex = parseInt(row.getAttribute('data-index') || '-1', 10);
+        row.classList.add('dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
 
-    // Swap models
-    const temp = this.config.models[index];
-    this.config.models[index] = this.config.models[newIndex];
-    this.config.models[newIndex] = temp;
+      row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        // Remove all drag-over classes
+        rows.forEach(r => r.classList.remove('drag-over'));
+      });
 
-    this.onConfigChange(this.config);
-    this.render();
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) {
+          e.dataTransfer.dropEffect = 'move';
+        }
+
+        // Add visual feedback
+        const targetRow = e.currentTarget as HTMLTableRowElement;
+        if (targetRow !== draggedRow) {
+          targetRow.classList.add('drag-over');
+        }
+      });
+
+      row.addEventListener('dragleave', (e) => {
+        const targetRow = e.currentTarget as HTMLTableRowElement;
+        targetRow.classList.remove('drag-over');
+      });
+
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetRow = e.currentTarget as HTMLTableRowElement;
+        targetRow.classList.remove('drag-over');
+
+        if (draggedRow && targetRow !== draggedRow) {
+          const targetIndex = parseInt(targetRow.getAttribute('data-index') || '-1', 10);
+
+          if (draggedIndex !== -1 && targetIndex !== -1) {
+            // Reorder the models array
+            const movedModel = this.config.models[draggedIndex];
+            this.config.models.splice(draggedIndex, 1);
+            this.config.models.splice(targetIndex, 0, movedModel);
+
+            this.onConfigChange(this.config);
+            this.render();
+          }
+        }
+      });
+    });
   }
 
   private handleDeleteModel(index: number): void {
