@@ -8,12 +8,14 @@ export class ModelsTab {
   private container: HTMLElement;
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
+  private availableModels: any[] = [];
 
   constructor(container: HTMLElement, config: AppConfig, onConfigChange: (config: AppConfig) => void) {
     this.container = container;
     this.config = config;
     this.onConfigChange = onConfigChange;
     this.render();
+    this.loadAvailableModels();
   }
 
   public updateConfig(config: AppConfig): void {
@@ -40,27 +42,15 @@ export class ModelsTab {
       </div>
 
       <div class="add-model-section">
-        <h3>Add Custom Model</h3>
+        <h3>Add Model from OpenRouter</h3>
         <div class="form-group">
-          <label for="newModelName">Model Name</label>
-          <input type="text" id="newModelName" class="form-control" placeholder="e.g., Custom GPT-4">
+          <label for="modelDropdown">Select Model</label>
+          <select id="modelDropdown" class="form-control">
+            <option value="">-- Select a model --</option>
+          </select>
+          <small class="form-text" id="loadingModelsText">Loading models from OpenRouter...</small>
         </div>
-        <div class="form-group">
-          <label for="newModelId">Model ID</label>
-          <input type="text" id="newModelId" class="form-control" placeholder="e.g., openai/gpt-4">
-          <small class="form-text">Find model IDs at <a href="https://openrouter.ai/models" target="_blank">OpenRouter Models</a></small>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="newModelCost">Cost Estimate</label>
-            <input type="text" id="newModelCost" class="form-control" placeholder="e.g., $0.03/1K tokens">
-          </div>
-          <div class="form-group">
-            <label for="newModelDescription">Description (optional)</label>
-            <input type="text" id="newModelDescription" class="form-control" placeholder="Best for...">
-          </div>
-        </div>
-        <button id="addModelBtn" class="btn btn-primary">Add Model</button>
+        <button id="addModelBtn" class="btn btn-primary" disabled>Add Model</button>
         <button id="resetModelsBtn" class="btn btn-secondary" style="margin-left: 8px;">Reset to Defaults</button>
       </div>
     `;
@@ -85,7 +75,10 @@ export class ModelsTab {
           ${isDefault ? '<span class="model-default-badge">Default</span>' : ''}
         </td>
         <td><code class="model-id">${this.escapeHtml(model.id)}</code></td>
-        <td><span class="model-cost">${this.escapeHtml(model.cost || 'N/A')}</span></td>
+        <td>
+          <span class="model-cost">${this.escapeHtml(model.cost || 'N/A')}</span>
+          ${model.costDetails ? `<br><small class="cost-details">In: ${this.escapeHtml(model.costDetails.input)} | Out: ${this.escapeHtml(model.costDetails.output)}</small>` : ''}
+        </td>
         <td>
           <label class="toggle-switch">
             <input type="checkbox" ${model.enabled ? 'checked' : ''} data-model-index="${index}">
@@ -120,9 +113,13 @@ export class ModelsTab {
       });
     });
 
-    // Add model button
-    const addBtn = document.getElementById('addModelBtn');
-    if (addBtn) {
+    // Model dropdown
+    const dropdown = document.getElementById('modelDropdown') as HTMLSelectElement;
+    const addBtn = document.getElementById('addModelBtn') as HTMLButtonElement;
+    if (dropdown && addBtn) {
+      dropdown.addEventListener('change', () => {
+        addBtn.disabled = !dropdown.value;
+      });
       addBtn.addEventListener('click', () => this.handleAddModel());
     }
 
@@ -156,43 +153,54 @@ export class ModelsTab {
   }
 
   private handleAddModel(): void {
-    const nameInput = document.getElementById('newModelName') as HTMLInputElement;
-    const idInput = document.getElementById('newModelId') as HTMLInputElement;
-    const costInput = document.getElementById('newModelCost') as HTMLInputElement;
-    const descInput = document.getElementById('newModelDescription') as HTMLInputElement;
+    const dropdown = document.getElementById('modelDropdown') as HTMLSelectElement;
+    const selectedModelId = dropdown?.value;
 
-    const name = nameInput?.value.trim();
-    const id = idInput?.value.trim();
-    const cost = costInput?.value.trim();
-    const description = descInput?.value.trim();
-
-    if (!name || !id) {
-      alert('Please enter both model name and ID.');
+    if (!selectedModelId) {
+      alert('Please select a model from the dropdown.');
       return;
     }
 
     // Check if model ID already exists
-    if (this.config.models.some(m => m.id === id)) {
-      alert('A model with this ID already exists.');
+    if (this.config.models.some(m => m.id === selectedModelId)) {
+      alert('This model has already been added.');
       return;
     }
 
+    // Find the selected model in availableModels
+    const selectedModel = this.availableModels.find(m => m.id === selectedModelId);
+    if (!selectedModel) {
+      alert('Model not found.');
+      return;
+    }
+
+    // Determine cost tier based on pricing
+    const inputCost = parseFloat(selectedModel.pricing?.prompt || '0');
+    let costTier: 'Low' | 'Medium' | 'High' = 'Medium';
+    if (inputCost < 0.000005) {
+      costTier = 'Low';
+    } else if (inputCost > 0.00001) {
+      costTier = 'High';
+    }
+
     const newModel: Model = {
-      id,
-      name,
-      cost: cost || undefined,
-      description: description || undefined,
+      id: selectedModel.id,
+      name: selectedModel.name,
+      cost: costTier,
+      costDetails: {
+        input: `$${(parseFloat(selectedModel.pricing?.prompt || '0') * 1000000).toFixed(2)}/M`,
+        output: `$${(parseFloat(selectedModel.pricing?.completion || '0') * 1000000).toFixed(2)}/M`,
+      },
       enabled: true,
     };
 
     this.config.models.push(newModel);
     this.onConfigChange(this.config);
 
-    // Clear form
-    if (nameInput) nameInput.value = '';
-    if (idInput) idInput.value = '';
-    if (costInput) costInput.value = '';
-    if (descInput) descInput.value = '';
+    // Reset dropdown
+    if (dropdown) dropdown.value = '';
+    const addBtn = document.getElementById('addModelBtn') as HTMLButtonElement;
+    if (addBtn) addBtn.disabled = true;
 
     this.render();
   }
@@ -207,6 +215,45 @@ export class ModelsTab {
 
   private isDefaultModel(modelId: string): boolean {
     return DEFAULT_CONFIG.models.some(m => m.id === modelId);
+  }
+
+  private async loadAvailableModels(): Promise<void> {
+    const loadingText = document.getElementById('loadingModelsText');
+    const dropdown = document.getElementById('modelDropdown') as HTMLSelectElement;
+
+    try {
+      const result = await window.electronAPI.getAvailableModels();
+
+      if (result.success && result.data) {
+        this.availableModels = result.data;
+
+        // Populate dropdown
+        if (dropdown) {
+          dropdown.innerHTML = '<option value="">-- Select a model --</option>';
+          this.availableModels.forEach((model: any) => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = `${model.name} (${model.id})`;
+            dropdown.appendChild(option);
+          });
+        }
+
+        if (loadingText) {
+          loadingText.textContent = `${this.availableModels.length} models available from OpenRouter`;
+        }
+      } else {
+        if (loadingText) {
+          loadingText.textContent = 'Failed to load models. Please check your API key.';
+          loadingText.style.color = 'var(--error-color)';
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load models:', error);
+      if (loadingText) {
+        loadingText.textContent = 'Error loading models from OpenRouter';
+        loadingText.style.color = 'var(--error-color)';
+      }
+    }
   }
 
   private escapeHtml(text: string): string {
