@@ -1,0 +1,414 @@
+/* Compose Booster - Main Window Styles */
+
+/* CSS Variables for Theming */
+:root {
+  /* Theme colors */
+  --color-primary: #0078D4;
+  --color-primary-hover: #005A9E;
+  --color-success: #107C10;
+  --color-error: #E81123;
+  --color-warning: #FFB900;
+
+  /* Light theme */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F5F5;
+  --bg-tertiary: #E8E8E8;
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --border-color: #D1D1D1;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-size-base: 14px;
+  --font-size-large: 16px;
+  --font-size-small: 12px;
+  --font-size-h2: 18px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Borders */
+  --border-radius: 6px;
+  --border-width: 1px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px var(--shadow-color);
+  --shadow-md: 0 2px 8px var(--shadow-color);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-primary: #1E1E1E;
+  --bg-secondary: #2D2D2D;
+  --bg-tertiary: #3D3D3D;
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --border-color: #555555;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+/* App Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  overflow: hidden;
+}
+
+.input-section,
+.output-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.section-header h2 {
+  font-size: var(--font-size-h2);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/* Text Areas */
+.email-textarea {
+  flex: 1;
+  width: 100%;
+  padding: var(--spacing-md);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  resize: vertical;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 250px;
+}
+
+.email-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
+}
+
+.email-textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.char-counter {
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.copy-confirmation {
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-success);
+  color: white;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-small);
+  text-align: center;
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  10%, 90% { opacity: 1; }
+}
+
+/* Control Panel */
+.control-panel {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+/* Hot Combos Section */
+.hot-combos-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.hot-combos-section h3 {
+  font-size: var(--font-size-large);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.hot-combo-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.btn-hot-combo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-hot-combo:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+}
+
+.btn-hot-combo:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-hot-combo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.hot-combo-icon {
+  font-size: 24px;
+}
+
+.hot-combo-label {
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.custom-combo-section h3 {
+  font-size: var(--font-size-large);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.custom-combo-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.combo-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.combo-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--border-color);
+}
+
+.btn-process {
+  padding: 10px 32px;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border-top: var(--border-width) solid var(--border-color);
+  font-size: var(--font-size-small);
+}
+
+.status-bar.status-ready {
+  background: var(--bg-secondary);
+}
+
+.status-bar.status-success {
+  background: rgba(16, 124, 16, 0.1);
+  border-top-color: var(--color-success);
+}
+
+.status-bar.status-error {
+  background: rgba(232, 17, 35, 0.1);
+  border-top-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.status-bar.status-processing {
+  background: rgba(0, 120, 212, 0.1);
+  border-top-color: var(--color-primary);
+}
+
+.status-message {
+  font-weight: 500;
+}
+
+.status-details {
+  display: flex;
+  gap: var(--spacing-md);
+  color: var(--text-secondary);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-content {
+  background: var(--bg-primary);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  min-width: 300px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto var(--spacing-md);
+  border: 4px solid var(--bg-tertiary);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-message {
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-large);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Utility Classes */
+.hidden {
+  display: none !important;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- CSP disabled for development - re-enable for production -->
+  <!-- <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';"> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compose Booster</title>
+</head>
+<body>
+  <div id="app" class="app-container">
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+      <!-- Input Section -->
+      <div class="input-section">
+        <div class="section-header">
+          <h2>Email Draft</h2>
+          <div class="actions">
+            <button id="pasteBtn" class="btn btn-secondary" title="Ctrl/Cmd+Shift+V">
+              📋 Paste
+            </button>
+            <button id="clearInputBtn" class="btn btn-secondary" title="Ctrl/Cmd+K">
+              🗑️ Clear
+            </button>
+          </div>
+        </div>
+        <textarea
+          id="inputText"
+          placeholder="Paste your email draft and conversation chain here..."
+          class="email-textarea"
+        ></textarea>
+        <div class="char-counter">
+          <span id="charCount">0</span> characters
+        </div>
+      </div>
+
+      <!-- Output Section -->
+      <div class="output-section">
+        <div class="section-header">
+          <h2>AI Response</h2>
+          <div class="actions">
+            <button id="copyBtn" class="btn btn-primary" title="Ctrl/Cmd+Shift+C">
+              📄 Copy
+            </button>
+            <button id="clearOutputBtn" class="btn btn-secondary" title="Ctrl/Cmd+Shift+K">
+              🗑️ Clear
+            </button>
+          </div>
+        </div>
+        <textarea
+          id="outputText"
+          placeholder="AI response will appear here..."
+          class="email-textarea"
+          readonly
+        ></textarea>
+        <div id="copyConfirmation" class="copy-confirmation hidden">✓ Copied!</div>
+      </div>
+
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+
+      <!-- Hot Combos -->
+      <div class="hot-combos-section">
+        <h3>Quick Actions</h3>
+        <div class="hot-combo-buttons">
+          <button id="hotCombo1" class="btn btn-hot-combo" title="Ctrl/Cmd+1">
+            <span class="hot-combo-icon">⚡</span>
+            <span class="hot-combo-label">Quick Polish</span>
+          </button>
+          <button id="hotCombo2" class="btn btn-hot-combo" title="Ctrl/Cmd+2">
+            <span class="hot-combo-icon">🎯</span>
+            <span class="hot-combo-label">Professional</span>
+          </button>
+          <button id="hotCombo3" class="btn btn-hot-combo" title="Ctrl/Cmd+3">
+            <span class="hot-combo-icon">✨</span>
+            <span class="hot-combo-label">Friendly</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Combo -->
+      <div class="custom-combo-section">
+        <h3>Custom Processing</h3>
+        <div class="custom-combo-controls">
+          <select id="modelSelect" class="combo-select">
+            <option value="">Loading models...</option>
+          </select>
+          <select id="promptSelect" class="combo-select">
+            <option value="">Loading prompts...</option>
+          </select>
+          <select id="toneSelect" class="combo-select">
+            <option value="">Loading tones...</option>
+          </select>
+          <button id="processBtn" class="btn btn-primary btn-process" title="Ctrl/Cmd+Enter">
+            ▶ Process
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Status Bar -->
+    <div id="statusBar" class="status-bar status-ready">
+      <div class="status-message">Ready</div>
+      <div class="status-details">
+        <span id="statusCost" class="status-cost hidden"></span>
+        <span id="statusTime" class="status-time hidden"></span>
+        <span id="statusModel" class="status-model hidden"></span>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <div class="loading-message">Processing your email...</div>
+        <button id="cancelBtn" class="btn btn-secondary">Cancel (ESC)</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="./renderer.ts"></script>
+</body>
+</html>
