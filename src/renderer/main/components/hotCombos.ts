@@ -80,4 +80,11 @@ export class HotCombosManager {
     this.hotCombo2Btn.disabled = !enabled;
     this.hotCombo3Btn.disabled = !enabled;
   }
+
+  /**
+   * Reload hot combos from config
+   */
+  async reload(): Promise<void> {
+    await this.initialize();
+  }
 }

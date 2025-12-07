@@ -61,6 +61,9 @@ class AppController {
     // Setup keyboard shortcuts
     this.setupKeyboardShortcuts();
 
+    // Listen for config updates
+    this.setupConfigListener();
+
     // Set initial status
     this.statusBar.setReady();
   }
@@ -133,6 +136,15 @@ class AppController {
         const index = parseInt(e.key, 10) - 1;
         this.handleHotCombo(index);
       }
+    });
+  }
+
+  private setupConfigListener(): void {
+    // Listen for config updates from settings window
+    window.electronAPI.onConfigUpdated(async () => {
+      // Reload dropdowns to reflect updated models/prompts/tones
+      await this.customCombo.reload();
+      await this.hotCombos.reload();
     });
   }
 

@@ -1,7 +1,7 @@
 // IPC Handlers
 // Central registration of all IPC handlers
 
-import { ipcMain, clipboard, dialog } from 'electron';
+import { ipcMain, clipboard, dialog, BrowserWindow } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
@@ -52,6 +52,12 @@ function registerConfigHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.CONFIG_SET, async (event, config: Partial<AppConfig>) => {
     try {
       configService.setConfig(config);
+
+      // Broadcast config update to all windows
+      BrowserWindow.getAllWindows().forEach(window => {
+        window.webContents.send(IPC_CHANNELS.CONFIG_UPDATED);
+      });
+
       return { success: true } as IpcResponse;
     } catch (error) {
       return {
