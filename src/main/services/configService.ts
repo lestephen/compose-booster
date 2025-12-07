@@ -66,7 +66,7 @@ class ConfigService {
       models: config.models || DEFAULT_CONFIG.models,
       prompts: config.prompts || DEFAULT_CONFIG.prompts,
       tones: config.tones || DEFAULT_CONFIG.tones,
-      hotCombos: config.hotCombos || DEFAULT_CONFIG.hotCombos,
+      quickActions: config.quickActions || DEFAULT_CONFIG.quickActions,
       lastUsed: config.lastUsed || DEFAULT_CONFIG.lastUsed,
       preferences: {
         ...DEFAULT_CONFIG.preferences,

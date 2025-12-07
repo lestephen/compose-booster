@@ -685,7 +685,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Hot Combos Configuration Styles */
-.hot-combo-config-card {
+.quick-action-config-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
@@ -693,7 +693,7 @@ input:checked + .toggle-slider:before {
   margin-bottom: var(--spacing-lg);
 }
 
-.hot-combo-config-card h3 {
+.quick-action-config-card h3 {
   margin-bottom: var(--spacing-md);
   display: flex;
   align-items: center;

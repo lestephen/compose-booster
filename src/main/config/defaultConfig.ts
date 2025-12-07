@@ -1,7 +1,7 @@
 // Default configuration for Compose Booster
 // Based on SPEC.md requirements
 
-import { AppConfig, Model, Prompt, Tone, HotCombo } from '../../shared/types';
+import { AppConfig, Model, Prompt, Tone, QuickAction } from '../../shared/types';
 import {
   DEFAULT_FONT_SIZE,
   MAIN_WINDOW_DEFAULT_WIDTH,
@@ -170,7 +170,7 @@ export const DEFAULT_TONES: Tone[] = [
   },
 ];
 
-export const DEFAULT_HOT_COMBOS: HotCombo[] = [
+export const DEFAULT_HOT_COMBOS: QuickAction[] = [
   {
     name: 'Quick Polish',
     icon: '✨',
@@ -202,7 +202,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   models: DEFAULT_MODELS,
   prompts: DEFAULT_PROMPTS,
   tones: DEFAULT_TONES,
-  hotCombos: DEFAULT_HOT_COMBOS,
+  quickActions: DEFAULT_HOT_COMBOS,
   lastUsed: {
     model: 'anthropic/claude-3.5-sonnet',
     prompt: 'improve',

@@ -192,7 +192,7 @@ export class AdvancedTab {
     if (!Array.isArray(config.models)) return false;
     if (!Array.isArray(config.prompts)) return false;
     if (!Array.isArray(config.tones)) return false;
-    if (!Array.isArray(config.hotCombos)) return false;
+    if (!Array.isArray(config.quickActions)) return false;
     if (!config.preferences || typeof config.preferences !== 'object') return false;
 
     return true;

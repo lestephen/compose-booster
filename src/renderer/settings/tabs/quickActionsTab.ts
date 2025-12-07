@@ -1,9 +1,9 @@
-// Hot Combos Tab
+// Quick Actions Tab
 // Configure the 3 quick action hot combo buttons
 
-import { AppConfig, HotCombo } from '../../../shared/types';
+import { AppConfig, QuickAction } from '../../../shared/types';
 
-export class HotCombosTab {
+export class QuickActionsTab {
   private container: HTMLElement;
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
@@ -23,15 +23,15 @@ export class HotCombosTab {
   private render(): void {
     this.container.innerHTML = '';
 
-    this.config.hotCombos.forEach((combo, index) => {
+    this.config.quickActions.forEach((combo, index) => {
       const card = this.createComboCard(combo, index);
       this.container.appendChild(card);
     });
   }
 
-  private createComboCard(combo: HotCombo, index: number): HTMLElement {
+  private createComboCard(combo: QuickAction, index: number): HTMLElement {
     const card = document.createElement('div');
-    card.className = 'hot-combo-config-card';
+    card.className = 'quick-action-config-card';
 
     const shortcut = this.getShortcutDisplay(index);
 
@@ -116,12 +116,12 @@ export class HotCombosTab {
     const inputs = card.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-combo-index]');
     inputs.forEach((input) => {
       input.addEventListener('change', () => {
-        const field = input.getAttribute('data-field') as keyof HotCombo;
+        const field = input.getAttribute('data-field') as keyof QuickAction;
         const value = input.value;
 
-        if (field && index >= 0 && index < this.config.hotCombos.length) {
+        if (field && index >= 0 && index < this.config.quickActions.length) {
           // Update config
-          (this.config.hotCombos[index] as any)[field] = value || undefined;
+          (this.config.quickActions[index] as any)[field] = value || undefined;
           this.onConfigChange(this.config);
 
           // Re-render to update the header

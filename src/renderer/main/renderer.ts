@@ -5,7 +5,7 @@ import './styles.css';
 import { TextAreaManager } from './components/textAreas';
 import { StatusBarManager } from './components/statusBar';
 import { CustomComboManager } from './components/customCombo';
-import { HotCombosManager } from './components/hotCombos';
+import { QuickActionsManager } from './components/quickActions';
 import { HistoryManager } from './components/history';
 import { ThemeManager } from './utils/themeManager';
 import { ProcessEmailRequest } from '../../shared/types';
@@ -14,7 +14,7 @@ class AppController {
   private textAreas: TextAreaManager;
   private statusBar: StatusBarManager;
   private customCombo: CustomComboManager;
-  private hotCombos: HotCombosManager;
+  private quickActions: QuickActionsManager;
   private history: HistoryManager;
   private themeManager: ThemeManager;
   private isProcessing = false;
@@ -34,7 +34,7 @@ class AppController {
     this.textAreas = new TextAreaManager();
     this.statusBar = new StatusBarManager();
     this.customCombo = new CustomComboManager();
-    this.hotCombos = new HotCombosManager();
+    this.quickActions = new QuickActionsManager();
     this.history = new HistoryManager();
     this.themeManager = new ThemeManager();
 
@@ -56,7 +56,7 @@ class AppController {
     await this.customCombo.initialize();
 
     // Initialize hot combos
-    await this.hotCombos.initialize();
+    await this.quickActions.initialize();
 
     // Setup event listeners
     this.setupEventListeners();
@@ -89,7 +89,7 @@ class AppController {
     this.cancelBtn.addEventListener('click', () => this.handleCancel());
 
     // Hot combo buttons
-    this.hotCombos.setupHandlers((index) => this.handleHotCombo(index));
+    this.quickActions.setupHandlers((index) => this.handleQuickAction(index));
   }
 
   private setupKeyboardShortcuts(): void {
@@ -143,7 +143,7 @@ class AppController {
       if (modifier && !e.shiftKey && ['1', '2', '3'].includes(e.key)) {
         e.preventDefault();
         const index = parseInt(e.key, 10) - 1;
-        this.handleHotCombo(index);
+        this.handleQuickAction(index);
       }
     });
   }
@@ -153,7 +153,7 @@ class AppController {
     window.electronAPI.onConfigUpdated(async () => {
       // Reload dropdowns to reflect updated models/prompts/tones
       await this.customCombo.reload();
-      await this.hotCombos.reload();
+      await this.quickActions.reload();
     });
   }
 
@@ -257,7 +257,7 @@ class AppController {
     }
   }
 
-  private async handleHotCombo(index: number): Promise<void> {
+  private async handleQuickAction(index: number): Promise<void> {
     if (this.isProcessing) return;
 
     const input = this.textAreas.getInput();
@@ -266,7 +266,7 @@ class AppController {
       return;
     }
 
-    const hotCombo = this.hotCombos.getHotCombo(index);
+    const hotCombo = this.quickActions.getQuickAction(index);
     if (!hotCombo) {
       this.statusBar.setError('Hot combo not configured');
       return;
@@ -335,7 +335,7 @@ class AppController {
     this.clearOutputBtn.disabled = !enabled;
     this.processBtn.disabled = !enabled;
     this.customCombo.setEnabled(enabled);
-    this.hotCombos.setEnabled(enabled);
+    this.quickActions.setEnabled(enabled);
   }
 }
 
