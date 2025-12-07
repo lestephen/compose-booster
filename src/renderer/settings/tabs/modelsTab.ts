@@ -15,6 +15,7 @@ export class ModelsTab {
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
   private availableModels: any[] = [];
+  private showDetailedView: boolean = false;
 
   constructor(container: HTMLElement, config: AppConfig, onConfigChange: (config: AppConfig) => void) {
     this.container = container;
@@ -31,14 +32,21 @@ export class ModelsTab {
 
   private render(): void {
     this.container.innerHTML = `
+      <div class="models-view-controls">
+        <label class="checkbox-label">
+          <input type="checkbox" id="detailedViewToggle" ${this.showDetailedView ? 'checked' : ''}>
+          Show detailed view (model IDs and cost per million tokens)
+        </label>
+      </div>
+
       <div class="models-table-wrapper">
         <table class="models-table">
           <thead>
             <tr>
-              <th style="width: 80px;">Order</th>
+              <th style="width: 50px;"></th>
               <th>Model Name</th>
-              <th>Model ID</th>
-              <th>Cost</th>
+              ${this.showDetailedView ? '<th>Model ID</th>' : ''}
+              ${this.showDetailedView ? '<th>Cost Details</th>' : '<th>Cost</th>'}
               <th style="width: 150px;">Status</th>
               <th style="width: 100px;">Actions</th>
             </tr>
@@ -82,22 +90,34 @@ export class ModelsTab {
       const isDefault = this.isDefaultModel(model.id);
       const row = document.createElement('tr');
 
+      // Build cost cell content based on view mode
+      let costCellContent = '';
+      if (this.showDetailedView) {
+        // Detailed view: show raw cost per million
+        costCellContent = model.costDetails
+          ? `<small class="cost-details-detailed">Input: ${this.escapeHtml(model.costDetails.input)}<br>Output: ${this.escapeHtml(model.costDetails.output)}</small>`
+          : 'N/A';
+      } else {
+        // Simple view: show cost tier with color badge
+        const costBadgeClass = model.cost === 'Low' ? 'cost-badge-low' : model.cost === 'High' ? 'cost-badge-high' : 'cost-badge-medium';
+        costCellContent = `<span class="cost-badge ${costBadgeClass}">${this.escapeHtml(model.cost || 'N/A')}</span>`;
+      }
+
+      row.setAttribute('draggable', 'true');
+      row.setAttribute('data-index', index.toString());
+      row.classList.add('draggable-row');
+
       row.innerHTML = `
         <td>
-          <div class="model-reorder-buttons">
-            <button class="btn-icon" data-move-up="${index}" ${index === 0 ? 'disabled' : ''} title="Move up">▲</button>
-            <button class="btn-icon" data-move-down="${index}" ${index === this.config.models.length - 1 ? 'disabled' : ''} title="Move down">▼</button>
+          <div class="drag-handle" title="Drag to reorder">
+            <span>⋮⋮</span>
           </div>
         </td>
         <td>
           <div class="model-name">${this.escapeHtml(model.name)}</div>
-          ${isDefault ? '<span class="model-default-badge">Default</span>' : ''}
         </td>
-        <td><code class="model-id">${this.escapeHtml(model.id)}</code></td>
-        <td>
-          <span class="model-cost">${this.escapeHtml(model.cost || 'N/A')}</span>
-          ${model.costDetails ? `<br><small class="cost-details">In: ${this.escapeHtml(model.costDetails.input)} | Out: ${this.escapeHtml(model.costDetails.output)}</small>` : ''}
-        </td>
+        ${this.showDetailedView ? `<td><code class="model-id">${this.escapeHtml(model.id)}</code></td>` : ''}
+        <td>${costCellContent}</td>
         <td>
           <label class="toggle-switch">
             <input type="checkbox" ${model.enabled ? 'checked' : ''} data-model-index="${index}">
@@ -119,6 +139,15 @@ export class ModelsTab {
   }
 
   private setupEventListeners(): void {
+    // Detailed view toggle
+    const detailedViewToggle = document.getElementById('detailedViewToggle') as HTMLInputElement;
+    if (detailedViewToggle) {
+      detailedViewToggle.addEventListener('change', () => {
+        this.showDetailedView = detailedViewToggle.checked;
+        this.render();
+      });
+    }
+
     // Toggle switches
     const toggles = this.container.querySelectorAll<HTMLInputElement>('.toggle-switch input[type="checkbox"]');
     toggles.forEach((toggle) => {
@@ -137,23 +166,8 @@ export class ModelsTab {
       });
     });
 
-    // Move up buttons
-    const moveUpButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-move-up]');
-    moveUpButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const index = parseInt(button.getAttribute('data-move-up') || '0', 10);
-        this.handleMoveModel(index, -1);
-      });
-    });
-
-    // Move down buttons
-    const moveDownButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-move-down]');
-    moveDownButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const index = parseInt(button.getAttribute('data-move-down') || '0', 10);
-        this.handleMoveModel(index, 1);
-      });
-    });
+    // Setup drag-and-drop
+    this.setupDragAndDrop();
 
     // Model search input
     const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
@@ -181,21 +195,65 @@ export class ModelsTab {
     }
   }
 
-  private handleMoveModel(index: number, direction: number): void {
-    const newIndex = index + direction;
+  private setupDragAndDrop(): void {
+    const rows = this.container.querySelectorAll<HTMLTableRowElement>('.draggable-row');
+    let draggedRow: HTMLTableRowElement | null = null;
+    let draggedIndex: number = -1;
 
-    // Validate bounds
-    if (newIndex < 0 || newIndex >= this.config.models.length) {
-      return;
-    }
+    rows.forEach((row) => {
+      row.addEventListener('dragstart', (e) => {
+        draggedRow = row;
+        draggedIndex = parseInt(row.getAttribute('data-index') || '-1', 10);
+        row.classList.add('dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
 
-    // Swap models
-    const temp = this.config.models[index];
-    this.config.models[index] = this.config.models[newIndex];
-    this.config.models[newIndex] = temp;
+      row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        // Remove all drag-over classes
+        rows.forEach(r => r.classList.remove('drag-over'));
+      });
 
-    this.onConfigChange(this.config);
-    this.render();
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) {
+          e.dataTransfer.dropEffect = 'move';
+        }
+
+        // Add visual feedback
+        const targetRow = e.currentTarget as HTMLTableRowElement;
+        if (targetRow !== draggedRow) {
+          targetRow.classList.add('drag-over');
+        }
+      });
+
+      row.addEventListener('dragleave', (e) => {
+        const targetRow = e.currentTarget as HTMLTableRowElement;
+        targetRow.classList.remove('drag-over');
+      });
+
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetRow = e.currentTarget as HTMLTableRowElement;
+        targetRow.classList.remove('drag-over');
+
+        if (draggedRow && targetRow !== draggedRow) {
+          const targetIndex = parseInt(targetRow.getAttribute('data-index') || '-1', 10);
+
+          if (draggedIndex !== -1 && targetIndex !== -1) {
+            // Reorder the models array
+            const movedModel = this.config.models[draggedIndex];
+            this.config.models.splice(draggedIndex, 1);
+            this.config.models.splice(targetIndex, 0, movedModel);
+
+            this.onConfigChange(this.config);
+            this.render();
+          }
+        }
+      });
+    });
   }
 
   private handleDeleteModel(index: number): void {

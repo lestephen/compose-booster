@@ -50,21 +50,28 @@ export class TonesTab {
     this.config.tones.forEach((tone, index) => {
       const isDefault = this.isDefaultTone(tone.id);
       const card = document.createElement('div');
-      card.className = 'item-card';
+      card.className = 'item-card draggable-card';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-index', index.toString());
 
       card.innerHTML = `
-        <div class="item-card-header">
-          <div class="item-card-title">
-            ${this.escapeHtml(tone.name)}
-            ${isDefault ? '<span class="lock-icon">🔒</span>' : ''}
-          </div>
-          <div class="item-card-actions">
-            <button class="btn btn-small btn-secondary" data-edit-index="${index}">Edit</button>
-            <button class="btn btn-small btn-secondary" data-duplicate-index="${index}">Duplicate</button>
-            ${!isDefault ? `<button class="btn btn-small btn-danger" data-delete-index="${index}">Delete</button>` : ''}
-          </div>
+        <div class="drag-handle-card" title="Drag to reorder">
+          <span>⋮⋮</span>
         </div>
-        <div class="item-card-preview">${this.escapeHtml(tone.description || 'No description')}</div>
+        <div class="item-card-content">
+          <div class="item-card-header">
+            <div class="item-card-title">
+              ${this.escapeHtml(tone.name)}
+              ${isDefault ? '<span class="lock-icon">🔒</span>' : ''}
+            </div>
+            <div class="item-card-actions">
+              <button class="btn btn-small btn-secondary" data-edit-index="${index}">Edit</button>
+              <button class="btn btn-small btn-secondary" data-duplicate-index="${index}">Duplicate</button>
+              ${!isDefault ? `<button class="btn btn-small btn-danger" data-delete-index="${index}">Delete</button>` : ''}
+            </div>
+          </div>
+          <div class="item-card-preview">${this.escapeHtml(tone.description || 'No description')}</div>
+        </div>
       `;
 
       listContainer.appendChild(card);
@@ -72,6 +79,9 @@ export class TonesTab {
 
     // Setup button listeners
     this.setupCardEventListeners();
+
+    // Setup drag-and-drop
+    this.setupDragAndDrop();
   }
 
   private setupEventListeners(): void {
@@ -111,6 +121,67 @@ export class TonesTab {
       button.addEventListener('click', () => {
         const index = parseInt(button.getAttribute('data-delete-index') || '0', 10);
         this.handleDelete(index);
+      });
+    });
+  }
+
+  private setupDragAndDrop(): void {
+    const cards = this.container.querySelectorAll<HTMLElement>('.draggable-card');
+    let draggedCard: HTMLElement | null = null;
+    let draggedIndex: number = -1;
+
+    cards.forEach((card) => {
+      card.addEventListener('dragstart', (e) => {
+        draggedCard = card;
+        draggedIndex = parseInt(card.getAttribute('data-index') || '-1', 10);
+        card.classList.add('dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        // Remove all drag-over classes
+        cards.forEach(c => c.classList.remove('drag-over'));
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) {
+          e.dataTransfer.dropEffect = 'move';
+        }
+
+        // Add visual feedback
+        const targetCard = e.currentTarget as HTMLElement;
+        if (targetCard !== draggedCard) {
+          targetCard.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', (e) => {
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+
+        if (draggedCard && targetCard !== draggedCard) {
+          const targetIndex = parseInt(targetCard.getAttribute('data-index') || '-1', 10);
+
+          if (draggedIndex !== -1 && targetIndex !== -1) {
+            // Reorder the tones array
+            const movedTone = this.config.tones[draggedIndex];
+            this.config.tones.splice(draggedIndex, 1);
+            this.config.tones.splice(targetIndex, 0, movedTone);
+
+            this.onConfigChange(this.config);
+            this.render();
+          }
+        }
       });
     });
   }

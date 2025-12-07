@@ -13,7 +13,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "icons": "node scripts/generate-icons.js"
   },
   "keywords": [],
   "author": {
@@ -39,7 +40,10 @@
     "electron": "39.2.6",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
+    "icon-gen": "^5.0.0",
     "jsdom": "^27.2.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
     "typescript": "~4.5.4",
     "vite": "^5.4.21",
     "vitest": "^4.0.15"

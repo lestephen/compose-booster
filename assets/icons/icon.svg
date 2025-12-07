@@ -1,0 +1,57 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0078D4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#005A9E;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="envelopeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E8F4FD;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="1024" height="1024" rx="180" fill="url(#bgGradient)"/>
+
+  <!-- Envelope body -->
+  <g filter="url(#shadow)">
+    <!-- Main envelope rectangle -->
+    <rect x="192" y="320" width="640" height="440" rx="24" fill="url(#envelopeGradient)"/>
+
+    <!-- Envelope flap (top triangle) -->
+    <path d="M 192 320 L 512 520 L 832 320 Z" fill="#FFFFFF" opacity="0.95"/>
+
+    <!-- Envelope flap shadow (darker triangle for depth) -->
+    <path d="M 192 320 L 512 520 L 832 320 L 832 344 L 512 544 L 192 344 Z" fill="#0078D4" opacity="0.15"/>
+
+    <!-- Envelope bottom flap lines for detail -->
+    <line x1="192" y1="320" x2="512" y2="520" stroke="#0078D4" stroke-width="4" opacity="0.3"/>
+    <line x1="832" y1="320" x2="512" y2="520" stroke="#0078D4" stroke-width="4" opacity="0.3"/>
+  </g>
+
+  <!-- AI Sparkle effect (top right) -->
+  <g transform="translate(700, 220)">
+    <!-- Main star/sparkle -->
+    <path d="M 0 -40 L 10 -10 L 40 0 L 10 10 L 0 40 L -10 10 L -40 0 L -10 -10 Z"
+          fill="#FFD700" stroke="#FFA500" stroke-width="4"/>
+
+    <!-- Smaller sparkles -->
+    <circle cx="50" cy="-20" r="8" fill="#FFD700" opacity="0.8"/>
+    <circle cx="30" cy="40" r="6" fill="#FFD700" opacity="0.7"/>
+    <circle cx="-30" cy="30" r="5" fill="#FFFFFF" opacity="0.9"/>
+
+    <!-- Lightning bolt effect -->
+    <path d="M 20 -50 L -10 -20 L 10 -20 L -20 10 L 10 -10 L -10 -10 Z"
+          fill="#FFA500" opacity="0.8"/>
+  </g>
+
+  <!-- Small decorative sparkle (bottom left) -->
+  <g transform="translate(280, 680)">
+    <path d="M 0 -15 L 4 -4 L 15 0 L 4 4 L 0 15 L -4 4 L -15 0 L -4 -4 Z"
+          fill="#FFFFFF" opacity="0.6"/>
+  </g>
+</svg>

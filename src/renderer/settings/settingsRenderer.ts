@@ -12,8 +12,9 @@ import { TabManager } from './components/tabManager';
 import { ModelsTab } from './tabs/modelsTab';
 import { PromptsTab } from './tabs/promptsTab';
 import { TonesTab } from './tabs/tonesTab';
-import { HotCombosTab } from './tabs/hotCombosTab';
+import { QuickActionsTab } from './tabs/quickActionsTab';
 import { AdvancedTab } from './tabs/advancedTab';
+import { AboutTab } from './tabs/aboutTab';
 
 class SettingsController {
   private config: AppConfig | null = null;
@@ -22,8 +23,9 @@ class SettingsController {
   private modelsTab: ModelsTab | null = null;
   private promptsTab: PromptsTab | null = null;
   private tonesTab: TonesTab | null = null;
-  private hotCombosTab: HotCombosTab | null = null;
+  private quickActionsTab: QuickActionsTab | null = null;
   private advancedTab: AdvancedTab | null = null;
+  private aboutTab: AboutTab | null = null;
 
   // UI Elements
   private apiKeyInput: HTMLInputElement;
@@ -108,10 +110,10 @@ class SettingsController {
     }
 
     // Initialize hot combos tab
-    const hotCombosContainer = document.getElementById('hotCombosContainer');
-    if (hotCombosContainer) {
-      this.hotCombosTab = new HotCombosTab(
-        hotCombosContainer,
+    const quickActionsContainer = document.getElementById('quickActionsContainer');
+    if (quickActionsContainer) {
+      this.quickActionsTab = new QuickActionsTab(
+        quickActionsContainer,
         this.config,
         (updatedConfig) => this.handleConfigChange(updatedConfig)
       );
@@ -125,6 +127,12 @@ class SettingsController {
         this.config,
         (updatedConfig) => this.handleConfigChange(updatedConfig)
       );
+    }
+
+    // Initialize about tab
+    const aboutContainer = document.getElementById('aboutContainer');
+    if (aboutContainer) {
+      this.aboutTab = new AboutTab(aboutContainer);
     }
   }
 

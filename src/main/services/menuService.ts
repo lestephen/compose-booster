@@ -131,23 +131,6 @@ export function createApplicationMenu(onOpenSettings: () => void): Menu {
       ],
     },
 
-    // Window Menu
-    {
-      label: 'Window',
-      submenu: [
-        { role: 'minimize' as const },
-        { role: 'zoom' as const },
-        ...(isMac
-          ? [
-              { type: 'separator' as const },
-              { role: 'front' as const },
-              { type: 'separator' as const },
-              { role: 'window' as const },
-            ]
-          : [{ role: 'close' as const }]),
-      ],
-    },
-
     // Help Menu
     {
       role: 'help' as const,
@@ -161,7 +144,7 @@ export function createApplicationMenu(onOpenSettings: () => void): Menu {
         {
           label: 'GitHub Repository',
           click: async () => {
-            await shell.openExternal('https://github.com');
+            await shell.openExternal('https://github.com/lestephen/compose-booster');
           },
         },
       ],

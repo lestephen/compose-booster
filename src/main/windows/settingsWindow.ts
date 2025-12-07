@@ -8,6 +8,7 @@
 
 import { BrowserWindow } from 'electron';
 import path from 'path';
+import { configService } from '../services/configService';
 import {
   SETTINGS_WINDOW_DEFAULT_WIDTH,
   SETTINGS_WINDOW_DEFAULT_HEIGHT,
@@ -24,15 +25,21 @@ export function createSettingsWindow(parent: BrowserWindow): BrowserWindow {
     return settingsWindow;
   }
 
+  const config = configService.getConfig();
+  const bounds = config.settingsWindowBounds;
+
   settingsWindow = new BrowserWindow({
-    width: SETTINGS_WINDOW_DEFAULT_WIDTH,
-    height: SETTINGS_WINDOW_DEFAULT_HEIGHT,
+    width: bounds?.width || SETTINGS_WINDOW_DEFAULT_WIDTH,
+    height: bounds?.height || SETTINGS_WINDOW_DEFAULT_HEIGHT,
+    x: bounds?.x,
+    y: bounds?.y,
     minWidth: SETTINGS_WINDOW_MIN_WIDTH,
     minHeight: SETTINGS_WINDOW_MIN_HEIGHT,
     title: 'Settings - Compose Booster',
     parent: parent,
     modal: true,
     show: false,
+    autoHideMenuBar: true, // Hide menu bar
     webPreferences: {
       preload: path.join(__dirname, 'settingsPreload.js'),
       contextIsolation: true,
@@ -54,6 +61,10 @@ export function createSettingsWindow(parent: BrowserWindow): BrowserWindow {
     settingsWindow?.show();
   });
 
+  // Save window bounds on resize/move
+  settingsWindow.on('resize', saveSettingsWindowBounds);
+  settingsWindow.on('move', saveSettingsWindowBounds);
+
   // Handle close
   settingsWindow.on('closed', () => {
     settingsWindow = null;
@@ -70,6 +81,13 @@ export function closeSettingsWindow(): void {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.close();
   }
+}
+
+function saveSettingsWindowBounds(): void {
+  if (!settingsWindow) return;
+
+  const bounds = settingsWindow.getBounds();
+  configService.updateSettingsWindowBounds(bounds);
 }
 
 // Declare Vite environment variables

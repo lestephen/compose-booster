@@ -47,20 +47,6 @@ export class AdvancedTab {
           <small class="form-text">⚠️ This will reset all settings to factory defaults. This action cannot be undone.</small>
         </div>
       </section>
-
-      <section class="settings-section">
-        <h2>About</h2>
-
-        <div class="form-group">
-          <p><strong>Compose Booster</strong></p>
-          <p>Version: 1.0.0</p>
-          <p>An AI-powered email composition assistant</p>
-        </div>
-
-        <div class="form-group">
-          <p><small class="form-text">Powered by OpenRouter API with access to multiple AI models from Anthropic, OpenAI, Google, Meta, and Mistral.</small></p>
-        </div>
-      </section>
     `;
 
     this.setupEventListeners();
@@ -198,7 +184,7 @@ export class AdvancedTab {
     if (!Array.isArray(config.models)) return false;
     if (!Array.isArray(config.prompts)) return false;
     if (!Array.isArray(config.tones)) return false;
-    if (!Array.isArray(config.hotCombos)) return false;
+    if (!Array.isArray(config.quickActions)) return false;
     if (!config.preferences || typeof config.preferences !== 'object') return false;
 
     return true;

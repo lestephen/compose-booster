@@ -5,7 +5,7 @@
 // Copyright (c) 2025 Stephen Le
 
 import { describe, it, expect } from 'vitest';
-import type { Model, Prompt, Tone, HotCombo, AppConfig } from '../../src/shared/types';
+import type { Model, Prompt, Tone, QuickAction, AppConfig } from '../../src/shared/types';
 
 /**
  * Tests for type validation and data structure integrity
@@ -119,9 +119,9 @@ describe('Type Validation', () => {
     });
   });
 
-  describe('HotCombo validation', () => {
+  describe('QuickAction validation', () => {
     it('should validate a complete hot combo', () => {
-      const hotCombo: HotCombo = {
+      const hotCombo: QuickAction = {
         name: 'Quick Polish',
         icon: '⚡',
         model: 'anthropic/claude-sonnet-4.5',
@@ -143,7 +143,7 @@ describe('Type Validation', () => {
       const positions = [0, 1, 2];
 
       positions.forEach(pos => {
-        const hotCombo: HotCombo = {
+        const hotCombo: QuickAction = {
           name: `Combo ${pos}`,
           icon: '🎯',
           model: 'test-model',
@@ -211,18 +211,18 @@ describe('Type Validation', () => {
       expect(Array.isArray(config.tones)).toBe(true);
     });
 
-    it('should validate hotCombos is an array of 3 items', () => {
+    it('should validate quickActions is an array of 3 items', () => {
       const config: Partial<AppConfig> = {
-        hotCombos: [
+        quickActions: [
           { name: 'C1', icon: '⚡', model: 'm1', prompt: 'p1', tone: 't1', position: 0 },
           { name: 'C2', icon: '🎯', model: 'm2', prompt: 'p2', tone: 't2', position: 1 },
           { name: 'C3', icon: '✨', model: 'm3', prompt: 'p3', tone: 't3', position: 2 },
         ],
       };
 
-      expect(config.hotCombos).toBeDefined();
-      expect(Array.isArray(config.hotCombos)).toBe(true);
-      expect(config.hotCombos!.length).toBe(3);
+      expect(config.quickActions).toBeDefined();
+      expect(Array.isArray(config.quickActions)).toBe(true);
+      expect(config.quickActions!.length).toBe(3);
     });
   });
 

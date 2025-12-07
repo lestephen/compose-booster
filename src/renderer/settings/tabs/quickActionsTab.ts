@@ -4,12 +4,12 @@
 //
 // Copyright (c) 2025 Stephen Le
 
-// Hot Combos Tab
+// Quick Actions Tab
 // Configure the 3 quick action hot combo buttons
 
-import { AppConfig, HotCombo } from '../../../shared/types';
+import { AppConfig, QuickAction } from '../../../shared/types';
 
-export class HotCombosTab {
+export class QuickActionsTab {
   private container: HTMLElement;
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
@@ -29,24 +29,39 @@ export class HotCombosTab {
   private render(): void {
     this.container.innerHTML = '';
 
-    this.config.hotCombos.forEach((combo, index) => {
+    this.config.quickActions.forEach((combo, index) => {
       const card = this.createComboCard(combo, index);
       this.container.appendChild(card);
     });
+
+    // Setup drag-and-drop
+    this.setupDragAndDrop();
   }
 
-  private createComboCard(combo: HotCombo, index: number): HTMLElement {
+  private createComboCard(combo: QuickAction, index: number): HTMLElement {
     const card = document.createElement('div');
-    card.className = 'hot-combo-config-card';
+    card.className = 'quick-action-config-card draggable-card';
+    card.setAttribute('draggable', 'true');
+    card.setAttribute('data-index', index.toString());
 
     const shortcut = this.getShortcutDisplay(index);
 
     card.innerHTML = `
-      <h3>
-        <span>${this.escapeHtml(combo.icon)}</span>
-        ${this.escapeHtml(combo.name)}
-        <span class="combo-shortcut">${shortcut}</span>
-      </h3>
+      <div class="drag-handle-card" title="Drag to reorder">
+        <span>⋮⋮</span>
+      </div>
+      <div class="quick-action-card-content">
+        <div class="quick-action-header">
+          <h3>
+            <span>${this.escapeHtml(combo.icon)}</span>
+            ${this.escapeHtml(combo.name)}
+            <span class="combo-shortcut">${shortcut}</span>
+          </h3>
+          <div class="quick-action-reorder-buttons">
+            <button class="btn-icon-small" data-move-up="${index}" ${index === 0 ? 'disabled' : ''} title="Move up">▲</button>
+            <button class="btn-icon-small" data-move-down="${index}" ${index === this.config.quickActions.length - 1 ? 'disabled' : ''} title="Move down">▼</button>
+          </div>
+        </div>
 
       <div class="form-group">
         <label for="comboName${index}">Button Name</label>
@@ -110,6 +125,7 @@ export class HotCombosTab {
           ${this.getToneOptions(combo.tone)}
         </select>
       </div>
+      </div>
     `;
 
     // Setup event listeners
@@ -122,12 +138,12 @@ export class HotCombosTab {
     const inputs = card.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-combo-index]');
     inputs.forEach((input) => {
       input.addEventListener('change', () => {
-        const field = input.getAttribute('data-field') as keyof HotCombo;
+        const field = input.getAttribute('data-field') as keyof QuickAction;
         const value = input.value;
 
-        if (field && index >= 0 && index < this.config.hotCombos.length) {
+        if (field && index >= 0 && index < this.config.quickActions.length) {
           // Update config
-          (this.config.hotCombos[index] as any)[field] = value || undefined;
+          (this.config.quickActions[index] as any)[field] = value || undefined;
           this.onConfigChange(this.config);
 
           // Re-render to update the header
@@ -135,6 +151,22 @@ export class HotCombosTab {
         }
       });
     });
+
+    // Move up button
+    const moveUpBtn = card.querySelector<HTMLButtonElement>('[data-move-up]');
+    if (moveUpBtn) {
+      moveUpBtn.addEventListener('click', () => {
+        this.handleMoveQuickAction(index, -1);
+      });
+    }
+
+    // Move down button
+    const moveDownBtn = card.querySelector<HTMLButtonElement>('[data-move-down]');
+    if (moveDownBtn) {
+      moveDownBtn.addEventListener('click', () => {
+        this.handleMoveQuickAction(index, 1);
+      });
+    }
   }
 
   private getModelOptions(selectedModel: string): string {
@@ -169,6 +201,84 @@ export class HotCombosTab {
     const isMac = navigator.platform.includes('Mac');
     const modifier = isMac ? 'Cmd' : 'Ctrl';
     return `${modifier}+${index + 1}`;
+  }
+
+  private handleMoveQuickAction(index: number, direction: number): void {
+    const newIndex = index + direction;
+
+    // Validate bounds
+    if (newIndex < 0 || newIndex >= this.config.quickActions.length) {
+      return;
+    }
+
+    // Swap quick actions
+    const temp = this.config.quickActions[index];
+    this.config.quickActions[index] = this.config.quickActions[newIndex];
+    this.config.quickActions[newIndex] = temp;
+
+    this.onConfigChange(this.config);
+    this.render();
+  }
+
+  private setupDragAndDrop(): void {
+    const cards = this.container.querySelectorAll<HTMLElement>('.draggable-card');
+    let draggedCard: HTMLElement | null = null;
+    let draggedIndex: number = -1;
+
+    cards.forEach((card) => {
+      card.addEventListener('dragstart', (e) => {
+        draggedCard = card;
+        draggedIndex = parseInt(card.getAttribute('data-index') || '-1', 10);
+        card.classList.add('dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        // Remove all drag-over classes
+        cards.forEach(c => c.classList.remove('drag-over'));
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) {
+          e.dataTransfer.dropEffect = 'move';
+        }
+
+        // Add visual feedback
+        const targetCard = e.currentTarget as HTMLElement;
+        if (targetCard !== draggedCard) {
+          targetCard.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', (e) => {
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetCard = e.currentTarget as HTMLElement;
+        targetCard.classList.remove('drag-over');
+
+        if (draggedCard && targetCard !== draggedCard) {
+          const targetIndex = parseInt(targetCard.getAttribute('data-index') || '-1', 10);
+
+          if (draggedIndex !== -1 && targetIndex !== -1) {
+            // Reorder the quick actions array
+            const movedAction = this.config.quickActions[draggedIndex];
+            this.config.quickActions.splice(draggedIndex, 1);
+            this.config.quickActions.splice(targetIndex, 0, movedAction);
+
+            this.onConfigChange(this.config);
+            this.render();
+          }
+        }
+      });
+    });
   }
 
   private escapeHtml(text: string): string {

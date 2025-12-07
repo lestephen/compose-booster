@@ -62,6 +62,11 @@ export class StatusBarManager {
     this.hideDetails();
   }
 
+  setInfo(message: string): void {
+    this.setStatus(message, 'ready');
+    this.hideDetails();
+  }
+
   private setStatus(message: string, type: 'ready' | 'processing' | 'success' | 'error'): void {
     this.messageElement.textContent = message;
 

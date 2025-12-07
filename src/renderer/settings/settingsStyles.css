@@ -250,7 +250,7 @@ body {
 .form-text {
   display: block;
   margin-top: var(--spacing-sm);
-  font-size: var(--font-size-small);
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   color: var(--text-secondary);
 }
 
@@ -265,9 +265,11 @@ body {
 
 .form-help {
   display: block;
-  margin-top: var(--spacing-xs);
-  margin-left: 24px;
-  font-size: var(--font-size-small);
+  margin-top: var(--spacing-sm);
+  margin-left: 26px; /* Align with checkbox label text: checkbox (18px) + margin (8px) */
+  /* TODO: Alignment breaks at different font sizes due to fixed px checkbox vs scaling em text.
+     Consider refactoring to use flexbox/grid layout for proper alignment at all font sizes. */
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   color: var(--text-secondary);
   line-height: 1.4;
 }
@@ -290,7 +292,7 @@ body {
   margin-top: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--border-radius);
-  font-size: var(--font-size-small);
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
 }
 
 .status-message.success {
@@ -508,14 +510,60 @@ input:checked + .toggle-slider:before {
   gap: var(--spacing-md);
 }
 
-.model-default-badge {
+/* Cost badges */
+.cost-badge {
   display: inline-block;
-  padding: 2px 8px;
-  background: var(--bg-tertiary);
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
   font-size: var(--font-size-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cost-badge-low {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.cost-badge-medium {
+  background: #FFF3CD;
+  color: #856404;
+}
+
+.cost-badge-high {
+  background: #F8D7DA;
+  color: #721C24;
+}
+
+[data-theme="dark"] .cost-badge-low {
+  background: #155724;
+  color: #D4EDDA;
+}
+
+[data-theme="dark"] .cost-badge-medium {
+  background: #856404;
+  color: #FFF3CD;
+}
+
+[data-theme="dark"] .cost-badge-high {
+  background: #721C24;
+  color: #F8D7DA;
+}
+
+.cost-details-detailed {
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   color: var(--text-secondary);
-  margin-left: var(--spacing-sm);
+  line-height: 1.6;
+}
+
+/* Models view controls */
+.models-view-controls {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
 }
 
 .empty-state {
@@ -562,7 +610,7 @@ input:checked + .toggle-slider:before {
 
 .item-card-preview {
   color: var(--text-secondary);
-  font-size: var(--font-size-small);
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
   max-height: 60px;
@@ -692,21 +740,59 @@ input:checked + .toggle-slider:before {
   font-size: 14px;
 }
 
-/* Hot Combos Configuration Styles */
-.hot-combo-config-card {
+/* Quick Actions Configuration Styles */
+.quick-action-config-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  padding: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
 }
 
-.hot-combo-config-card h3 {
+.quick-action-card-content {
+  padding: var(--spacing-lg);
+  flex: 1;
+}
+
+.quick-action-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: var(--spacing-md);
+}
+
+.quick-action-config-card h3 {
+  margin: 0;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   font-size: var(--font-size-large);
+}
+
+.quick-action-reorder-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-icon-small {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.btn-icon-small:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--color-primary);
+}
+
+.btn-icon-small:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .combo-shortcut {
@@ -718,31 +804,83 @@ input:checked + .toggle-slider:before {
   color: var(--text-secondary);
 }
 
-/* Model Reordering Buttons */
-.model-reorder-buttons {
+/* Drag handle for reordering */
+.drag-handle {
+  cursor: grab;
+  color: var(--text-secondary);
+  font-size: 18px;
+  padding: 4px;
+  user-select: none;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
 }
 
-.btn-icon {
-  background: none;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  line-height: 1;
+.drag-handle:hover {
+  color: var(--color-primary);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Draggable row states */
+.draggable-row {
+  cursor: move;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.draggable-row.dragging {
+  opacity: 0.5;
+  background-color: var(--bg-tertiary);
+}
+
+.draggable-row.drag-over {
+  border-top: 2px solid var(--color-primary);
+}
+
+/* Card-based drag handle for prompts/tones/quick actions */
+.drag-handle-card {
+  cursor: grab;
+  color: var(--text-secondary);
+  font-size: 20px;
+  padding: var(--spacing-md);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.drag-handle-card:hover {
+  color: var(--color-primary);
+}
+
+.drag-handle-card:active {
+  cursor: grabbing;
+}
+
+/* Draggable card states */
+.draggable-card {
+  cursor: move;
   transition: all 0.2s;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
 }
 
-.btn-icon:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--color-primary);
+.draggable-card .item-card-content {
+  flex: 1;
 }
 
-.btn-icon:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+.draggable-card.dragging {
+  opacity: 0.5;
+  background-color: var(--bg-tertiary);
+}
+
+.draggable-card.drag-over {
+  border-left: 3px solid var(--color-primary);
+  margin-left: -3px;
 }

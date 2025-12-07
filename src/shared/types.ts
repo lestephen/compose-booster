@@ -31,7 +31,7 @@ export interface Tone {
   isDefault?: boolean;
 }
 
-export interface HotCombo {
+export interface QuickAction {
   name: string;
   icon: string;
   model: string;
@@ -74,10 +74,11 @@ export interface AppConfig {
   models: Model[];
   prompts: Record<string, Prompt>;
   tones: Tone[];
-  hotCombos: HotCombo[];
+  quickActions: QuickAction[];
   lastUsed: LastUsed;
   preferences: Preferences;
   windowBounds: WindowBounds;
+  settingsWindowBounds?: WindowBounds;
   statistics: Statistics;
 }
 
