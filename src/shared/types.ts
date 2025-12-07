@@ -72,6 +72,7 @@ export interface AppConfig {
   lastUsed: LastUsed;
   preferences: Preferences;
   windowBounds: WindowBounds;
+  settingsWindowBounds?: WindowBounds;
   statistics: Statistics;
 }
 

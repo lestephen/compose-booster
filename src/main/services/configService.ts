@@ -164,6 +164,13 @@ class ConfigService {
   updateWindowBounds(bounds: { width: number; height: number; x?: number; y?: number }): void {
     this.set('windowBounds', bounds);
   }
+
+  /**
+   * Update settings window bounds
+   */
+  updateSettingsWindowBounds(bounds: { width: number; height: number; x?: number; y?: number }): void {
+    this.set('settingsWindowBounds', bounds);
+  }
 }
 
 // Export singleton instance
