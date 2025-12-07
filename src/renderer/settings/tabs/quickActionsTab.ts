@@ -45,11 +45,17 @@ export class QuickActionsTab {
         <span>⋮⋮</span>
       </div>
       <div class="quick-action-card-content">
-        <h3>
-          <span>${this.escapeHtml(combo.icon)}</span>
-          ${this.escapeHtml(combo.name)}
-          <span class="combo-shortcut">${shortcut}</span>
-        </h3>
+        <div class="quick-action-header">
+          <h3>
+            <span>${this.escapeHtml(combo.icon)}</span>
+            ${this.escapeHtml(combo.name)}
+            <span class="combo-shortcut">${shortcut}</span>
+          </h3>
+          <div class="quick-action-reorder-buttons">
+            <button class="btn-icon-small" data-move-up="${index}" ${index === 0 ? 'disabled' : ''} title="Move up">▲</button>
+            <button class="btn-icon-small" data-move-down="${index}" ${index === this.config.quickActions.length - 1 ? 'disabled' : ''} title="Move down">▼</button>
+          </div>
+        </div>
 
       <div class="form-group">
         <label for="comboName${index}">Button Name</label>
@@ -139,6 +145,22 @@ export class QuickActionsTab {
         }
       });
     });
+
+    // Move up button
+    const moveUpBtn = card.querySelector<HTMLButtonElement>('[data-move-up]');
+    if (moveUpBtn) {
+      moveUpBtn.addEventListener('click', () => {
+        this.handleMoveQuickAction(index, -1);
+      });
+    }
+
+    // Move down button
+    const moveDownBtn = card.querySelector<HTMLButtonElement>('[data-move-down]');
+    if (moveDownBtn) {
+      moveDownBtn.addEventListener('click', () => {
+        this.handleMoveQuickAction(index, 1);
+      });
+    }
   }
 
   private getModelOptions(selectedModel: string): string {
@@ -173,6 +195,23 @@ export class QuickActionsTab {
     const isMac = navigator.platform.includes('Mac');
     const modifier = isMac ? 'Cmd' : 'Ctrl';
     return `${modifier}+${index + 1}`;
+  }
+
+  private handleMoveQuickAction(index: number, direction: number): void {
+    const newIndex = index + direction;
+
+    // Validate bounds
+    if (newIndex < 0 || newIndex >= this.config.quickActions.length) {
+      return;
+    }
+
+    // Swap quick actions
+    const temp = this.config.quickActions[index];
+    this.config.quickActions[index] = this.config.quickActions[newIndex];
+    this.config.quickActions[newIndex] = temp;
+
+    this.onConfigChange(this.config);
+    this.render();
   }
 
   private setupDragAndDrop(): void {
