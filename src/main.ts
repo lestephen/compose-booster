@@ -13,10 +13,26 @@ import { createSettingsWindow } from './main/windows/settingsWindow';
 import { registerIpcHandlers } from './main/ipc/handlers';
 import { IPC_CHANNELS } from './main/ipc/channels';
 import { createApplicationMenu } from './main/services/menuService';
+import { configService } from './main/services/configService';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
+}
+
+// Helper function to rebuild the application menu
+function rebuildMenu(): void {
+  const config = configService.getConfig();
+  const menu = createApplicationMenu({
+    onOpenSettings: () => {
+      const mainWin = getMainWindow();
+      if (mainWin) {
+        createSettingsWindow(mainWin);
+      }
+    },
+    showDeveloperTools: config.preferences.showDeveloperTools,
+  });
+  Menu.setApplicationMenu(menu);
 }
 
 // Register all IPC handlers before creating windows
@@ -31,16 +47,16 @@ app.whenReady().then(() => {
     }
   });
 
+  // Handler to rebuild menu when settings change
+  ipcMain.handle(IPC_CHANNELS.MENU_REBUILD, () => {
+    rebuildMenu();
+    return { success: true };
+  });
+
   // Note: WINDOW_CLOSE_SETTINGS handler is in handlers.ts
 
-  // Create application menu
-  const menu = createApplicationMenu(() => {
-    const mainWin = getMainWindow();
-    if (mainWin) {
-      createSettingsWindow(mainWin);
-    }
-  });
-  Menu.setApplicationMenu(menu);
+  // Create application menu with initial settings
+  rebuildMenu();
 
   // Create main window
   createMainWindow();

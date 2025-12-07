@@ -51,6 +51,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on(IPC_CHANNELS.CONFIG_UPDATED, callback);
   },
 
+  // Menu
+  rebuildMenu: (): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.MENU_REBUILD),
+
   // Close window
   closeWindow: (): void => {
     ipcRenderer.send(IPC_CHANNELS.WINDOW_CLOSE_SETTINGS);
@@ -72,6 +76,7 @@ declare global {
       getTheme: () => Promise<IpcResponse<string>>;
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<IpcResponse>;
       onConfigUpdated: (callback: () => void) => void;
+      rebuildMenu: () => Promise<IpcResponse>;
       closeWindow: () => void;
     };
   }

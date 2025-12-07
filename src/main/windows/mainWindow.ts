@@ -40,9 +40,9 @@ export function createMainWindow(): BrowserWindow {
 
   // Load the app
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/main/index.html`);
+    mainWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/src/renderer/main/index.html`);
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/main/index.html`));
+    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/src/renderer/main/index.html`));
   }
 
   // Show window when ready

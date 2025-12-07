@@ -3,8 +3,6 @@ import path from 'path';
 
 // https://vitejs.dev/config
 export default defineConfig({
-  // Set root to src/renderer to access both main and settings
-  root: 'src/renderer',
   build: {
     rollupOptions: {
       input: {

@@ -50,10 +50,10 @@ export function createSettingsWindow(parent: BrowserWindow): BrowserWindow {
   // Load the settings page
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     // In development, load from dev server
-    settingsWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/settings/settings.html`);
+    settingsWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/src/renderer/settings/settings.html`);
   } else {
     // In production, load from built files
-    settingsWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/settings/settings.html`));
+    settingsWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/src/renderer/settings/settings.html`));
   }
 
   // Show when ready

@@ -10,7 +10,13 @@
 import { Menu, app, shell } from 'electron';
 import type { MenuItemConstructorOptions } from 'electron';
 
-export function createApplicationMenu(onOpenSettings: () => void): Menu {
+export interface MenuOptions {
+  onOpenSettings: () => void;
+  showDeveloperTools?: boolean;
+}
+
+export function createApplicationMenu(options: MenuOptions): Menu {
+  const { onOpenSettings, showDeveloperTools = false } = options;
   const isMac = process.platform === 'darwin';
 
   const template: MenuItemConstructorOptions[] = [
@@ -119,10 +125,15 @@ export function createApplicationMenu(onOpenSettings: () => void): Menu {
     {
       label: 'View',
       submenu: [
-        { role: 'reload' as const },
-        { role: 'forceReload' as const },
-        { role: 'toggleDevTools' as const },
-        { type: 'separator' as const },
+        // Developer tools (only shown when enabled in settings)
+        ...(showDeveloperTools
+          ? [
+              { role: 'reload' as const },
+              { role: 'forceReload' as const },
+              { role: 'toggleDevTools' as const },
+              { type: 'separator' as const },
+            ]
+          : []),
         { role: 'resetZoom' as const },
         { role: 'zoomIn' as const },
         { role: 'zoomOut' as const },

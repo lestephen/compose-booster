@@ -28,6 +28,18 @@ export class AdvancedTab {
   private render(): void {
     this.container.innerHTML = `
       <section class="settings-section">
+        <h2>Developer Options</h2>
+
+        <div class="form-group">
+          <label class="toggle-label">
+            <input type="checkbox" id="showDevToolsToggle" ${this.config.preferences.showDeveloperTools ? 'checked' : ''}>
+            <span>Show Developer Tools in View menu</span>
+          </label>
+          <small class="form-text">Enable to show Reload, Force Reload, and Toggle Developer Tools options in the View menu.</small>
+        </div>
+      </section>
+
+      <section class="settings-section">
         <h2>Data Management</h2>
 
         <div class="form-group">
@@ -53,6 +65,12 @@ export class AdvancedTab {
   }
 
   private setupEventListeners(): void {
+    // Developer Tools toggle
+    const devToolsToggle = document.getElementById('showDevToolsToggle') as HTMLInputElement;
+    if (devToolsToggle) {
+      devToolsToggle.addEventListener('change', () => this.handleDevToolsToggle(devToolsToggle.checked));
+    }
+
     // Export button
     const exportBtn = document.getElementById('exportSettingsBtn');
     if (exportBtn) {
@@ -71,6 +89,27 @@ export class AdvancedTab {
     const resetBtn = document.getElementById('resetAllSettingsBtn');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.handleResetAll());
+    }
+  }
+
+  private async handleDevToolsToggle(enabled: boolean): Promise<void> {
+    const updatedConfig: AppConfig = {
+      ...this.config,
+      preferences: {
+        ...this.config.preferences,
+        showDeveloperTools: enabled,
+      },
+    };
+    this.config = updatedConfig;
+    this.onConfigChange(updatedConfig);
+
+    // Save the config immediately so the menu rebuild can read the new value
+    try {
+      await window.electronAPI.setConfig(updatedConfig);
+      // Rebuild the menu to reflect the change
+      await window.electronAPI.rebuildMenu();
+    } catch (error) {
+      console.error('Failed to update developer tools setting:', error);
     }
   }
 
