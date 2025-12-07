@@ -191,9 +191,7 @@ class SettingsController {
   }
 
   private applyFontSize(size: number): void {
-    console.log('applyFontSize called with size:', size);
     document.documentElement.style.setProperty('--font-size-base', `${size}px`);
-    console.log('CSS variable set to:', document.documentElement.style.getPropertyValue('--font-size-base'));
   }
 
   private async handleTestApiKey(): Promise<void> {
@@ -226,7 +224,6 @@ class SettingsController {
   }
 
   private async handleSave(): Promise<void> {
-    console.log('handleSave called');
     if (!this.config) return;
 
     // Update config with form values
@@ -241,7 +238,6 @@ class SettingsController {
     this.saveBtn.textContent = 'Saving...';
 
     try {
-      console.log('Calling setConfig with:', this.config);
       const result = await window.electronAPI.setConfig(this.config);
 
       if (result.success) {
@@ -267,14 +263,12 @@ class SettingsController {
   }
 
   private handleCancel(): void {
-    console.log('handleCancel called, isDirty:', this.isDirty);
     if (this.isDirty) {
       // In a real app, we might want to confirm before closing
       const confirmed = confirm('You have unsaved changes. Are you sure you want to close?');
       if (!confirmed) return;
     }
 
-    console.log('Calling window.electronAPI.closeWindow()');
     window.electronAPI.closeWindow();
   }
 
