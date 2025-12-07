@@ -4,6 +4,10 @@ export interface Model {
   id: string;
   name: string;
   cost: 'Low' | 'Medium' | 'High';
+  costDetails?: {
+    input: string;
+    output: string;
+  };
   enabled: boolean;
   isDefault?: boolean;
 }

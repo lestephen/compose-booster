@@ -9,16 +9,30 @@ import {
 } from '../../shared/constants';
 
 export const DEFAULT_MODELS: Model[] = [
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', cost: 'Medium', enabled: true, isDefault: true },
-  { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', cost: 'High', enabled: true, isDefault: true },
-  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', cost: 'Low', enabled: true, isDefault: true },
-  { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', cost: 'High', enabled: true, isDefault: true },
-  { id: 'openai/gpt-4o', name: 'GPT-4o', cost: 'Medium', enabled: true, isDefault: true },
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', cost: 'Low', enabled: true, isDefault: true },
-  { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo', cost: 'Low', enabled: true, isDefault: true },
-  { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', cost: 'Low', enabled: true, isDefault: true },
-  { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5', cost: 'Low', enabled: true, isDefault: true },
-  { id: 'anthropic/claude-2.1', name: 'Claude 2.1', cost: 'Medium', enabled: true, isDefault: true },
+  {
+    id: 'anthropic/claude-sonnet-4.5',
+    name: 'Claude 4.5 Sonnet',
+    cost: 'Medium',
+    costDetails: { input: '$3.00/M', output: '$15.00/M' },
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'google/gemini-3-pro-preview',
+    name: 'Gemini 3 Pro Preview',
+    cost: 'Low',
+    costDetails: { input: '$0.35/M', output: '$1.05/M' },
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'openai/gpt-5',
+    name: 'GPT 5',
+    cost: 'High',
+    costDetails: { input: '$10.00/M', output: '$30.00/M' },
+    enabled: true,
+    isDefault: true
+  },
 ];
 
 export const DEFAULT_PROMPTS: Record<string, Prompt> = {
