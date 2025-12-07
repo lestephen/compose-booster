@@ -6,6 +6,7 @@ import { TextAreaManager } from './components/textAreas';
 import { StatusBarManager } from './components/statusBar';
 import { CustomComboManager } from './components/customCombo';
 import { HotCombosManager } from './components/hotCombos';
+import { ThemeManager } from './utils/themeManager';
 import { ProcessEmailRequest } from '../../shared/types';
 
 class AppController {
@@ -13,6 +14,7 @@ class AppController {
   private statusBar: StatusBarManager;
   private customCombo: CustomComboManager;
   private hotCombos: HotCombosManager;
+  private themeManager: ThemeManager;
   private isProcessing = false;
 
   // UI Elements
@@ -31,6 +33,7 @@ class AppController {
     this.statusBar = new StatusBarManager();
     this.customCombo = new CustomComboManager();
     this.hotCombos = new HotCombosManager();
+    this.themeManager = new ThemeManager();
 
     // Get UI elements
     this.pasteBtn = document.getElementById('pasteBtn') as HTMLButtonElement;
