@@ -44,10 +44,16 @@ export class ModelsTab {
       <div class="add-model-section">
         <h3>Add Model from OpenRouter</h3>
         <div class="form-group">
-          <label for="modelDropdown">Select Model</label>
-          <select id="modelDropdown" class="form-control">
-            <option value="">-- Select a model --</option>
-          </select>
+          <label for="modelSearchInput">Search and Select Model</label>
+          <input
+            type="text"
+            id="modelSearchInput"
+            class="form-control"
+            list="modelDatalist"
+            placeholder="Type to search models..."
+            autocomplete="off"
+          >
+          <datalist id="modelDatalist"></datalist>
           <small class="form-text" id="loadingModelsText">Loading models from OpenRouter...</small>
         </div>
         <button id="addModelBtn" class="btn btn-primary" disabled>Add Model</button>
@@ -113,12 +119,14 @@ export class ModelsTab {
       });
     });
 
-    // Model dropdown
-    const dropdown = document.getElementById('modelDropdown') as HTMLSelectElement;
+    // Model search input
+    const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
     const addBtn = document.getElementById('addModelBtn') as HTMLButtonElement;
-    if (dropdown && addBtn) {
-      dropdown.addEventListener('change', () => {
-        addBtn.disabled = !dropdown.value;
+    if (searchInput && addBtn) {
+      searchInput.addEventListener('input', () => {
+        // Enable button only if input matches a valid model ID
+        const modelExists = this.availableModels.some(m => m.id === searchInput.value || m.name === searchInput.value);
+        addBtn.disabled = !modelExists;
       });
       addBtn.addEventListener('click', () => this.handleAddModel());
     }
@@ -153,24 +161,24 @@ export class ModelsTab {
   }
 
   private handleAddModel(): void {
-    const dropdown = document.getElementById('modelDropdown') as HTMLSelectElement;
-    const selectedModelId = dropdown?.value;
+    const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
+    const inputValue = searchInput?.value;
 
-    if (!selectedModelId) {
-      alert('Please select a model from the dropdown.');
+    if (!inputValue) {
+      alert('Please select a model.');
+      return;
+    }
+
+    // Find the selected model in availableModels (by ID or name)
+    const selectedModel = this.availableModels.find(m => m.id === inputValue || m.name === inputValue);
+    if (!selectedModel) {
+      alert('Model not found. Please select a model from the suggestions.');
       return;
     }
 
     // Check if model ID already exists
-    if (this.config.models.some(m => m.id === selectedModelId)) {
+    if (this.config.models.some(m => m.id === selectedModel.id)) {
       alert('This model has already been added.');
-      return;
-    }
-
-    // Find the selected model in availableModels
-    const selectedModel = this.availableModels.find(m => m.id === selectedModelId);
-    if (!selectedModel) {
-      alert('Model not found.');
       return;
     }
 
@@ -197,8 +205,8 @@ export class ModelsTab {
     this.config.models.push(newModel);
     this.onConfigChange(this.config);
 
-    // Reset dropdown
-    if (dropdown) dropdown.value = '';
+    // Reset input
+    if (searchInput) searchInput.value = '';
     const addBtn = document.getElementById('addModelBtn') as HTMLButtonElement;
     if (addBtn) addBtn.disabled = true;
 
@@ -219,7 +227,7 @@ export class ModelsTab {
 
   private async loadAvailableModels(): Promise<void> {
     const loadingText = document.getElementById('loadingModelsText');
-    const dropdown = document.getElementById('modelDropdown') as HTMLSelectElement;
+    const datalist = document.getElementById('modelDatalist') as HTMLDataListElement;
 
     try {
       const result = await window.electronAPI.getAvailableModels();
@@ -227,19 +235,20 @@ export class ModelsTab {
       if (result.success && result.data) {
         this.availableModels = result.data;
 
-        // Populate dropdown
-        if (dropdown) {
-          dropdown.innerHTML = '<option value="">-- Select a model --</option>';
+        // Populate datalist with searchable options
+        if (datalist) {
+          datalist.innerHTML = '';
           this.availableModels.forEach((model: any) => {
             const option = document.createElement('option');
             option.value = model.id;
-            option.textContent = `${model.name} (${model.id})`;
-            dropdown.appendChild(option);
+            option.textContent = `${model.name} - ${model.id}`;
+            datalist.appendChild(option);
           });
         }
 
         if (loadingText) {
-          loadingText.textContent = `${this.availableModels.length} models available from OpenRouter`;
+          loadingText.textContent = `${this.availableModels.length} models available - type to search`;
+          loadingText.style.color = '';
         }
       } else {
         if (loadingText) {
