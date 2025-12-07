@@ -1,0 +1,45 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Copyright (c) 2025 Stephen Le
+
+---
+
+For HTML files, use:
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  Copyright (c) 2025 Stephen Le
+-->
+
+---
+
+For CSS files, use:
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Stephen Le
+ */
+
+---
+
+INSTRUCTIONS FOR USE:
+
+This file contains the standard MPL 2.0 header that should be placed at the
+top of all source code files in this project.
+
+The header format varies by file type:
+- TypeScript/JavaScript (.ts, .js): Use // comment style (shown first)
+- HTML (.html): Use <!-- --> comment style
+- CSS (.css): Use /* */ comment style
+
+The add_license_headers.py script will automatically apply the appropriate
+header format based on file extension.
+
+For more information about MPL 2.0 requirements, see:
+https://www.mozilla.org/en-US/MPL/2.0/FAQ/
