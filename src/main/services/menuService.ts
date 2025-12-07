@@ -61,6 +61,51 @@ export function createApplicationMenu(onOpenSettings: () => void): Menu {
         { role: 'copy' as const },
         { role: 'paste' as const },
         { role: 'selectAll' as const },
+        { type: 'separator' as const },
+        {
+          label: 'Clear Input',
+          accelerator: isMac ? 'Cmd+K' : 'Ctrl+K',
+          registerAccelerator: false, // Handled by renderer
+        },
+        {
+          label: 'Clear Output',
+          accelerator: isMac ? 'Cmd+Shift+K' : 'Ctrl+Shift+K',
+          registerAccelerator: false, // Handled by renderer
+        },
+      ],
+    },
+
+    // Process Menu
+    {
+      label: 'Process',
+      submenu: [
+        {
+          label: 'Process Email',
+          accelerator: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
+          registerAccelerator: false, // Handled by renderer
+        },
+        { type: 'separator' as const },
+        {
+          label: 'Quick Polish',
+          accelerator: isMac ? 'Cmd+1' : 'Ctrl+1',
+          registerAccelerator: false, // Handled by renderer
+        },
+        {
+          label: 'Professional',
+          accelerator: isMac ? 'Cmd+2' : 'Ctrl+2',
+          registerAccelerator: false, // Handled by renderer
+        },
+        {
+          label: 'Friendly',
+          accelerator: isMac ? 'Cmd+3' : 'Ctrl+3',
+          registerAccelerator: false, // Handled by renderer
+        },
+        { type: 'separator' as const },
+        {
+          label: 'Cancel',
+          accelerator: 'Esc',
+          registerAccelerator: false, // Handled by renderer
+        },
       ],
     },
 
