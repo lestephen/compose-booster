@@ -9,7 +9,7 @@ export class PromptsTab {
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
   private modalElement: HTMLElement | null = null;
-  private editingIndex: number = -1;
+  private editingPromptId: string = '';
 
   constructor(container: HTMLElement, config: AppConfig, onConfigChange: (config: AppConfig) => void) {
     this.container = container;
@@ -41,8 +41,11 @@ export class PromptsTab {
 
     listContainer.innerHTML = '';
 
-    this.config.prompts.forEach((prompt, index) => {
-      const isDefault = this.isDefaultPrompt(prompt.id);
+    // Convert prompts object to array of [key, value] pairs
+    const promptEntries = Object.entries(this.config.prompts);
+
+    promptEntries.forEach(([promptId, prompt], index) => {
+      const isDefault = prompt.isDefault || false;
       const card = document.createElement('div');
       card.className = 'item-card';
 
@@ -55,9 +58,9 @@ export class PromptsTab {
             ${isDefault ? '<span class="lock-icon">🔒</span>' : ''}
           </div>
           <div class="item-card-actions">
-            <button class="btn btn-small btn-secondary" data-edit-index="${index}">Edit</button>
-            <button class="btn btn-small btn-secondary" data-duplicate-index="${index}">Duplicate</button>
-            ${!isDefault ? `<button class="btn btn-small btn-danger" data-delete-index="${index}">Delete</button>` : ''}
+            <button class="btn btn-small btn-secondary" data-edit-id="${promptId}">Edit</button>
+            <button class="btn btn-small btn-secondary" data-duplicate-id="${promptId}">Duplicate</button>
+            ${!isDefault ? `<button class="btn btn-small btn-danger" data-delete-id="${promptId}">Delete</button>` : ''}
           </div>
         </div>
         <div class="item-card-preview">${this.escapeHtml(preview)}</div>
@@ -84,29 +87,29 @@ export class PromptsTab {
 
   private setupCardEventListeners(): void {
     // Edit buttons
-    const editButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-edit-index]');
+    const editButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-edit-id]');
     editButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        const index = parseInt(button.getAttribute('data-edit-index') || '0', 10);
-        this.openModal(index);
+        const promptId = button.getAttribute('data-edit-id') || '';
+        this.openModal(promptId);
       });
     });
 
     // Duplicate buttons
-    const duplicateButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-duplicate-index]');
+    const duplicateButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-duplicate-id]');
     duplicateButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        const index = parseInt(button.getAttribute('data-duplicate-index') || '0', 10);
-        this.handleDuplicate(index);
+        const promptId = button.getAttribute('data-duplicate-id') || '';
+        this.handleDuplicate(promptId);
       });
     });
 
     // Delete buttons
-    const deleteButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-delete-index]');
+    const deleteButtons = this.container.querySelectorAll<HTMLButtonElement>('[data-delete-id]');
     deleteButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        const index = parseInt(button.getAttribute('data-delete-index') || '0', 10);
-        this.handleDelete(index);
+        const promptId = button.getAttribute('data-delete-id') || '';
+        this.handleDelete(promptId);
       });
     });
   }
@@ -160,17 +163,17 @@ export class PromptsTab {
     });
   }
 
-  private openModal(editIndex: number = -1): void {
+  private openModal(editPromptId: string = ''): void {
     if (!this.modalElement) return;
 
-    this.editingIndex = editIndex;
+    this.editingPromptId = editPromptId;
 
     const title = this.modalElement.querySelector('#modalTitle');
     const nameInput = this.modalElement.querySelector('#promptName') as HTMLInputElement;
     const textInput = this.modalElement.querySelector('#promptText') as HTMLTextAreaElement;
 
-    if (editIndex >= 0) {
-      const prompt = this.config.prompts[editIndex];
+    if (editPromptId) {
+      const prompt = this.config.prompts[editPromptId];
       if (title) title.textContent = 'Edit Prompt Template';
       if (nameInput) nameInput.value = prompt.name;
       if (textInput) textInput.value = prompt.text;
@@ -186,7 +189,7 @@ export class PromptsTab {
   private closeModal(): void {
     if (!this.modalElement) return;
     this.modalElement.classList.remove('active');
-    this.editingIndex = -1;
+    this.editingPromptId = '';
   }
 
   private handleModalSave(): void {
@@ -209,18 +212,18 @@ export class PromptsTab {
       return;
     }
 
-    if (this.editingIndex >= 0) {
+    if (this.editingPromptId) {
       // Edit existing
-      this.config.prompts[this.editingIndex].name = name;
-      this.config.prompts[this.editingIndex].text = text;
+      this.config.prompts[this.editingPromptId].name = name;
+      this.config.prompts[this.editingPromptId].text = text;
     } else {
       // Add new
+      const newPromptId = `custom-${Date.now()}`;
       const newPrompt: Prompt = {
-        id: `custom-${Date.now()}`,
         name,
         text,
       };
-      this.config.prompts.push(newPrompt);
+      this.config.prompts[newPromptId] = newPrompt;
     }
 
     this.onConfigChange(this.config);
@@ -228,29 +231,29 @@ export class PromptsTab {
     this.render();
   }
 
-  private handleDuplicate(index: number): void {
-    const prompt = this.config.prompts[index];
+  private handleDuplicate(promptId: string): void {
+    const prompt = this.config.prompts[promptId];
+    const newPromptId = `custom-${Date.now()}`;
     const newPrompt: Prompt = {
-      id: `custom-${Date.now()}`,
       name: `${prompt.name} (Copy)`,
       text: prompt.text,
     };
 
-    this.config.prompts.push(newPrompt);
+    this.config.prompts[newPromptId] = newPrompt;
     this.onConfigChange(this.config);
     this.render();
   }
 
-  private handleDelete(index: number): void {
-    const prompt = this.config.prompts[index];
+  private handleDelete(promptId: string): void {
+    const prompt = this.config.prompts[promptId];
 
-    if (this.isDefaultPrompt(prompt.id)) {
+    if (prompt.isDefault) {
       alert('Cannot delete default prompts.');
       return;
     }
 
     if (confirm(`Are you sure you want to delete "${prompt.name}"?`)) {
-      this.config.prompts.splice(index, 1);
+      delete this.config.prompts[promptId];
       this.onConfigChange(this.config);
       this.render();
     }
