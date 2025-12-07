@@ -1,3 +1,9 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Copyright (c) 2025 Stephen Le
+
 import { describe, it, expect, beforeEach } from 'vitest';
 import { apiService } from '../../src/main/services/apiService';
 import { Tone } from '../../src/shared/types';

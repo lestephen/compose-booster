@@ -2,7 +2,7 @@
 
 An AI-powered desktop application for improving and polishing email drafts using OpenRouter's API with access to multiple state-of-the-art language models.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
 
 ## Features
@@ -253,9 +253,45 @@ Contributions are welcome! Please:
 4. Test thoroughly
 5. Submit a pull request
 
-## License
+## License & Legal
 
-MIT License - see LICENSE file for details
+### Open Source License
+
+This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**. The source code is freely available for use, modification, and distribution under the terms of the MPL 2.0 license. See the [LICENSE](LICENSE) file for the complete license text.
+
+[![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
+
+### ⚠️ NO WARRANTY DISCLAIMER
+
+**THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.**
+
+This application is developed and released by an individual developer, not a corporation. By using this software, you acknowledge that:
+
+- The software is provided for free with no guarantees of support, updates, or bug fixes
+- The author assumes no liability for any damages, data loss, or issues arising from use of this software
+- You use this software entirely at your own risk
+- No warranty is provided regarding fitness for any particular purpose
+
+### Trademarks
+
+The "Compose Booster" name and logo are trademarks of Stephen Le and may not be used in derivative works without explicit written permission.
+
+**Important for Forking:**
+- ✅ You MAY fork and modify the source code under the MPL 2.0 license
+- ❌ You MAY NOT use the "Compose Booster" name or logo in your fork
+- ✅ You MUST rebrand your distribution with a distinct name and visual identity
+- ✅ You MUST comply with MPL 2.0 requirements (see LEGAL_HEADER.txt for source file headers)
+
+### Source Code Availability
+
+The complete source code for this application is available at:
+- GitHub Repository: [https://github.com/your-username/compose-booster](https://github.com/your-username/compose-booster)
+
+Under MPL 2.0, you have the right to:
+- View, download, and study the source code
+- Modify the code for your own use
+- Distribute modified versions (with proper attribution and rebranding)
+- Use the code in commercial projects (following MPL 2.0 terms)
 
 ## Credits
 
