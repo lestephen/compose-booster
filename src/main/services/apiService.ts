@@ -285,6 +285,51 @@ Mock AI Assistant`;
   }
 
   /**
+   * Fetch available models from OpenRouter API
+   */
+  async getAvailableModels(apiKey: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    if (this.useMock) {
+      // Return mock models for development
+      return {
+        success: true,
+        data: [
+          { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', pricing: { prompt: '0.000015', completion: '0.000075' } },
+          { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', pricing: { prompt: '0.00001', completion: '0.00003' } },
+          { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', pricing: { prompt: '0.0000008', completion: '0.0000008' } },
+        ],
+      };
+    }
+
+    try {
+      const response = await axios.get(
+        'https://openrouter.ai/api/v1/models',
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': OPENROUTER_REFERER,
+            'X-Title': APP_NAME,
+          },
+          timeout: 10000,
+        }
+      );
+
+      if (response.data && response.data.data) {
+        return { success: true, data: response.data.data };
+      }
+
+      return { success: false, error: 'Invalid response from OpenRouter API' };
+    } catch (error) {
+      const axiosError = error as AxiosError;
+
+      if (axiosError.response?.status === 401) {
+        return { success: false, error: 'Invalid API key' };
+      }
+
+      return { success: false, error: 'Failed to fetch models. Check your connection.' };
+    }
+  }
+
+  /**
    * Build final prompt from template with variable substitution
    */
   buildPrompt(

@@ -255,6 +255,46 @@ function registerApiHandlers(): void {
       };
     }
   });
+
+  // Get available models from OpenRouter
+  ipcMain.handle(IPC_CHANNELS.API_GET_MODELS, async () => {
+    try {
+      const config = configService.getConfig();
+      const apiKey = config.apiKey;
+
+      if (!apiKey || apiKey.trim() === '') {
+        return {
+          success: false,
+          error: {
+            message: 'API key not configured. Please set your OpenRouter API key first.',
+          },
+        } as IpcResponse;
+      }
+
+      const result = await apiService.getAvailableModels(apiKey);
+
+      if (result.success) {
+        return {
+          success: true,
+          data: result.data,
+        } as IpcResponse;
+      } else {
+        return {
+          success: false,
+          error: {
+            message: result.error || 'Failed to fetch models',
+          },
+        } as IpcResponse;
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to fetch models',
+        },
+      } as IpcResponse;
+    }
+  });
 }
 
 /**

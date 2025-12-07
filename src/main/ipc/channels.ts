@@ -14,6 +14,7 @@ export const IPC_CHANNELS = {
   // API Operations
   API_PROCESS_EMAIL: 'api:process-email',
   API_CANCEL: 'api:cancel',
+  API_GET_MODELS: 'api:get-models',
 
   // Window Management
   WINDOW_OPEN_SETTINGS: 'window:open-settings',
