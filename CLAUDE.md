@@ -273,7 +273,7 @@ npm run make
 
 - **Main branch**: `master` - stable releases
 - **Feature branches**: `feature/<name>` - active development
-- **Commit messages**: Descriptive with Claude Code attribution
+- **Commit messages**: Descriptive, professional format. **DO NOT include Claude Code attribution or co-author lines** - keep commit messages clean and professional without AI references
 - **Protected files**: See `.gitignore` for sensitive data exclusions
 
 ## Notes for AI Assistants
@@ -286,6 +286,7 @@ npm run make
 4. **Test locally**: Encourage use of mock mode for testing
 5. **Document changes**: Update this file if architecture changes significantly
 6. **Cross-platform**: Consider Windows and macOS differences
+7. **Git commits**: **IMPORTANT** - Do NOT include Claude Code attribution, co-author lines, or any AI-related references in commit messages. Keep commits professional and clean.
 
 ### Key Files to Reference
 
