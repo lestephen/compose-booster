@@ -242,7 +242,7 @@ body {
 .form-text {
   display: block;
   margin-top: var(--spacing-sm);
-  font-size: var(--font-size-small);
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   color: var(--text-secondary);
 }
 
@@ -257,9 +257,11 @@ body {
 
 .form-help {
   display: block;
-  margin-top: var(--spacing-xs);
-  margin-left: 24px;
-  font-size: var(--font-size-small);
+  margin-top: var(--spacing-sm);
+  margin-left: 26px; /* Align with checkbox label text: checkbox (18px) + margin (8px) */
+  /* TODO: Alignment breaks at different font sizes due to fixed px checkbox vs scaling em text.
+     Consider refactoring to use flexbox/grid layout for proper alignment at all font sizes. */
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   color: var(--text-secondary);
   line-height: 1.4;
 }
@@ -282,7 +284,7 @@ body {
   margin-top: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--border-radius);
-  font-size: var(--font-size-small);
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
 }
 
 .status-message.success {
@@ -542,7 +544,7 @@ input:checked + .toggle-slider:before {
 }
 
 .cost-details-detailed {
-  font-size: var(--font-size-small);
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   color: var(--text-secondary);
   line-height: 1.6;
 }
@@ -600,7 +602,7 @@ input:checked + .toggle-slider:before {
 
 .item-card-preview {
   color: var(--text-secondary);
-  font-size: var(--font-size-small);
+  font-size: 0.857em; /* Scale proportionally with base font size (12/14 ratio) */
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
   max-height: 60px;

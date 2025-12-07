@@ -10,10 +10,14 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    icon: './assets/icons/win/icon', // Electron Forge will add .ico automatically
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
+    new MakerSquirrel({
+      setupIcon: './assets/icons/win/icon.ico',
+      iconUrl: 'https://raw.githubusercontent.com/lestephen/compose-booster/master/assets/icons/win/icon.ico', // URL for auto-update (optional)
+    }),
     new MakerZIP({}, ['darwin']),
     new MakerRpm({}),
     new MakerDeb({}),
