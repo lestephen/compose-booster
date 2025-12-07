@@ -160,7 +160,9 @@ class SettingsController {
     this.apiKeyInput.addEventListener('input', () => this.markDirty());
     this.themeSelect.addEventListener('change', () => this.markDirty());
     this.fontSizeSlider.addEventListener('input', () => {
-      this.fontSizeValue.textContent = this.fontSizeSlider.value;
+      const fontSize = this.fontSizeSlider.value;
+      this.fontSizeValue.textContent = fontSize;
+      this.applyFontSize(parseInt(fontSize, 10));
       this.markDirty();
     });
     this.saveWindowPositionCheckbox.addEventListener('change', () => this.markDirty());
@@ -180,11 +182,16 @@ class SettingsController {
     // Font Size
     this.fontSizeSlider.value = this.config.preferences.fontSize.toString();
     this.fontSizeValue.textContent = this.config.preferences.fontSize.toString();
+    this.applyFontSize(this.config.preferences.fontSize);
 
     // Checkboxes
     this.saveWindowPositionCheckbox.checked = this.config.preferences.saveWindowPosition;
     this.clearHistoryOnExitCheckbox.checked = this.config.preferences.clearHistoryOnExit;
     this.includeClosingAndSignatureCheckbox.checked = this.config.preferences.includeClosingAndSignature;
+  }
+
+  private applyFontSize(size: number): void {
+    document.documentElement.style.setProperty('--font-size-base', `${size}px`);
   }
 
   private async handleTestApiKey(): Promise<void> {

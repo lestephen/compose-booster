@@ -11,11 +11,12 @@ export class ThemeManager {
   }
 
   private async init(): Promise<void> {
-    // Load saved theme preference
+    // Load saved theme and font size preferences
     const result = await window.electronAPI.getConfig();
     if (result.success && result.data) {
       this.currentTheme = result.data.preferences.theme;
       this.applyTheme(this.currentTheme);
+      this.applyFontSize(result.data.preferences.fontSize);
     }
 
     // Listen for system theme changes
@@ -24,6 +25,10 @@ export class ThemeManager {
         this.applySystemTheme();
       }
     });
+  }
+
+  private applyFontSize(size: number): void {
+    document.documentElement.style.setProperty('--font-size-base', `${size}px`);
   }
 
   public setTheme(theme: 'light' | 'dark' | 'system'): void {
