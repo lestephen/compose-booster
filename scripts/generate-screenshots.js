@@ -63,12 +63,20 @@ const SCREENSHOT_CONFIGS = {
     settingsWindow: { width: 1200, height: 800 },
     outputDir: 'screenshots/mac',
   },
+  readme: {
+    // README.md: same viewport as Windows but will be displayed smaller in markdown
+    // Using same size ensures consistent rendering, just displayed at smaller size
+    mainWindow: { width: 1400, height: 900 },
+    settingsWindow: { width: 1200, height: 800 },
+    outputDir: '../docs/images',
+  },
 };
 
 // Screenshot definitions
 const SCREENSHOTS = [
   {
     name: '01-main-empty-light',
+    readmeName: null,  // Skip for README
     description: 'Main window - Empty state (Light mode)',
     setup: async (page) => {
       await setTheme(page, 'light');
@@ -77,6 +85,7 @@ const SCREENSHOTS = [
   },
   {
     name: '02-main-content-light',
+    readmeName: 'main-light',
     description: 'Main window - With content (Light mode)',
     setup: async (page) => {
       await setTheme(page, 'light');
@@ -85,6 +94,7 @@ const SCREENSHOTS = [
   },
   {
     name: '03-main-content-dark',
+    readmeName: 'main-dark',
     description: 'Main window - With content (Dark mode)',
     setup: async (page) => {
       await setTheme(page, 'dark');
@@ -96,11 +106,13 @@ const SCREENSHOTS = [
 const SETTINGS_SCREENSHOTS = [
   {
     name: '04-settings-general',
+    readmeName: 'settings',
     description: 'Settings - General tab',
     tab: 'general',
   },
   {
     name: '05-settings-models',
+    readmeName: null,  // Skip for README
     description: 'Settings - Models tab',
     tab: 'models',
   },
@@ -182,18 +194,25 @@ async function launchApp() {
   });
 }
 
-async function captureMainScreenshots(electronApp, page, config, outputDir) {
+async function captureMainScreenshots(electronApp, page, config, outputDir, isReadme = false) {
   console.log('\n📸 Capturing main window screenshots...');
 
   // Resize window
   await page.setViewportSize(config.mainWindow);
 
   for (const screenshot of SCREENSHOTS) {
+    // For readme mode, skip screenshots without readmeName
+    if (isReadme && !screenshot.readmeName) {
+      console.log(`  • ${screenshot.description} (skipped for readme)`);
+      continue;
+    }
+
     console.log(`  • ${screenshot.description}`);
     await screenshot.setup(page);
     await page.waitForTimeout(500); // Wait for any animations
 
-    const outputPath = path.join(outputDir, `${screenshot.name}.png`);
+    const filename = isReadme ? screenshot.readmeName : screenshot.name;
+    const outputPath = path.join(outputDir, `${filename}.png`);
 
     // Use Electron's native capturePage via main process for better quality
     const imageData = await electronApp.evaluate(async ({ BrowserWindow }) => {
@@ -215,7 +234,7 @@ async function captureMainScreenshots(electronApp, page, config, outputDir) {
   }
 }
 
-async function captureSettingsScreenshots(electronApp, config, outputDir) {
+async function captureSettingsScreenshots(electronApp, config, outputDir, isReadme = false) {
   console.log('\n📸 Capturing settings window screenshots...');
 
   // Open settings window
@@ -243,11 +262,18 @@ async function captureSettingsScreenshots(electronApp, config, outputDir) {
   await setTheme(settingsPage, 'light');
 
   for (const screenshot of SETTINGS_SCREENSHOTS) {
+    // For readme mode, skip screenshots without readmeName
+    if (isReadme && !screenshot.readmeName) {
+      console.log(`  • ${screenshot.description} (skipped for readme)`);
+      continue;
+    }
+
     console.log(`  • ${screenshot.description}`);
     await clickSettingsTab(settingsPage, screenshot.tab);
     await settingsPage.waitForTimeout(300);
 
-    const outputPath = path.join(outputDir, `${screenshot.name}.png`);
+    const filename = isReadme ? screenshot.readmeName : screenshot.name;
+    const outputPath = path.join(outputDir, `${filename}.png`);
 
     // Use Electron's native capturePage for better quality
     const imageData = await electronApp.evaluate(async ({ BrowserWindow }) => {
@@ -289,7 +315,15 @@ async function generateScreenshots(store = 'both') {
 
     for (const storeName of stores) {
       const config = SCREENSHOT_CONFIGS[storeName];
-      const outputDir = path.join(__dirname, '..', 'assets', 'store', config.outputDir);
+      const isReadme = storeName === 'readme';
+
+      // Determine output directory
+      let outputDir;
+      if (isReadme) {
+        outputDir = path.join(__dirname, '..', 'docs', 'images');
+      } else {
+        outputDir = path.join(__dirname, '..', 'assets', 'store', config.outputDir);
+      }
 
       console.log(`\n📁 Generating ${storeName.toUpperCase()} screenshots...`);
       console.log(`   Output: ${outputDir}`);
@@ -298,10 +332,10 @@ async function generateScreenshots(store = 'both') {
       fs.mkdirSync(outputDir, { recursive: true });
 
       // Capture main window screenshots
-      await captureMainScreenshots(electronApp, page, config, outputDir);
+      await captureMainScreenshots(electronApp, page, config, outputDir, isReadme);
 
       // Capture settings screenshots
-      await captureSettingsScreenshots(electronApp, config, outputDir);
+      await captureSettingsScreenshots(electronApp, config, outputDir, isReadme);
     }
 
     console.log('\n' + '='.repeat(50));
@@ -309,7 +343,12 @@ async function generateScreenshots(store = 'both') {
     console.log('\nGenerated files:');
     for (const storeName of stores) {
       const config = SCREENSHOT_CONFIGS[storeName];
-      console.log(`  • ${storeName}: assets/store/${config.outputDir}/`);
+      const isReadme = storeName === 'readme';
+      if (isReadme) {
+        console.log(`  • ${storeName}: docs/images/`);
+      } else {
+        console.log(`  • ${storeName}: assets/store/${config.outputDir}/`);
+      }
     }
 
   } catch (error) {
@@ -333,8 +372,8 @@ function parseArgs() {
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--store' && args[i + 1]) {
       store = args[i + 1].toLowerCase();
-      if (!['windows', 'mac', 'both'].includes(store)) {
-        console.error('Invalid store option. Use: windows, mac, or both');
+      if (!['windows', 'mac', 'both', 'readme'].includes(store)) {
+        console.error('Invalid store option. Use: windows, mac, readme, or both');
         process.exit(1);
       }
     }

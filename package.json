@@ -20,7 +20,8 @@
     "fix-headers": "node scripts/check-headers.js --fix",
     "screenshots": "node scripts/generate-screenshots.js",
     "screenshots:windows": "node scripts/generate-screenshots.js --store windows",
-    "screenshots:mac": "node scripts/generate-screenshots.js --store mac"
+    "screenshots:mac": "node scripts/generate-screenshots.js --store mac",
+    "screenshots:readme": "node scripts/generate-screenshots.js --store readme"
   },
   "keywords": [
     "email",
