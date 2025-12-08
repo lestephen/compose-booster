@@ -134,28 +134,51 @@ interface ResponseVersion {
 }
 ```
 
-## v1.4 - Platform Expansion
+## v1.4 - Platform Expansion & Auto-Updates
 
 ### macOS Support
 
-- [ ] **Apple Developer Account**
-  - Enroll in Apple Developer Program ($99/year)
-  - Set up code signing certificates
-  - Configure notarization
+- [x] **Apple Developer Account** ✅
+  - Enrolled in Apple Developer Program ($99/year)
+  - Account approved December 2025
 
-- [ ] **macOS Build Pipeline**
-  - Add MakerDMG or MakerPKG to forge.config.ts
+- [ ] **macOS GitHub Distribution**
+  - Generate Developer ID Application certificate
+  - Configure code signing in Electron Forge
+  - Set up notarization script
   - Generate .icns file from SVG
   - Test on macOS (Intel and Apple Silicon)
-  - Notarize for Gatekeeper
 
 - [ ] **Mac App Store**
-  - Similar process to Microsoft Store
+  - Generate Apple Distribution certificate
+  - Create provisioning profile for app
+  - Configure MAS-specific build in Electron Forge
+  - Create entitlements.mas.plist for sandbox compliance
   - App Store Connect setup
-  - Screenshot requirements (different sizes)
-  - Review guidelines compliance
+  - Screenshot requirements (different sizes from Windows)
+  - Submit for Apple review
 
-### Linux Support
+### Auto-Updater (GitHub Distributions)
+
+- [ ] **Distribution Detection**
+  - Detect if running from Microsoft Store (process.windowsStore)
+  - Detect if running from Mac App Store (process.mas)
+  - Only enable auto-updater for direct download versions
+
+- [ ] **electron-updater Integration**
+  - Install and configure electron-updater
+  - Point to GitHub Releases as update source
+  - Handle update download and installation prompts
+  - Test on Windows (unsigned - SmartScreen considerations)
+  - Test on macOS (signed/notarized updates)
+
+- [ ] **Update UI**
+  - Notify user when update is available
+  - Show download progress
+  - Prompt to restart and install
+  - Option to defer updates
+
+### Linux Support (Deferred)
 
 - [ ] **Linux Packages**
   - .deb for Debian/Ubuntu
@@ -171,7 +194,6 @@ interface ResponseVersion {
 - **Templates**: Save common email structures
 - **Batch Processing**: Process multiple emails at once
 - **Browser Extension**: Chrome/Firefox extension for in-browser processing
-- **Auto-update**: Squirrel auto-update for Windows (requires code signing)
 - **Sync Settings**: Cloud sync for settings across devices
 - **Team Features**: Shared prompts/styles for teams
 

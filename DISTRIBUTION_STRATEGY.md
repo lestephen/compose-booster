@@ -6,15 +6,23 @@ This document outlines the distribution and code signing approach for this Elect
 
 ## Distribution Channels
 
-### 1. GitHub Releases (Primary)
+### 1. GitHub Releases (Direct Download)
 - **Platforms**: Windows, macOS
 - **Update Method**: electron-updater with auto-updates
 - **Frequency**: As needed for bug fixes and features
+- **Advantage**: Immediate releases, no review process
 
-### 2. Microsoft Store (Secondary)
+### 2. Microsoft Store (Windows)
 - **Platform**: Windows only
 - **Update Method**: Microsoft Store managed updates
 - **Frequency**: Major releases and significant updates
+- **Advantage**: Microsoft-signed, no SmartScreen warnings
+
+### 3. Mac App Store (macOS)
+- **Platform**: macOS only
+- **Update Method**: Mac App Store managed updates
+- **Frequency**: Major releases and significant updates
+- **Advantage**: Apple-signed, sandboxed, trusted distribution
 
 ## Code Signing Strategy
 
@@ -50,36 +58,54 @@ This document outlines the distribution and code signing approach for this Elect
 - **Auto-Updates**: Enabled via electron-updater
 - **User Experience**: No security warnings
 
+#### Mac App Store Distribution
+- **Signing**: Signed with Apple Distribution certificate
+- **Format**: .app bundle (submitted via Transporter)
+- **Auto-Updates**: DISABLED (App Store manages updates)
+- **Sandbox**: Required - app runs in sandboxed environment
+- **Entitlements**: Restricted set for MAS compliance
+- **User Experience**:
+  - No security warnings
+  - Automatic updates via App Store
+  - Sandboxed environment
+
 ## Build Configurations
 
 ### Separate Builds Required
 
-Two distinct build configurations are maintained:
+Multiple build configurations are maintained:
 
-1. **GitHub Build** (`electron-builder.github.json`)
-   - Windows: NSIS installer, unsigned
-   - macOS: DMG, signed and notarized
+1. **GitHub Build** (via Electron Forge)
+   - Windows: Squirrel installer, unsigned
+   - macOS: DMG or ZIP, signed and notarized
    - Auto-updater: ENABLED
 
-2. **Microsoft Store Build** (`electron-builder.store.json`)
-   - Windows: MSIX package
+2. **Microsoft Store Build** (via Electron Forge MakerAppX)
+   - Windows: APPX/MSIX package
    - Auto-updater: DISABLED
    - Store-specific metadata and capabilities
+
+3. **Mac App Store Build** (via Electron Forge)
+   - macOS: .app bundle for MAS submission
+   - Auto-updater: DISABLED
+   - Sandboxed with MAS entitlements
+   - Submitted via Apple Transporter
 
 ### Build Commands
 
 ```bash
 # Build for GitHub (Windows)
-npm run build:github:win
+npm run make                           # Uses Squirrel maker
 
 # Build for GitHub (macOS)
-npm run build:github:mac
+npm run make                           # Uses DMG/ZIP maker
 
 # Build for Microsoft Store
-npm run build:store
+npm run make -- --targets=@electron-forge/maker-appx
+node scripts/fix-appx-manifest.js      # Fix manifest for Store
 
-# Build all distributions
-npm run build:all
+# Build for Mac App Store
+npm run make:mas                       # MAS-specific build (TBD)
 ```
 
 ## Auto-Updater Logic
@@ -90,11 +116,19 @@ The application detects its distribution channel at runtime:
 
 ```javascript
 function getDistributionChannel() {
-  // Microsoft Store detection
-  if (process.windowsStore || 
+  // Microsoft Store detection (Windows)
+  if (process.windowsStore ||
       (process.platform === 'win32' && process.execPath.includes('WindowsApps'))) {
     return 'microsoft-store';
   }
+
+  // Mac App Store detection (macOS)
+  if (process.mas ||
+      (process.platform === 'darwin' && process.execPath.includes('/Applications/') &&
+       process.execPath.includes('sandboxed'))) {
+    return 'mac-app-store';
+  }
+
   return 'direct-download';
 }
 ```
@@ -113,21 +147,23 @@ if (shouldEnableAutoUpdater()) {
 
 ### Apple Developer Account
 - **Type**: Individual
-- **Name**: [Your Personal Name]
+- **Status**: ACTIVE
 - **Cost**: $99/year
-- **Purpose**: 
-  - Code signing for macOS builds
-  - Notarization service
-  - Developer ID certificates
+- **Purpose**:
+  - Code signing for macOS GitHub builds (Developer ID Application)
+  - Notarization service for GitHub distribution
+  - Mac App Store submission (Apple Distribution certificate)
+  - App Store Connect access
 
 ### Microsoft Store Account
-- **Type**: Individual  
-- **Name**: [Your Personal Name]
+- **Type**: Individual
+- **Status**: ACTIVE
 - **Cost**: $19 one-time registration fee
-- **Purpose**: 
-  - Publish Windows MSIX packages
+- **Purpose**:
+  - Publish Windows APPX/MSIX packages
   - Microsoft-provided code signing
   - Store-managed update distribution
+  - Partner Center access
 
 ## File Structure
 
@@ -196,32 +232,59 @@ Total: $19 one-time
 7. Windows: SmartScreen appears but less frequently for known app
 
 ### Microsoft Store
-1. Developer submits MSIX package via Partner Center
+1. Developer submits APPX/MSIX package via Partner Center
 2. Microsoft reviews (usually 1-3 days)
 3. Store signs package with Microsoft certificate
 4. Users receive automatic updates via Store
 5. No user action required
 
+### Mac App Store
+1. Developer builds MAS package with Apple Distribution certificate
+2. Submit via Apple Transporter or Xcode
+3. Apple reviews (usually 1-3 days, can take longer)
+4. App signed and distributed via Mac App Store
+5. Users receive automatic updates via App Store
+6. No user action required
+
 ## Implementation Checklist
 
-### Initial Setup
-- [ ] Register Apple Developer account ($99/year)
-- [ ] Register Microsoft Store developer account ($19 one-time)
-- [ ] Generate Apple Developer ID certificate
-- [ ] Configure GitHub repository for releases
-- [ ] Set up GitHub Actions secrets (Apple credentials)
-- [ ] Create both build configuration files
+### Initial Setup - Accounts
+- [x] Register Apple Developer account ($99/year)
+- [x] Register Microsoft Store developer account ($19 one-time)
+
+### Initial Setup - Windows
+- [x] Configure Electron Forge for APPX builds
+- [x] Create fix-appx-manifest.js script for Store submission
+- [ ] Submit to Microsoft Store and get approval
+
+### Initial Setup - macOS (GitHub)
+- [ ] Generate Developer ID Application certificate
+- [ ] Configure code signing in Electron Forge
+- [ ] Set up notarization script
+- [ ] Test signed/notarized build
+
+### Initial Setup - Mac App Store
+- [ ] Generate Apple Distribution certificate
+- [ ] Create provisioning profile
+- [ ] Configure MAS build in Electron Forge
+- [ ] Create entitlements.mas.plist for sandbox
+- [ ] Submit to Mac App Store and get approval
+
+### Initial Setup - Auto-Updater
 - [ ] Implement distribution detection logic
+- [ ] Integrate electron-updater for GitHub builds
+- [ ] Disable auto-updater for store builds
 - [ ] Test auto-updater on both platforms
 
 ### Each Release
 - [ ] Update version in `package.json`
+- [ ] Update CHANGELOG.md
 - [ ] Create git tag (e.g., `git tag v1.2.0`)
-- [ ] Push tag to trigger GitHub Actions
-- [ ] Verify GitHub release published correctly
-- [ ] Build Microsoft Store package locally
-- [ ] Submit MSIX to Microsoft Partner Center
-- [ ] Monitor Store certification status
+- [ ] Build and test all distribution packages
+- [ ] Create GitHub release with assets
+- [ ] Submit to Microsoft Store via Partner Center
+- [ ] Submit to Mac App Store via App Store Connect
+- [ ] Monitor store certification status
 - [ ] Test updates on all distribution channels
 
 ## Environment Variables
@@ -292,7 +355,8 @@ Consider upgrading to:
 
 ## Summary
 
-**Total Annual Cost**: $99/year (Apple Developer Program only)
+**Total Annual Cost**: $99/year (Apple Developer Program)
+**One-time Cost**: $19 (Microsoft Store registration)
 
 **Distribution Matrix**:
 
@@ -300,10 +364,11 @@ Consider upgrading to:
 |----------|---------|--------|-------------|------|
 | Windows  | GitHub  | No     | Yes (electron-updater) | $0 |
 | Windows  | MS Store | Yes (by MS) | Yes (by Store) | $19 one-time |
-| macOS    | GitHub  | Yes    | Yes (electron-updater) | $99/year |
+| macOS    | GitHub  | Yes (notarized) | Yes (electron-updater) | $99/year |
+| macOS    | Mac App Store | Yes (by Apple) | Yes (by Store) | Included in $99/year |
 
-This approach prioritizes:
-1. **Cost-effectiveness** for an individual developer
-2. **User experience** through multiple distribution options
-3. **Professional macOS support** with proper signing
-4. **Flexibility** with both direct and store distributions
+This approach provides:
+1. **Maximum reach** through both direct download and app stores
+2. **User choice** between store-managed and direct updates
+3. **Professional signing** on all distribution channels
+4. **Cost-effectiveness** with shared Apple Developer membership
