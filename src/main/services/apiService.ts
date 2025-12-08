@@ -323,13 +323,13 @@ Mock AI Assistant`;
    */
   async getAvailableModels(apiKey: string, forceRefresh: boolean = false): Promise<{ success: boolean; data?: any[]; error?: string }> {
     if (this.useMock) {
-      // Return mock models for development with context_length
+      // Return mock models for development with context_length and modality
       return {
         success: true,
         data: [
-          { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', context_length: 200000, pricing: { prompt: '0.000015', completion: '0.000075' } },
-          { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', context_length: 128000, pricing: { prompt: '0.00001', completion: '0.00003' } },
-          { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', context_length: 131072, pricing: { prompt: '0.0000008', completion: '0.0000008' } },
+          { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', context_length: 200000, architecture: { modality: 'text->text' }, pricing: { prompt: '0.000015', completion: '0.000075' } },
+          { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', context_length: 128000, architecture: { modality: 'text+image->text' }, pricing: { prompt: '0.00001', completion: '0.00003' } },
+          { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', context_length: 131072, architecture: { modality: 'text->text' }, pricing: { prompt: '0.0000008', completion: '0.0000008' } },
         ],
       };
     }
@@ -361,15 +361,24 @@ Mock AI Assistant`;
       );
 
       if (response.data && response.data.data) {
-        console.log(`[ApiService] Successfully fetched ${response.data.data.length} models`);
+        // Filter to only include models that output text
+        // Modality format: "input->output" e.g., "text->text", "text+image->text", "text->image"
+        const textOutputModels = response.data.data.filter((model: any) => {
+          const modality = model.architecture?.modality;
+          if (!modality) return true; // Include if no modality info (safer default)
+          // Include models that output text (modality ends with "->text")
+          return modality.endsWith('->text');
+        });
 
-        // Update cache
+        console.log(`[ApiService] Successfully fetched ${response.data.data.length} models, ${textOutputModels.length} are text-output models`);
+
+        // Update cache with filtered models
         this.modelCache = {
-          data: response.data.data,
+          data: textOutputModels,
           timestamp: Date.now(),
         };
 
-        return { success: true, data: response.data.data };
+        return { success: true, data: textOutputModels };
       }
 
       console.error('[ApiService] Invalid response structure:', JSON.stringify(response.data).substring(0, 200));
