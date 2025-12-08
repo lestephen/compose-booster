@@ -304,9 +304,15 @@ git merge feature/my-feature-name --no-edit
 
 # 5. Push merged master to remote
 git push
+
+# 6. Delete the merged branch (local and remote)
+git branch -d feature/my-feature-name
+git push origin --delete feature/my-feature-name
 ```
 
 **Always push feature branches to remote** - the user prefers reviewing branches on GitHub before merging.
+
+**Always clean up merged branches** - after merging to master, delete the feature branch both locally and on the remote. This prevents stale branches from accumulating and causing confusion about ongoing work. If unsure whether a branch should be deleted, ask the user first.
 
 This ensures:
 - Master remains stable and deployable
@@ -336,5 +342,5 @@ This ensures:
 
 ---
 
-**Last Updated**: 2025-12-07
+**Last Updated**: 2025-12-08
 **Project Status**: v1.0.0 Released, planning v1.1
