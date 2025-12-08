@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App Sandbox - REQUIRED for Mac App Store -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+
+    <!-- Application group for data sharing -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>NBW65ZYT36.com.coldray.compose-booster</string>
+    </array>
+
+    <!-- Network access - required for OpenRouter API calls -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- Allow reading/writing user-selected files (for import/export) -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+</dict>
+</plist>

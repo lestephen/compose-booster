@@ -4,16 +4,45 @@ import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
 import { MakerAppX } from '@electron-forge/maker-appx';
+import { MakerDMG } from '@electron-forge/maker-dmg';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+
+// Determine if this is a Mac App Store build
+const isMAS = process.env.MAS_BUILD === 'true';
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     name: 'Compose Booster',
     executableName: 'Compose Booster',
-    icon: './assets/icons/win/icon', // Electron Forge will add .ico automatically
+    // Platform-specific icons
+    icon: process.platform === 'darwin'
+      ? './assets/icons/mac/icon'
+      : './assets/icons/win/icon',
+    // macOS specific configuration
+    appBundleId: 'com.coldray.compose-booster',
+    appCategoryType: 'public.app-category.productivity',
+    // Code signing for macOS (uses environment variables or keychain)
+    osxSign: process.platform === 'darwin' ? {
+      identity: isMAS
+        ? 'Apple Distribution'           // For Mac App Store
+        : 'Developer ID Application',    // For GitHub distribution
+      entitlements: isMAS
+        ? './build/entitlements.mas.plist'
+        : './build/entitlements.mac.plist',
+      'entitlements-inherit': isMAS
+        ? './build/entitlements.mas.inherit.plist'
+        : './build/entitlements.mac.plist',
+      'hardened-runtime': !isMAS,        // Hardened runtime for notarization (not MAS)
+    } : undefined,
+    // Notarization for GitHub distribution (not needed for MAS)
+    osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
+      appleId: process.env.APPLE_ID || '',
+      appleIdPassword: process.env.APPLE_ID_PASSWORD || '',
+      teamId: 'NBW65ZYT36',
+    } : undefined,
   },
   buildIdentifier: process.arch,
   rebuildConfig: {},
@@ -42,6 +71,11 @@ const config: ForgeConfig = {
       devCert: undefined,
     }),
     new MakerZIP({}, ['darwin']),
+    new MakerDMG({
+      name: 'Compose Booster',
+      icon: './assets/icons/mac/icon.icns',
+      format: 'ULFO', // ULFO = lzfse compression, good balance of size and compatibility
+    }),
     new MakerRpm({}),
     new MakerDeb({}),
   ],
