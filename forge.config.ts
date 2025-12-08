@@ -3,6 +3,7 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
+import { MakerAppX } from '@electron-forge/maker-appx';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
@@ -21,6 +22,23 @@ const config: ForgeConfig = {
       name: 'ComposeBooster', // Used for installation folder and registry entries (no spaces)
       setupIcon: './assets/icons/win/icon.ico',
       iconUrl: 'https://raw.githubusercontent.com/lestephen/compose-booster/master/assets/icons/win/icon.ico', // URL for auto-update (optional)
+    }),
+    new MakerAppX({
+      // Microsoft Store identity (from Partner Center)
+      identityName: 'ColdRayLabs.ComposeBooster',
+      publisher: 'CN=D41101CD-1A4E-4FB3-8255-4BA6A73D7D90',
+      publisherDisplayName: 'Cold Ray Labs',
+      // App metadata
+      applicationDescription: 'AI-powered email composition assistant - improve, polish, and customize your emails with advanced AI models',
+      backgroundColor: '#f18138', // Orange from logo
+      // Assets
+      assets: './assets/store',
+      // Package settings
+      packageName: 'ComposeBooster',
+      packageDisplayName: 'Compose Booster',
+      packageVersion: '1.0.0.0', // Must be x.x.x.x format for Store
+      // Windows version requirements
+      windowsKit: undefined, // Will auto-detect
     }),
     new MakerZIP({}, ['darwin']),
     new MakerRpm({}),

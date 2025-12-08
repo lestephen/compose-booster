@@ -6,7 +6,8 @@
  * Converts the base SVG icon to all required formats:
  * - PNG files at multiple sizes
  * - Windows .ico file (multi-resolution)
- * - macOS .icns file (multi-resolution)
+ * - Microsoft Store tile assets
+ * - macOS .icns file (multi-resolution) - skipped without Apple Developer account
  */
 
 const sharp = require('sharp');
@@ -16,12 +17,25 @@ const path = require('path');
 
 // Standard icon sizes for multi-resolution icons
 const ICON_SIZES = [256, 128, 64, 48, 32, 16];
+
+// Microsoft Store asset sizes (required for MSIX packaging)
+// See: https://learn.microsoft.com/en-us/windows/apps/design/style/iconography/app-icon-construction
+const STORE_ASSETS = [
+  { name: 'StoreLogo.png', size: 50 },           // Store logo
+  { name: 'Square150x150Logo.png', size: 150 },  // Medium tile
+  { name: 'Square44x44Logo.png', size: 44 },     // App list icon
+  { name: 'Wide310x150Logo.png', width: 310, height: 150 }, // Wide tile
+  { name: 'LargeTile.png', size: 310 },          // Large tile (Square310x310Logo)
+  { name: 'SmallTile.png', size: 71 },           // Small tile (Square71x71Logo)
+];
+
 const BASE_DIR = path.join(__dirname, '..');
 const ASSETS_DIR = path.join(BASE_DIR, 'assets', 'icons');
 const SVG_PATH = path.join(ASSETS_DIR, 'icon.svg');
 const PNG_DIR = path.join(ASSETS_DIR, 'png');
 const WIN_DIR = path.join(ASSETS_DIR, 'win');
 const MAC_DIR = path.join(ASSETS_DIR, 'mac');
+const STORE_DIR = path.join(BASE_DIR, 'assets', 'store');
 
 async function generatePNGs() {
   console.log('📦 Generating PNG files...');
@@ -61,6 +75,55 @@ async function generateICO() {
   console.log('✅ Windows icon.ico generated!\n');
 }
 
+async function generateStoreAssets() {
+  console.log('📦 Generating Microsoft Store assets...');
+
+  if (!fs.existsSync(STORE_DIR)) {
+    fs.mkdirSync(STORE_DIR, { recursive: true });
+  }
+
+  for (const asset of STORE_ASSETS) {
+    const outputPath = path.join(STORE_DIR, asset.name);
+    const width = asset.width || asset.size;
+    const height = asset.height || asset.size;
+
+    console.log(`  ✓ Generating ${asset.name} (${width}x${height})...`);
+
+    if (width === height) {
+      // Square asset - simple resize
+      await sharp(SVG_PATH)
+        .resize(width, height)
+        .png()
+        .toFile(outputPath);
+    } else {
+      // Wide tile - need to composite icon centered on background
+      const iconSize = Math.min(width, height) - 20; // Leave some padding
+      const icon = await sharp(SVG_PATH)
+        .resize(iconSize, iconSize)
+        .png()
+        .toBuffer();
+
+      // Create background with brand color and composite icon
+      await sharp({
+        create: {
+          width: width,
+          height: height,
+          channels: 4,
+          background: { r: 241, g: 129, b: 56, alpha: 1 } // #f18138 - orange from logo
+        }
+      })
+        .composite([{
+          input: icon,
+          gravity: 'center'
+        }])
+        .png()
+        .toFile(outputPath);
+    }
+  }
+
+  console.log('✅ Microsoft Store assets generated!\n');
+}
+
 async function main() {
   console.log('🎨 Compose Booster - Icon Generator\n');
   console.log('=' .repeat(50) + '\n');
@@ -75,14 +138,15 @@ async function main() {
     // Generate all formats
     await generatePNGs();
     await generateICO();
+    await generateStoreAssets();
 
     console.log('=' .repeat(50));
     console.log('🎉 All icons generated successfully!');
     console.log('\nGenerated files:');
-    console.log('  • PNG files: assets/icons/png/icon-*.png');
-    console.log('  • Windows:   assets/icons/win/icon.ico');
-    console.log('\nNext step: Update forge.config.ts to use these icons');
-    console.log('Note: macOS .icns generation skipped (not needed without Apple Developer account)');
+    console.log('  • PNG files:    assets/icons/png/icon-*.png');
+    console.log('  • Windows:      assets/icons/win/icon.ico');
+    console.log('  • Store assets: assets/store/*.png');
+    console.log('\nNote: macOS .icns generation skipped (not needed without Apple Developer account)');
 
   } catch (error) {
     console.error('❌ Error generating icons:', error);
