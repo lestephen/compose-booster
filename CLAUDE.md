@@ -210,37 +210,41 @@ npm run make
 - CSS variables for theming (defined in `:root`)
 - Mobile-first responsive design (even for desktop app)
 
-## Implementation Status
+## Current Release
 
-### ✅ Completed (Phase 1-4)
+**v1.0.0** - Initial public release (December 2025)
 
-- Main application window with input/output
-- Hot combo buttons with keyboard shortcuts
-- Custom model/prompt/tone selection
-- OpenRouter API integration + mock mode
-- Settings window with tabbed navigation
-- Models management tab
-- Prompts management tab
-- Tones management tab
-- Quick Actions configuration tab
-- Advanced settings tab (export/import/reset)
-- Clipboard integration
-- Theme support (light/dark/system)
-- Font size adjustment
-- History/Undo functionality
-- Enhanced application menu
-- Keyboard shortcuts (Ctrl+1/2/3 for quick actions, Ctrl+Enter to process, etc.)
-- Dark mode CSS implementation
-- Window position persistence
-- Developer Tools toggle in settings
-- Windows packaging (x64 and ARM64)
-- Application icons (Windows .ico)
+- Available on GitHub Releases (Windows x64 unsigned)
+- Microsoft Store submission pending approval
+- See ROADMAP.md for planned features
 
-### 📋 Planned (Phase 5)
+## File Headers
 
-- macOS packaging and App Store submission
-- Microsoft Store submission
-- Additional cross-platform testing
+All TypeScript source files should include the MPL-2.0 license header:
+
+```typescript
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Copyright (c) 2025 Stephen Le
+```
+
+## Build Commands
+
+```bash
+# Development
+npm start                    # Run in dev mode
+npm test                     # Run tests
+npm run test:coverage        # Run tests with coverage
+
+# Production builds
+npm run make                 # Build all platforms
+npm run make:store           # Build MSIX for Microsoft Store
+
+# Assets
+npm run icons                # Regenerate icons from SVG
+```
 
 ## Troubleshooting
 
@@ -289,16 +293,10 @@ npm run make
 - `src/shared/types.ts` - All TypeScript interfaces
 - `src/main/config/defaultConfig.ts` - Default values
 - `src/main/ipc/channels.ts` - IPC channel definitions
-- `IMPLEMENTATION_PLAN.md` - Detailed implementation roadmap
-- `SPEC.md` - Original requirements specification
-
-### Current Development Branch
-
-Branch: `master`
-
-Preparing for v1.0 release to Microsoft Store
+- `ROADMAP.md` - Planned features and technical debt
+- `CHANGELOG.md` - Version history (when created)
 
 ---
 
 **Last Updated**: 2025-12-07
-**Project Status**: Pre-release - Phase 4 Complete, preparing for store submission
+**Project Status**: v1.0.0 Released, planning v1.1
