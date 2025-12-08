@@ -271,10 +271,35 @@ npm run icons                # Regenerate icons from SVG
 
 ## Git Workflow
 
-- **Main branch**: `master` - stable releases
-- **Feature branches**: `feature/<name>` - active development
+- **Main branch**: `master` - stable releases only
+- **Feature branches**: `feature/<name>` - all active development
 - **Commit messages**: Descriptive, professional format. **DO NOT include Claude Code attribution or co-author lines** - keep commit messages clean and professional without AI references
 - **Protected files**: See `.gitignore` for sensitive data exclusions
+
+### Feature Branch Process
+
+**IMPORTANT**: Always create a feature branch for any changes, no matter how small:
+
+```bash
+# 1. Create and switch to feature branch
+git checkout -b feature/my-feature-name
+
+# 2. Make changes and commit
+git add .
+git commit -m "Description of changes"
+
+# 3. Merge back to master when complete
+git checkout master
+git merge feature/my-feature-name --no-edit
+
+# 4. Push to remote
+git push
+```
+
+This ensures:
+- Master remains stable and deployable
+- Changes can be easily rolled back if needed
+- Clean history with logical groupings of changes
 
 ## Notes for AI Assistants
 
@@ -294,7 +319,7 @@ npm run icons                # Regenerate icons from SVG
 - `src/main/config/defaultConfig.ts` - Default values
 - `src/main/ipc/channels.ts` - IPC channel definitions
 - `ROADMAP.md` - Planned features and technical debt
-- `CHANGELOG.md` - Version history (when created)
+- `CHANGELOG.md` - Version history following Keep a Changelog format
 
 ---
 
