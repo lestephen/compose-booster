@@ -6,21 +6,22 @@ This document outlines planned features, improvements, and technical debt for fu
 
 ### Build & Release Automation
 
-- [ ] **Automated Screenshot Generation**
-  - Add demo mode via `DEMO_MODE=true` environment variable
+- [x] **Automated Screenshot Generation** ✅
+  - ~~Add demo mode via `DEMO_MODE=true` environment variable~~ (used direct Playwright page.evaluate instead)
   - Pre-populate input/output with sample text
-  - Use Playwright or Spectron to automate screenshot capture
+  - Use Playwright to automate screenshot capture
   - Generate screenshots for both Windows and macOS at required dimensions
-  - Apple App Store requires different sizes than Microsoft Store
+  - Run: `npm run screenshots`, `npm run screenshots:windows`, `npm run screenshots:mac`
+  - Output: `assets/store/screenshots/windows/` and `assets/store/screenshots/mac/`
 
 - [ ] **Changelog Management**
   - Create CHANGELOG.md following Keep a Changelog format
   - Consider conventional commits for automated changelog generation
   - Link changelog entries to GitHub releases
 
-- [ ] **Copyright Header Enforcement**
-  - Add script to check/add MPL-2.0 headers to all source files
-  - Integrate with pre-commit hook or CI
+- [x] **Copyright Header Enforcement** ✅
+  - Script to check/add MPL-2.0 headers to all source files
+  - Run: `npm run check-headers` (check only) or `npm run fix-headers` (auto-fix)
   - Header format:
     ```
     // This Source Code Form is subject to the terms of the Mozilla Public

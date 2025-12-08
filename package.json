@@ -17,7 +17,10 @@
     "icons": "node scripts/generate-icons.js",
     "make:store": "electron-forge make --targets=@electron-forge/maker-appx && node scripts/fix-appx-manifest.js",
     "check-headers": "node scripts/check-headers.js",
-    "fix-headers": "node scripts/check-headers.js --fix"
+    "fix-headers": "node scripts/check-headers.js --fix",
+    "screenshots": "node scripts/generate-screenshots.js",
+    "screenshots:windows": "node scripts/generate-screenshots.js --store windows",
+    "screenshots:mac": "node scripts/generate-screenshots.js --store mac"
   },
   "keywords": [
     "email",
@@ -46,6 +49,7 @@
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron-forge/plugin-vite": "^7.10.2",
     "@electron/fuses": "^1.8.0",
+    "@playwright/test": "^1.57.0",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -56,6 +60,7 @@
     "eslint-plugin-import": "^2.32.0",
     "icon-gen": "^5.0.0",
     "jsdom": "^27.2.0",
+    "playwright": "^1.57.0",
     "png-to-ico": "^3.0.1",
     "sharp": "^0.34.5",
     "typescript": "~4.5.4",
