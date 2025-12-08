@@ -36,8 +36,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke(IPC_CHANNELS.CONFIG_TEST_API_KEY, apiKey),
 
   // Models
-  getAvailableModels: (): Promise<IpcResponse> =>
-    ipcRenderer.invoke(IPC_CHANNELS.API_GET_MODELS),
+  getAvailableModels: (forceRefresh: boolean = false): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.API_GET_MODELS, forceRefresh),
 
   // Theme
   getTheme: (): Promise<IpcResponse<string>> =>
@@ -76,7 +76,7 @@ declare global {
       exportConfig: () => Promise<IpcResponse<string>>;
       importConfig: () => Promise<IpcResponse>;
       testApiKey: (apiKey: string) => Promise<IpcResponse>;
-      getAvailableModels: () => Promise<IpcResponse>;
+      getAvailableModels: (forceRefresh?: boolean) => Promise<IpcResponse>;
       getTheme: () => Promise<IpcResponse<string>>;
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<IpcResponse>;
       onConfigUpdated: (callback: () => void) => void;

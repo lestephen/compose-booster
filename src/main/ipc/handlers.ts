@@ -351,7 +351,7 @@ function registerApiHandlers(): void {
   });
 
   // Get available models from OpenRouter
-  ipcMain.handle(IPC_CHANNELS.API_GET_MODELS, async () => {
+  ipcMain.handle(IPC_CHANNELS.API_GET_MODELS, async (event, forceRefresh: boolean = false) => {
     try {
       const config = configService.getConfig();
       const apiKey = config.apiKey;
@@ -365,7 +365,7 @@ function registerApiHandlers(): void {
         } as IpcResponse;
       }
 
-      const result = await apiService.getAvailableModels(apiKey);
+      const result = await apiService.getAvailableModels(apiKey, forceRefresh);
 
       if (result.success) {
         return {

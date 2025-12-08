@@ -17,8 +17,17 @@ import {
   MOCK_API_ENV_VAR,
 } from '../../shared/constants';
 
+// Cache TTL for model list (5 minutes)
+const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
+
+interface ModelCache {
+  data: any[];
+  timestamp: number;
+}
+
 class ApiService {
   private useMock: boolean;
+  private modelCache: ModelCache | null = null;
 
   constructor() {
     this.useMock = process.env[MOCK_API_ENV_VAR] === 'true';
@@ -310,8 +319,9 @@ Mock AI Assistant`;
   /**
    * Fetch available models from OpenRouter API
    * Note: The /models endpoint is public but we include auth for consistency
+   * @param forceRefresh - If true, bypass cache and fetch fresh data
    */
-  async getAvailableModels(apiKey: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+  async getAvailableModels(apiKey: string, forceRefresh: boolean = false): Promise<{ success: boolean; data?: any[]; error?: string }> {
     if (this.useMock) {
       // Return mock models for development with context_length
       return {
@@ -322,6 +332,17 @@ Mock AI Assistant`;
           { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', context_length: 131072, pricing: { prompt: '0.0000008', completion: '0.0000008' } },
         ],
       };
+    }
+
+    // Check cache first (unless force refresh requested)
+    if (!forceRefresh && this.modelCache) {
+      const cacheAge = Date.now() - this.modelCache.timestamp;
+      if (cacheAge < MODEL_CACHE_TTL_MS) {
+        console.log(`[ApiService] Returning cached models (${this.modelCache.data.length} models, cache age: ${Math.round(cacheAge / 1000)}s)`);
+        return { success: true, data: this.modelCache.data };
+      } else {
+        console.log('[ApiService] Model cache expired, fetching fresh data...');
+      }
     }
 
     try {
@@ -341,6 +362,13 @@ Mock AI Assistant`;
 
       if (response.data && response.data.data) {
         console.log(`[ApiService] Successfully fetched ${response.data.data.length} models`);
+
+        // Update cache
+        this.modelCache = {
+          data: response.data.data,
+          timestamp: Date.now(),
+        };
+
         return { success: true, data: response.data.data };
       }
 
@@ -365,6 +393,14 @@ Mock AI Assistant`;
 
       return { success: false, error: `Failed to fetch models: ${axiosError.message}` };
     }
+  }
+
+  /**
+   * Clear the model cache (useful when API key changes)
+   */
+  clearModelCache(): void {
+    this.modelCache = null;
+    console.log('[ApiService] Model cache cleared');
   }
 
   /**

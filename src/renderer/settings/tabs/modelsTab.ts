@@ -16,13 +16,15 @@ export class ModelsTab {
   private onConfigChange: (config: AppConfig) => void;
   private availableModels: any[] = [];
   private showDetailedView: boolean = false;
+  private isLoadingModels: boolean = false;
+  private modelsLoadError: string | null = null;
 
   constructor(container: HTMLElement, config: AppConfig, onConfigChange: (config: AppConfig) => void) {
     this.container = container;
     this.config = config;
     this.onConfigChange = onConfigChange;
     this.render();
-    this.loadAvailableModels();
+    this.loadAvailableModels(false); // Don't force refresh on initial load
   }
 
   public updateConfig(config: AppConfig): void {
@@ -69,15 +71,58 @@ export class ModelsTab {
             autocomplete="off"
           >
           <datalist id="modelDatalist"></datalist>
-          <small class="form-text" id="loadingModelsText">Loading models from OpenRouter...</small>
+          <small class="form-text" id="loadingModelsText">${this.getLoadingStatusText()}</small>
         </div>
         <button id="addModelBtn" class="btn btn-primary" disabled>Add Model</button>
+        <button id="refreshModelsBtn" class="btn btn-secondary" style="margin-left: 8px;" ${this.isLoadingModels ? 'disabled' : ''}>
+          ${this.isLoadingModels ? 'Refreshing...' : 'Refresh Models'}
+        </button>
         <button id="resetModelsBtn" class="btn btn-secondary" style="margin-left: 8px;">Reset to Defaults</button>
       </div>
     `;
 
     this.populateModelsTable();
     this.setupEventListeners();
+    this.populateDatalistFromCache(); // Repopulate datalist from cached models
+  }
+
+  /**
+   * Get the status text for the loading indicator
+   */
+  private getLoadingStatusText(): string {
+    if (this.isLoadingModels) {
+      return 'Loading models from OpenRouter...';
+    }
+    if (this.modelsLoadError) {
+      return this.modelsLoadError;
+    }
+    if (this.availableModels.length > 0) {
+      return `${this.availableModels.length} models available - type to search`;
+    }
+    return 'Click "Refresh Models" to load available models';
+  }
+
+  /**
+   * Populate the datalist from cached models (called after render)
+   */
+  private populateDatalistFromCache(): void {
+    const datalist = document.getElementById('modelDatalist') as HTMLDataListElement;
+    const loadingText = document.getElementById('loadingModelsText');
+
+    if (datalist && this.availableModels.length > 0) {
+      datalist.innerHTML = '';
+      this.availableModels.forEach((model: any) => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = `${model.name} - ${model.id}`;
+        datalist.appendChild(option);
+      });
+    }
+
+    // Update loading text styling for errors
+    if (loadingText && this.modelsLoadError) {
+      loadingText.style.color = 'var(--error-color)';
+    }
   }
 
   private populateModelsTable(): void {
@@ -179,6 +224,12 @@ export class ModelsTab {
         addBtn.disabled = !modelExists;
       });
       addBtn.addEventListener('click', () => this.handleAddModel());
+    }
+
+    // Refresh models button
+    const refreshBtn = document.getElementById('refreshModelsBtn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => this.loadAvailableModels(true));
     }
 
     // Reset button
@@ -337,42 +388,36 @@ export class ModelsTab {
     return DEFAULT_CONFIG.models.some(m => m.id === modelId);
   }
 
-  private async loadAvailableModels(): Promise<void> {
-    const loadingText = document.getElementById('loadingModelsText');
-    const datalist = document.getElementById('modelDatalist') as HTMLDataListElement;
+  private async loadAvailableModels(forceRefresh: boolean = false): Promise<void> {
+    // If we already have cached models and not forcing refresh, just repopulate
+    if (!forceRefresh && this.availableModels.length > 0) {
+      this.populateDatalistFromCache();
+      return;
+    }
+
+    // Prevent multiple simultaneous requests
+    if (this.isLoadingModels) {
+      return;
+    }
+
+    this.isLoadingModels = true;
+    this.modelsLoadError = null;
+    this.render(); // Re-render to show loading state
 
     try {
-      const result = await window.electronAPI.getAvailableModels();
+      const result = await window.electronAPI.getAvailableModels(forceRefresh);
 
       if (result.success && result.data) {
         this.availableModels = result.data;
-
-        // Populate datalist with searchable options
-        if (datalist) {
-          datalist.innerHTML = '';
-          this.availableModels.forEach((model: any) => {
-            const option = document.createElement('option');
-            option.value = model.id;
-            option.textContent = `${model.name} - ${model.id}`;
-            datalist.appendChild(option);
-          });
-        }
-
-        if (loadingText) {
-          loadingText.textContent = `${this.availableModels.length} models available - type to search`;
-          loadingText.style.color = '';
-        }
+        this.modelsLoadError = null;
       } else {
-        if (loadingText) {
-          loadingText.textContent = 'Failed to load models. Please check your API key.';
-          loadingText.style.color = 'var(--error-color)';
-        }
+        this.modelsLoadError = result.error?.message || 'Failed to load models. Please check your API key.';
       }
-    } catch {
-      if (loadingText) {
-        loadingText.textContent = 'Error loading models from OpenRouter';
-        loadingText.style.color = 'var(--error-color)';
-      }
+    } catch (error) {
+      this.modelsLoadError = 'Error loading models from OpenRouter';
+    } finally {
+      this.isLoadingModels = false;
+      this.render(); // Re-render to show results
     }
   }
 
