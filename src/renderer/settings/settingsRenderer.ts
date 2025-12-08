@@ -12,6 +12,7 @@ import { TabManager } from './components/tabManager';
 import { ModelsTab } from './tabs/modelsTab';
 import { PromptsTab } from './tabs/promptsTab';
 import { TonesTab } from './tabs/tonesTab';
+import { StylesTab } from './tabs/stylesTab';
 import { QuickActionsTab } from './tabs/quickActionsTab';
 import { AdvancedTab } from './tabs/advancedTab';
 import { AboutTab } from './tabs/aboutTab';
@@ -23,6 +24,7 @@ class SettingsController {
   private modelsTab: ModelsTab | null = null;
   private promptsTab: PromptsTab | null = null;
   private tonesTab: TonesTab | null = null;
+  private stylesTab: StylesTab | null = null;
   private quickActionsTab: QuickActionsTab | null = null;
   private advancedTab: AdvancedTab | null = null;
   private aboutTab: AboutTab | null = null;
@@ -104,6 +106,16 @@ class SettingsController {
     if (tonesContainer) {
       this.tonesTab = new TonesTab(
         tonesContainer,
+        this.config,
+        (updatedConfig) => this.handleConfigChange(updatedConfig)
+      );
+    }
+
+    // Initialize styles tab
+    const stylesContainer = document.getElementById('stylesListContainer');
+    if (stylesContainer) {
+      this.stylesTab = new StylesTab(
+        stylesContainer,
         this.config,
         (updatedConfig) => this.handleConfigChange(updatedConfig)
       );

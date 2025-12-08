@@ -7,18 +7,20 @@
 // Custom Combo Component
 // Manages the custom combination dropdown controls
 
-import { AppConfig, Model, Prompt, Tone } from '../../../shared/types';
+import { AppConfig, Model, Prompt, Tone, StyleProfile } from '../../../shared/types';
 
 export class CustomComboManager {
   private modelSelect: HTMLSelectElement;
   private promptSelect: HTMLSelectElement;
   private toneSelect: HTMLSelectElement;
+  private styleSelect: HTMLSelectElement;
   private config: AppConfig | null = null;
 
   constructor() {
     this.modelSelect = document.getElementById('modelSelect') as HTMLSelectElement;
     this.promptSelect = document.getElementById('promptSelect') as HTMLSelectElement;
     this.toneSelect = document.getElementById('toneSelect') as HTMLSelectElement;
+    this.styleSelect = document.getElementById('styleSelect') as HTMLSelectElement;
   }
 
   async initialize(): Promise<void> {
@@ -64,6 +66,17 @@ export class CustomComboManager {
       this.toneSelect.appendChild(option);
     });
 
+    // Populate styles
+    this.styleSelect.innerHTML = '';
+    if (this.config.styles) {
+      this.config.styles.forEach((style: StyleProfile) => {
+        const option = document.createElement('option');
+        option.value = style.id;
+        option.textContent = style.name;
+        this.styleSelect.appendChild(option);
+      });
+    }
+
     // Set last used values, with fallbacks
     if (this.config.lastUsed) {
       // Try to set last used model
@@ -92,6 +105,16 @@ export class CustomComboManager {
       if (!this.toneSelect.value && this.config.tones.length > 0) {
         this.toneSelect.value = this.config.tones[0].id;
       }
+
+      // Try to set last used style
+      if (this.config.lastUsed.style) {
+        this.styleSelect.value = this.config.lastUsed.style;
+      }
+
+      // If style wasn't set, select first style (usually 'none')
+      if (!this.styleSelect.value && this.config.styles && this.config.styles.length > 0) {
+        this.styleSelect.value = this.config.styles[0].id;
+      }
     } else {
       // No lastUsed data, select defaults
       if (enabledModels.length > 0) {
@@ -106,27 +129,36 @@ export class CustomComboManager {
       if (this.config.tones.length > 0) {
         this.toneSelect.value = this.config.tones[0].id;
       }
+
+      if (this.config.styles && this.config.styles.length > 0) {
+        this.styleSelect.value = this.config.styles[0].id;
+      }
     }
   }
 
-  getSelection(): { model: string; prompt: string; tone: string } {
+  getSelection(): { model: string; prompt: string; tone: string; style: string } {
     return {
       model: this.modelSelect.value,
       prompt: this.promptSelect.value,
       tone: this.toneSelect.value,
+      style: this.styleSelect.value,
     };
   }
 
-  setSelection(model: string, prompt: string, tone: string): void {
+  setSelection(model: string, prompt: string, tone: string, style?: string): void {
     this.modelSelect.value = model;
     this.promptSelect.value = prompt;
     this.toneSelect.value = tone;
+    if (style) {
+      this.styleSelect.value = style;
+    }
   }
 
   setEnabled(enabled: boolean): void {
     this.modelSelect.disabled = !enabled;
     this.promptSelect.disabled = !enabled;
     this.toneSelect.disabled = !enabled;
+    this.styleSelect.disabled = !enabled;
   }
 
   async reload(): Promise<void> {

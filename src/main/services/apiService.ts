@@ -8,7 +8,7 @@
 // Handles OpenRouter API integration with mock mode support
 
 import axios, { AxiosError } from 'axios';
-import { ApiResponse, Tone } from '../../shared/types';
+import { ApiResponse, Tone, StyleProfile } from '../../shared/types';
 import {
   OPENROUTER_API_URL,
   OPENROUTER_REFERER,
@@ -358,6 +358,7 @@ Mock AI Assistant`;
   buildPrompt(
     template: string,
     tone: Tone | undefined,
+    style: StyleProfile | undefined,
     content: string,
     includeClosingAndSignature: boolean
   ): string {
@@ -368,6 +369,25 @@ Mock AI Assistant`;
       .replace(/\$\{content\}/g, content)
       .replace(/\$\{tone\}/g, toneDescription)
       .replace(/\$\{date\}/g, date);
+
+    // Add style instructions if a style is selected (and it has content)
+    if (style && (style.description || (style.samples && style.samples.length > 0))) {
+      prompt += '\n\n--- WRITING STYLE GUIDANCE ---';
+
+      if (style.description) {
+        prompt += `\nStyle description: ${style.description}`;
+      }
+
+      // Add sample emails for few-shot learning
+      if (style.samples && style.samples.length > 0) {
+        prompt += '\n\nHere are examples of emails written in my preferred style. Please match this writing style:';
+        style.samples.forEach((sample, index) => {
+          prompt += `\n\n[Example ${index + 1}]\n${sample}`;
+        });
+      }
+
+      prompt += '\n\n--- END STYLE GUIDANCE ---';
+    }
 
     // Add instruction about closing and signature
     if (!includeClosingAndSignature) {

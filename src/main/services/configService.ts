@@ -133,6 +133,7 @@ class ConfigService {
       models: config.models || DEFAULT_CONFIG.models,
       prompts: config.prompts || DEFAULT_CONFIG.prompts,
       tones: config.tones || DEFAULT_CONFIG.tones,
+      styles: config.styles || DEFAULT_CONFIG.styles,
       quickActions: config.quickActions || DEFAULT_CONFIG.quickActions,
       lastUsed: config.lastUsed || DEFAULT_CONFIG.lastUsed,
       preferences: {
@@ -221,8 +222,8 @@ class ConfigService {
   /**
    * Update last used combo
    */
-  updateLastUsed(model: string, prompt: string, tone: string): void {
-    this.set('lastUsed', { model, prompt, tone });
+  updateLastUsed(model: string, prompt: string, tone: string, style?: string): void {
+    this.set('lastUsed', { model, prompt, tone, style: style || 'none' });
   }
 
   /**

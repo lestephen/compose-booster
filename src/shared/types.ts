@@ -37,13 +37,23 @@ export interface QuickAction {
   model: string;
   prompt: string;
   tone: string;
+  style?: string;
   position: number;
+}
+
+export interface StyleProfile {
+  id: string;
+  name: string;
+  description: string;
+  samples?: string[];  // Example emails written in this style for few-shot prompting
+  isDefault?: boolean;
 }
 
 export interface LastUsed {
   model: string;
   prompt: string;
   tone: string;
+  style: string;
 }
 
 export interface Preferences {
@@ -75,6 +85,7 @@ export interface AppConfig {
   models: Model[];
   prompts: Record<string, Prompt>;
   tones: Tone[];
+  styles: StyleProfile[];
   quickActions: QuickAction[];
   lastUsed: LastUsed;
   preferences: Preferences;
@@ -89,6 +100,7 @@ export interface ProcessEmailRequest {
   model: string;
   prompt: string;
   tone: string;
+  style?: string;
 }
 
 export interface RegenerateRequest {
@@ -96,6 +108,7 @@ export interface RegenerateRequest {
   model: string;
   prompt: string;
   tone: string;
+  style?: string;
   temperature: number;
 }
 

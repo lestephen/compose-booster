@@ -261,6 +261,7 @@ class AppController {
         model: selection.model,
         prompt: selection.prompt,
         tone: selection.tone,
+        style: selection.style,
       };
 
       // Store the request for potential regeneration
@@ -331,6 +332,7 @@ class AppController {
         model: hotCombo.model,
         prompt: hotCombo.prompt,
         tone: hotCombo.tone,
+        style: hotCombo.style,
       };
 
       // Store the request for potential regeneration
@@ -427,6 +429,7 @@ class AppController {
         model: this.lastRequest.model,
         prompt: this.lastRequest.prompt,
         tone: this.lastRequest.tone,
+        style: this.lastRequest.style,
         temperature: temperature,
       };
 

@@ -200,7 +200,7 @@ function registerApiHandlers(): void {
   // Process email
   ipcMain.handle(IPC_CHANNELS.API_PROCESS_EMAIL, async (event, request: ProcessEmailRequest) => {
     try {
-      const { input, model, prompt, tone } = request;
+      const { input, model, prompt, tone, style } = request;
 
       // Validate input
       if (!input || input.trim() === '') {
@@ -238,10 +238,14 @@ function registerApiHandlers(): void {
       // Get tone
       const toneObj = config.tones.find((t) => t.id === tone);
 
+      // Get style
+      const styleObj = style ? config.styles.find((s) => s.id === style) : undefined;
+
       // Build final prompt
       const finalPrompt = apiService.buildPrompt(
         promptTemplate.text,
         toneObj,
+        styleObj,
         input,
         config.preferences.includeClosingAndSignature
       );
@@ -256,7 +260,7 @@ function registerApiHandlers(): void {
 
       // Update last used
       if (result.success) {
-        configService.updateLastUsed(model, prompt, tone);
+        configService.updateLastUsed(model, prompt, tone, style);
       }
 
       return result;
@@ -274,7 +278,7 @@ function registerApiHandlers(): void {
   // Regenerate response with higher temperature
   ipcMain.handle(IPC_CHANNELS.API_REGENERATE, async (event, request: RegenerateRequest) => {
     try {
-      const { input, model, prompt, tone, temperature } = request;
+      const { input, model, prompt, tone, style, temperature } = request;
 
       // Validate input
       if (!input || input.trim() === '') {
@@ -312,10 +316,14 @@ function registerApiHandlers(): void {
       // Get tone
       const toneObj = config.tones.find((t) => t.id === tone);
 
+      // Get style
+      const styleObj = style ? config.styles.find((s) => s.id === style) : undefined;
+
       // Build final prompt
       const finalPrompt = apiService.buildPrompt(
         promptTemplate.text,
         toneObj,
+        styleObj,
         input,
         config.preferences.includeClosingAndSignature
       );
