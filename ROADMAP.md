@@ -14,10 +14,10 @@ This document outlines planned features, improvements, and technical debt for fu
   - Run: `npm run screenshots`, `npm run screenshots:windows`, `npm run screenshots:mac`
   - Output: `assets/store/screenshots/windows/` and `assets/store/screenshots/mac/`
 
-- [ ] **Changelog Management**
-  - Create CHANGELOG.md following Keep a Changelog format
-  - Consider conventional commits for automated changelog generation
-  - Link changelog entries to GitHub releases
+- [x] **Changelog Management** ✅
+  - Created CHANGELOG.md following Keep a Changelog format
+  - Links to GitHub releases for each version
+  - Consider conventional commits for automated generation (future enhancement)
 
 - [x] **Copyright Header Enforcement** ✅
   - Script to check/add MPL-2.0 headers to all source files
