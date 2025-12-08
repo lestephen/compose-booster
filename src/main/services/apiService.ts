@@ -309,21 +309,24 @@ Mock AI Assistant`;
 
   /**
    * Fetch available models from OpenRouter API
+   * Note: The /models endpoint is public but we include auth for consistency
    */
   async getAvailableModels(apiKey: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
     if (this.useMock) {
-      // Return mock models for development
+      // Return mock models for development with context_length
       return {
         success: true,
         data: [
-          { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', pricing: { prompt: '0.000015', completion: '0.000075' } },
-          { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', pricing: { prompt: '0.00001', completion: '0.00003' } },
-          { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', pricing: { prompt: '0.0000008', completion: '0.0000008' } },
+          { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', context_length: 200000, pricing: { prompt: '0.000015', completion: '0.000075' } },
+          { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', context_length: 128000, pricing: { prompt: '0.00001', completion: '0.00003' } },
+          { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', context_length: 131072, pricing: { prompt: '0.0000008', completion: '0.0000008' } },
         ],
       };
     }
 
     try {
+      console.log('[ApiService] Fetching models from OpenRouter...');
+
       const response = await axios.get(
         'https://openrouter.ai/api/v1/models',
         {
@@ -332,23 +335,35 @@ Mock AI Assistant`;
             'HTTP-Referer': OPENROUTER_REFERER,
             'X-Title': APP_NAME,
           },
-          timeout: 10000,
+          timeout: 15000, // Increased timeout for large model list
         }
       );
 
       if (response.data && response.data.data) {
+        console.log(`[ApiService] Successfully fetched ${response.data.data.length} models`);
         return { success: true, data: response.data.data };
       }
 
+      console.error('[ApiService] Invalid response structure:', JSON.stringify(response.data).substring(0, 200));
       return { success: false, error: 'Invalid response from OpenRouter API' };
     } catch (error) {
       const axiosError = error as AxiosError;
+
+      console.error('[ApiService] Model fetch error:', {
+        code: axiosError.code,
+        status: axiosError.response?.status,
+        message: axiosError.message,
+      });
 
       if (axiosError.response?.status === 401) {
         return { success: false, error: 'Invalid API key' };
       }
 
-      return { success: false, error: 'Failed to fetch models. Check your connection.' };
+      if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
+        return { success: false, error: 'Request timed out. OpenRouter may be slow to respond.' };
+      }
+
+      return { success: false, error: `Failed to fetch models: ${axiosError.message}` };
     }
   }
 

@@ -20,6 +20,7 @@ export const DEFAULT_MODELS: Model[] = [
     name: 'Claude 4.5 Sonnet',
     cost: 'Medium',
     costDetails: { input: '$3.00/M', output: '$15.00/M' },
+    contextLength: 200000,
     enabled: true,
     isDefault: true
   },
@@ -28,6 +29,7 @@ export const DEFAULT_MODELS: Model[] = [
     name: 'Gemini 3 Pro Preview',
     cost: 'Low',
     costDetails: { input: '$0.35/M', output: '$1.05/M' },
+    contextLength: 1000000,
     enabled: true,
     isDefault: true
   },
@@ -36,6 +38,7 @@ export const DEFAULT_MODELS: Model[] = [
     name: 'GPT 5',
     cost: 'High',
     costDetails: { input: '$10.00/M', output: '$30.00/M' },
+    contextLength: 128000,
     enabled: true,
     isDefault: true
   },
@@ -233,6 +236,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     clearHistoryOnExit: false,
     includeClosingAndSignature: false,
     showDeveloperTools: false,
+    outputFormat: 'plain',
   },
   windowBounds: {
     width: MAIN_WINDOW_DEFAULT_WIDTH,

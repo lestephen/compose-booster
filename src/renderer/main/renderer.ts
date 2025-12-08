@@ -15,7 +15,9 @@ import { QuickActionsManager } from './components/quickActions';
 import { HistoryManager } from './components/history';
 import { ResponseVersionManager } from './components/responseVersions';
 import { ThemeManager } from './utils/themeManager';
-import { ProcessEmailRequest, RegenerateRequest } from '../../shared/types';
+import { getClipboardContent } from './utils/outputFormatter';
+import { checkContextLimit } from './utils/contextEstimator';
+import { ProcessEmailRequest, RegenerateRequest, OutputFormat, Model, Prompt, StyleProfile } from '../../shared/types';
 
 class AppController {
   private textAreas: TextAreaManager;
@@ -220,7 +222,16 @@ class AppController {
         return;
       }
 
-      const result = await window.electronAPI.writeClipboard(output);
+      // Get the output format preference from config
+      const configResult = await window.electronAPI.getConfig();
+      const outputFormat: OutputFormat = configResult.success && configResult.data
+        ? (configResult.data.preferences.outputFormat || 'plain')
+        : 'plain';
+
+      // Format the output based on preference
+      const clipboardContent = getClipboardContent(output, outputFormat);
+
+      const result = await window.electronAPI.writeClipboard(clipboardContent);
       if (result.success) {
         // Show confirmation
         this.copyConfirmation.classList.remove('hidden');
@@ -243,6 +254,12 @@ class AppController {
     }
 
     const selection = this.customCombo.getSelection();
+
+    // Check context limit before processing
+    const contextCheck = await this.checkAndWarnContextLimit(input, selection);
+    if (!contextCheck) {
+      return; // User cancelled
+    }
 
     // Clear response versions when starting a new process
     this.responseVersions.clear();
@@ -499,6 +516,49 @@ class AppController {
 
   private hideVersionNavigator(): void {
     this.versionNavigator.classList.add('hidden');
+  }
+
+  /**
+   * Check context limit and warn user if approaching limits
+   * Returns true to proceed, false to cancel
+   */
+  private async checkAndWarnContextLimit(
+    input: string,
+    selection: { model: string; prompt: string; tone: string; style?: string }
+  ): Promise<boolean> {
+    try {
+      const configResult = await window.electronAPI.getConfig();
+      if (!configResult.success || !configResult.data) {
+        return true; // Proceed if can't get config
+      }
+
+      const config = configResult.data;
+
+      // Find the selected model, prompt, and style
+      const model = config.models.find((m: Model) => m.id === selection.model);
+      const prompt = config.prompts[selection.prompt];
+      const style = selection.style ? config.styles.find((s: StyleProfile) => s.id === selection.style) : undefined;
+
+      if (!model) {
+        return true; // Proceed if model not found
+      }
+
+      const warning = checkContextLimit(input, prompt, style, model);
+
+      if (warning.type === 'critical') {
+        const message = `${warning.message}\n\nSuggestions:\n- ${warning.suggestions.join('\n- ')}\n\nDo you want to proceed anyway?`;
+        return confirm(message);
+      }
+
+      if (warning.type === 'warning') {
+        // Just show a status message for warnings, don't block
+        this.statusBar.setWarning(warning.message);
+      }
+
+      return true;
+    } catch {
+      return true; // Proceed on error
+    }
   }
 }
 

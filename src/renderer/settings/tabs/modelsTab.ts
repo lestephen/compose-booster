@@ -310,6 +310,7 @@ export class ModelsTab {
         input: `$${(parseFloat(selectedModel.pricing?.prompt || '0') * 1000000).toFixed(2)}/M`,
         output: `$${(parseFloat(selectedModel.pricing?.completion || '0') * 1000000).toFixed(2)}/M`,
       },
+      contextLength: selectedModel.context_length || undefined,
       enabled: true,
     };
 

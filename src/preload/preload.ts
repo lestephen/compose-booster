@@ -44,8 +44,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readClipboard: (): Promise<IpcResponse<string>> =>
     ipcRenderer.invoke(IPC_CHANNELS.CLIPBOARD_READ),
 
-  writeClipboard: (text: string): Promise<IpcResponse> =>
-    ipcRenderer.invoke(IPC_CHANNELS.CLIPBOARD_WRITE, text),
+  writeClipboard: (content: { text: string; html?: string }): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CLIPBOARD_WRITE, content),
 
   // Theme
   getTheme: (): Promise<IpcResponse<string>> =>
@@ -97,7 +97,7 @@ declare global {
       processEmail: (request: ProcessEmailRequest) => Promise<ApiResponse>;
       regenerate: (request: RegenerateRequest) => Promise<ApiResponse>;
       readClipboard: () => Promise<IpcResponse<string>>;
-      writeClipboard: (text: string) => Promise<IpcResponse>;
+      writeClipboard: (content: { text: string; html?: string }) => Promise<IpcResponse>;
       getTheme: () => Promise<IpcResponse<string>>;
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<IpcResponse>;
       openSettings: () => Promise<void>;

@@ -410,10 +410,18 @@ function registerClipboardHandlers(): void {
     }
   });
 
-  // Write to clipboard
-  ipcMain.handle(IPC_CHANNELS.CLIPBOARD_WRITE, async (event, text: string) => {
+  // Write to clipboard (supports text and HTML)
+  ipcMain.handle(IPC_CHANNELS.CLIPBOARD_WRITE, async (event, content: { text: string; html?: string }) => {
     try {
-      clipboard.writeText(text);
+      if (content.html) {
+        // Write both HTML and plain text for rich-text support
+        clipboard.write({
+          text: content.text,
+          html: content.html,
+        });
+      } else {
+        clipboard.writeText(content.text);
+      }
       return { success: true } as IpcResponse;
     } catch (error) {
       return {

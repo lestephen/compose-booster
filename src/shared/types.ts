@@ -14,6 +14,7 @@ export interface Model {
     input: string;
     output: string;
   };
+  contextLength?: number; // Maximum context window size in tokens
   enabled: boolean;
   isDefault?: boolean;
 }
@@ -56,6 +57,8 @@ export interface LastUsed {
   style: string;
 }
 
+export type OutputFormat = 'plain' | 'markdown' | 'html';
+
 export interface Preferences {
   theme: 'light' | 'dark' | 'system';
   fontSize: number;
@@ -64,6 +67,7 @@ export interface Preferences {
   clearHistoryOnExit: boolean;
   includeClosingAndSignature: boolean;
   showDeveloperTools: boolean;
+  outputFormat: OutputFormat;
 }
 
 export interface WindowBounds {

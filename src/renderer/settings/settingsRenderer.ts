@@ -7,7 +7,7 @@
 // Settings Window Renderer
 
 import './settingsStyles.css';
-import { AppConfig } from '../../shared/types';
+import { AppConfig, OutputFormat } from '../../shared/types';
 import { TabManager } from './components/tabManager';
 import { ModelsTab } from './tabs/modelsTab';
 import { PromptsTab } from './tabs/promptsTab';
@@ -39,6 +39,7 @@ class SettingsController {
   private saveWindowPositionCheckbox: HTMLInputElement;
   private clearHistoryOnExitCheckbox: HTMLInputElement;
   private includeClosingAndSignatureCheckbox: HTMLInputElement;
+  private outputFormatSelect: HTMLSelectElement;
   private saveBtn: HTMLButtonElement;
   private cancelBtn: HTMLButtonElement;
   private openRouterLink: HTMLAnchorElement;
@@ -54,6 +55,7 @@ class SettingsController {
     this.saveWindowPositionCheckbox = document.getElementById('saveWindowPosition') as HTMLInputElement;
     this.clearHistoryOnExitCheckbox = document.getElementById('clearHistoryOnExit') as HTMLInputElement;
     this.includeClosingAndSignatureCheckbox = document.getElementById('includeClosingAndSignature') as HTMLInputElement;
+    this.outputFormatSelect = document.getElementById('outputFormat') as HTMLSelectElement;
     this.saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     this.cancelBtn = document.getElementById('cancelBtn') as HTMLButtonElement;
     this.openRouterLink = document.getElementById('openRouterLink') as HTMLAnchorElement;
@@ -192,6 +194,7 @@ class SettingsController {
     this.saveWindowPositionCheckbox.addEventListener('change', () => this.markDirty());
     this.clearHistoryOnExitCheckbox.addEventListener('change', () => this.markDirty());
     this.includeClosingAndSignatureCheckbox.addEventListener('change', () => this.markDirty());
+    this.outputFormatSelect.addEventListener('change', () => this.markDirty());
   }
 
   private populateForm(): void {
@@ -212,6 +215,9 @@ class SettingsController {
     this.saveWindowPositionCheckbox.checked = this.config.preferences.saveWindowPosition;
     this.clearHistoryOnExitCheckbox.checked = this.config.preferences.clearHistoryOnExit;
     this.includeClosingAndSignatureCheckbox.checked = this.config.preferences.includeClosingAndSignature;
+
+    // Output format
+    this.outputFormatSelect.value = this.config.preferences.outputFormat || 'plain';
   }
 
   private applyFontSize(size: number): void {
@@ -256,6 +262,7 @@ class SettingsController {
     this.config.preferences.saveWindowPosition = this.saveWindowPositionCheckbox.checked;
     this.config.preferences.clearHistoryOnExit = this.clearHistoryOnExitCheckbox.checked;
     this.config.preferences.includeClosingAndSignature = this.includeClosingAndSignatureCheckbox.checked;
+    this.config.preferences.outputFormat = this.outputFormatSelect.value as OutputFormat;
 
     this.saveBtn.disabled = true;
     this.saveBtn.textContent = 'Saving...';
