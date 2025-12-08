@@ -50,6 +50,9 @@
         <div class="section-header">
           <h2>AI Response</h2>
           <div class="actions">
+            <button id="regenerateBtn" class="btn btn-secondary btn-regenerate hidden" title="Generate a different response">
+              👎 Try Again
+            </button>
             <button id="copyBtn" class="btn btn-primary" title="Ctrl/Cmd+Shift+C">
               📄 Copy
             </button>
@@ -64,7 +67,14 @@
           class="email-textarea"
           readonly
         ></textarea>
-        <div id="copyConfirmation" class="copy-confirmation hidden">✓ Copied!</div>
+        <div class="output-footer">
+          <div id="copyConfirmation" class="copy-confirmation hidden">✓ Copied!</div>
+          <div id="versionNavigator" class="version-navigator hidden">
+            <button id="prevVersionBtn" class="btn-version-nav" title="Previous version" disabled>◀</button>
+            <span id="versionIndicator" class="version-indicator">1 of 1</span>
+            <button id="nextVersionBtn" class="btn-version-nav" title="Next version" disabled>▶</button>
+          </div>
+        </div>
       </div>
 
     </div>

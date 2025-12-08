@@ -9,7 +9,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../main/ipc/channels';
-import { ProcessEmailRequest, AppConfig, IpcResponse, ApiResponse } from '../shared/types';
+import { ProcessEmailRequest, RegenerateRequest, AppConfig, IpcResponse, ApiResponse } from '../shared/types';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // API Operations
   processEmail: (request: ProcessEmailRequest): Promise<ApiResponse> =>
     ipcRenderer.invoke(IPC_CHANNELS.API_PROCESS_EMAIL, request),
+
+  regenerate: (request: RegenerateRequest): Promise<ApiResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.API_REGENERATE, request),
 
   // Clipboard
   readClipboard: (): Promise<IpcResponse<string>> =>
@@ -92,6 +95,7 @@ declare global {
       importConfig: () => Promise<IpcResponse>;
       testApiKey: (apiKey: string) => Promise<IpcResponse>;
       processEmail: (request: ProcessEmailRequest) => Promise<ApiResponse>;
+      regenerate: (request: RegenerateRequest) => Promise<ApiResponse>;
       readClipboard: () => Promise<IpcResponse<string>>;
       writeClipboard: (text: string) => Promise<IpcResponse>;
       getTheme: () => Promise<IpcResponse<string>>;

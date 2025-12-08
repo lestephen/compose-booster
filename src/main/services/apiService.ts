@@ -26,17 +26,19 @@ class ApiService {
 
   /**
    * Process email through OpenRouter API
+   * @param temperature - Optional temperature for response variety (0.0-2.0, default undefined uses model default)
    */
   async processEmail(
     apiKey: string,
     model: string,
-    finalPrompt: string
+    finalPrompt: string,
+    temperature?: number
   ): Promise<ApiResponse> {
     if (this.useMock) {
-      return this.mockResponse(finalPrompt);
+      return this.mockResponse(finalPrompt, temperature);
     }
 
-    return this.callOpenRouter(apiKey, model, finalPrompt);
+    return this.callOpenRouter(apiKey, model, finalPrompt, temperature);
   }
 
   /**
@@ -45,22 +47,30 @@ class ApiService {
   private async callOpenRouter(
     apiKey: string,
     model: string,
-    prompt: string
+    prompt: string,
+    temperature?: number
   ): Promise<ApiResponse> {
     const startTime = Date.now();
 
     try {
+      const requestBody: Record<string, unknown> = {
+        model,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      };
+
+      // Add temperature if specified
+      if (temperature !== undefined) {
+        requestBody.temperature = temperature;
+      }
+
       const response = await axios.post(
         OPENROUTER_API_URL,
-        {
-          model,
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-        },
+        requestBody,
         {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -88,11 +98,16 @@ class ApiService {
       // Extract usage information if available
       const usage = response.data.usage;
 
+      // Extract cost - OpenRouter returns this in usage.total_cost or as a separate field
+      // Cost is in USD
+      const cost = usage?.total_cost ?? response.data.cost ?? undefined;
+
       return {
         success: true,
         data: content,
         model,
         time,
+        cost,
         usage: usage
           ? {
               promptTokens: usage.prompt_tokens || 0,
@@ -205,15 +220,17 @@ class ApiService {
   /**
    * Mock API response for development
    */
-  private async mockResponse(prompt: string): Promise<ApiResponse> {
+  private async mockResponse(prompt: string, temperature?: number): Promise<ApiResponse> {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
+    const tempInfo = temperature !== undefined ? `Temperature: ${temperature}` : 'Temperature: default';
     const mockContent = `[MOCK RESPONSE]
 
 This is a simulated AI response for development purposes.
 
 Your original prompt was ${prompt.length} characters long.
+${tempInfo}
 
 In production, this would be replaced with the actual OpenRouter API response.
 
