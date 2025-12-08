@@ -25,7 +25,7 @@ const STORE_ASSETS = [
   { name: 'Square150x150Logo.png', size: 150 },  // Medium tile
   { name: 'Square44x44Logo.png', size: 44 },     // App list icon
   { name: 'Wide310x150Logo.png', width: 310, height: 150 }, // Wide tile
-  { name: 'LargeTile.png', size: 310 },          // Large tile (Square310x310Logo)
+  { name: 'LargeTile.png', size: 300 },          // Large tile (300x300 for Store)
   { name: 'SmallTile.png', size: 71 },           // Small tile (Square71x71Logo)
 ];
 

@@ -37,8 +37,9 @@ const config: ForgeConfig = {
       packageName: 'ComposeBooster',
       packageDisplayName: 'Compose Booster',
       packageVersion: '1.0.0.0', // Must be x.x.x.x format for Store
-      // Windows version requirements
-      windowsKit: undefined, // Will auto-detect
+      // For Store submission - don't sign with dev cert, produce unsigned package
+      makeVersionWinStoreCompatible: true,
+      devCert: undefined,
     }),
     new MakerZIP({}, ['darwin']),
     new MakerRpm({}),

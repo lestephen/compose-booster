@@ -14,7 +14,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "icons": "node scripts/generate-icons.js"
+    "icons": "node scripts/generate-icons.js",
+    "make:store": "electron-forge make --targets=@electron-forge/maker-appx && node scripts/fix-appx-manifest.js"
   },
   "keywords": [
     "email",
