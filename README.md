@@ -10,6 +10,33 @@ Compose Booster helps you write better emails faster using advanced AI models. P
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/images/main-light.png" alt="Compose Booster - Light Theme" width="700">
+</p>
+
+<p align="center">
+  <em>Main interface with AI-improved email output (Light Theme)</em>
+</p>
+
+<details>
+<summary>More Screenshots</summary>
+
+### Dark Theme
+<p align="center">
+  <img src="docs/images/main-dark.png" alt="Compose Booster - Dark Theme" width="700">
+</p>
+
+### Settings
+<p align="center">
+  <img src="docs/images/settings.png" alt="Settings Window" width="600">
+</p>
+
+</details>
+
+---
+
 ## ✨ Features
 
 ### 🚀 Quick Actions
