@@ -84,20 +84,21 @@ Providers to support:
 
 ### Writing Style Profiles
 
-- [ ] **Style Profile Feature**
-  - New "Styles" tab in Settings (or extend Tones)
+- [x] **Style Profile Feature** ✅
+  - New "Styles" tab in Settings
   - Each style profile contains:
     - Name (e.g., "My Professional Style", "Casual Me")
     - Description/prompt addendum
-    - Few-shot examples (optional)
+    - Sample emails for few-shot learning
   - Dropdown in main UI to select active style
   - Style prompt appended to system prompt
 
-- [ ] **Style Profile Editor**
+- [x] **Style Profile Editor** ✅
   - Text area for style description
-  - Example pairs: "Original → Styled" format
-  - Preview/test functionality
-  - Import/export style profiles
+  - Sample emails for teaching AI your writing style
+  - Add/edit/delete sample emails
+  - Context warning when samples approach model limits
+  - Import/export via settings export feature
 
 ### Response Alternatives
 
@@ -115,14 +116,12 @@ Providers to support:
 ### Technical Implementation
 
 ```typescript
+// Implemented in src/shared/types.ts
 interface StyleProfile {
   id: string;
   name: string;
   description: string;  // Added to system prompt
-  examples?: Array<{
-    original: string;
-    styled: string;
-  }>;
+  samples?: string[];   // Example emails for few-shot learning
   isDefault?: boolean;
 }
 

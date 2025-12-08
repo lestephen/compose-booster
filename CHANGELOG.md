@@ -8,11 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Style Profiles** - Create custom writing style profiles with example emails for AI to match your voice
+- **Output Format Options** - Choose clipboard output format: Plain Text, Markdown, or HTML (rich text)
+- **Context Window Warnings** - Visual alerts when input approaches model's context limit (80% warning, 95% critical)
 - **Response Regeneration** - "Try Again" button to regenerate responses with higher temperature for more variety
 - **Response Version Navigator** - Browse between multiple response versions when regenerating
 - Automated screenshot generation for app stores (`npm run screenshots`)
 - README screenshots with high-resolution images
 - Copyright header enforcement script (`npm run check-headers`)
+
+### Changed
+- Model list now filtered to text-output models only (excludes image generation models)
+- Model list cached for 5 minutes with manual refresh button
+- Improved model retrieval logging and error handling
 
 ## [1.0.0] - 2025-12-06
 

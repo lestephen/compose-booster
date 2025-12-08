@@ -45,17 +45,21 @@ Compose Booster helps you write better emails faster using advanced AI models. P
 - **Configurable presets** - customize your quick actions to match your workflow
 
 ### 🎯 Smart Email Processing
-- **Multiple AI models** - Choose from Claude, GPT-4, Gemini, and more
+- **Multiple AI models** - Choose from Claude, GPT-4, Gemini, and more (text models only)
 - **Flexible prompts** - Improve tone, fix grammar, shorten, expand, or create custom prompts
 - **Tone control** - Switch between professional, friendly, neutral, and other tones
+- **Style Profiles** - Train the AI to match your personal writing style with example emails
 - **Signature handling** - Option to preserve your existing email signature
 
 ### ⚙️ Powerful Features
 - **Dark mode** - Easy on the eyes with light, dark, or system theme
 - **Clipboard integration** - Quick paste and copy with keyboard shortcuts
+- **Output format options** - Copy as plain text, Markdown, or HTML for rich text pasting
+- **Context warnings** - Alerts when input is approaching the model's context limit
+- **Response regeneration** - Try Again button to get alternative responses
 - **History/Undo** - Restore previous inputs with Ctrl+Z
 - **Character counter** - Track your email length in real-time
-- **Fully customizable** - Configure models, prompts, tones, and quick actions
+- **Fully customizable** - Configure models, prompts, tones, styles, and quick actions
 
 ---
 
@@ -134,11 +138,13 @@ Access settings via **File → Settings** or press `Ctrl/Cmd + ,`
 - **API Key** - Configure your OpenRouter API key
 - **Theme** - Choose Light, Dark, or System theme
 - **Font Size** - Adjust interface text size (10-20px)
+- **Output Format** - Choose clipboard format (Plain Text, Markdown, or HTML)
 
 ### Models
 - Enable/disable AI models
-- Add custom models
+- Add custom models from OpenRouter (text models only)
 - Reorder your model list
+- Refresh models button with 5-minute cache
 
 ### Prompts
 - Edit default prompt templates
@@ -148,6 +154,11 @@ Access settings via **File → Settings** or press `Ctrl/Cmd + ,`
 ### Tones
 - Customize tone descriptions
 - Add your own tone options
+
+### Styles
+- Create personal writing style profiles
+- Add example emails to teach the AI your style
+- Select active style in main window dropdown
 
 ### Quick Actions
 - Configure your 3 quick action buttons

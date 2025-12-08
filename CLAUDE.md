@@ -216,7 +216,14 @@ npm run make
 
 - Available on GitHub Releases (Windows x64 unsigned)
 - Microsoft Store submission pending approval
-- See ROADMAP.md for planned features
+
+**Post-release features in development:**
+- Style Profiles - Custom writing styles with example emails
+- Output Format Options - Plain text, Markdown, or HTML clipboard output
+- Context Window Warnings - Visual alerts for large inputs
+- Response Regeneration - Try Again button with version navigation
+
+See ROADMAP.md for planned features and CHANGELOG.md for version history.
 
 ## File Headers
 
