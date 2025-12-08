@@ -31,8 +31,8 @@ const config: ForgeConfig = {
       // App metadata
       applicationDescription: 'AI-powered email composition assistant - improve, polish, and customize your emails with advanced AI models',
       backgroundColor: '#f18138', // Orange from logo
-      // Assets
-      assets: './assets/store',
+      // Assets - use appx folder for APPX package tiles (separate from store display images)
+      assets: './assets/appx',
       // Package settings
       packageName: 'ComposeBooster',
       packageDisplayName: 'Compose Booster',
