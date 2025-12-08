@@ -19,6 +19,7 @@ export const IPC_CHANNELS = {
 
   // API Operations
   API_PROCESS_EMAIL: 'api:process-email',
+  API_REGENERATE: 'api:regenerate',
   API_CANCEL: 'api:cancel',
   API_GET_MODELS: 'api:get-models',
 

@@ -101,16 +101,16 @@ Providers to support:
 
 ### Response Alternatives
 
-- [ ] **Thumbs Down / Regenerate**
+- [x] **Thumbs Down / Regenerate** ✅
   - Add thumbs down button next to output
   - On click: regenerate with higher temperature
   - Store multiple versions in memory
   - Show version selector: "Response 1 of 3" with arrows
 
-- [ ] **Response History**
-  - Keep last N responses for current session
-  - Navigate between versions
-  - Compare side-by-side (optional)
+- [x] **Response History** ✅
+  - Keep last N responses for current session (up to 10)
+  - Navigate between versions with prev/next buttons
+  - ~~Compare side-by-side (optional)~~ (deferred)
 
 ### Technical Implementation
 

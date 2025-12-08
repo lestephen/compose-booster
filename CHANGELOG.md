@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Response Regeneration** - "Try Again" button to regenerate responses with higher temperature for more variety
+- **Response Version Navigator** - Browse between multiple response versions when regenerating
 - Automated screenshot generation for app stores (`npm run screenshots`)
 - README screenshots with high-resolution images
 - Copyright header enforcement script (`npm run check-headers`)

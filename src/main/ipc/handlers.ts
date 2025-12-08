@@ -12,7 +12,7 @@ import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
 import { closeSettingsWindow } from '../windows/settingsWindow';
-import { ProcessEmailRequest, IpcResponse, AppConfig } from '../../shared/types';
+import { ProcessEmailRequest, RegenerateRequest, IpcResponse, AppConfig } from '../../shared/types';
 import * as fs from 'fs';
 
 /**
@@ -258,6 +258,77 @@ function registerApiHandlers(): void {
       if (result.success) {
         configService.updateLastUsed(model, prompt, tone);
       }
+
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          code: 'UNKNOWN_ERROR',
+        },
+      };
+    }
+  });
+
+  // Regenerate response with higher temperature
+  ipcMain.handle(IPC_CHANNELS.API_REGENERATE, async (event, request: RegenerateRequest) => {
+    try {
+      const { input, model, prompt, tone, temperature } = request;
+
+      // Validate input
+      if (!input || input.trim() === '') {
+        return {
+          success: false,
+          error: { message: 'Please enter some text to process', code: 'EMPTY_INPUT' },
+        };
+      }
+
+      // Get config
+      const config = configService.getConfig();
+
+      // Validate API key (skip check in mock mode)
+      const isMockMode = process.env.MOCK_API === 'true';
+      if (!isMockMode && (!config.apiKey || config.apiKey.trim() === '')) {
+        return {
+          success: false,
+          error: {
+            message: 'API key not configured. Please set your OpenRouter API key in Settings.',
+            code: 'NO_API_KEY',
+            action: 'OPEN_SETTINGS',
+          },
+        };
+      }
+
+      // Get prompt template
+      const promptTemplate = config.prompts[prompt];
+      if (!promptTemplate) {
+        return {
+          success: false,
+          error: { message: `Prompt "${prompt}" not found`, code: 'INVALID_PROMPT' },
+        };
+      }
+
+      // Get tone
+      const toneObj = config.tones.find((t) => t.id === tone);
+
+      // Build final prompt
+      const finalPrompt = apiService.buildPrompt(
+        promptTemplate.text,
+        toneObj,
+        input,
+        config.preferences.includeClosingAndSignature
+      );
+
+      // Make API call with temperature
+      const result = await apiService.processEmail(config.apiKey, model, finalPrompt, temperature);
+
+      // Update statistics if successful
+      if (result.success && result.cost) {
+        configService.incrementStatistics(result.cost);
+      }
+
+      // Note: We don't update lastUsed for regenerate since we want to preserve the original settings
 
       return result;
     } catch (error) {

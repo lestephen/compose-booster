@@ -91,6 +91,14 @@ export interface ProcessEmailRequest {
   tone: string;
 }
 
+export interface RegenerateRequest {
+  input: string;
+  model: string;
+  prompt: string;
+  tone: string;
+  temperature: number;
+}
+
 export interface ApiUsage {
   promptTokens: number;
   completionTokens: number;
@@ -133,4 +141,16 @@ export interface HistoryItem {
   input: string;
   output: string;
   timestamp: number;
+}
+
+// Response Version (for regenerate feature)
+export interface ResponseVersion {
+  id: string;
+  content: string;
+  model: string;
+  prompt: string;
+  tone: string;
+  temperature: number;
+  timestamp: number;
+  cost?: number;
 }
