@@ -288,18 +288,24 @@ git checkout -b feature/my-feature-name
 git add .
 git commit -m "Description of changes"
 
-# 3. Merge back to master when complete
+# 3. Push branch to remote for review on GitHub
+git push -u origin feature/my-feature-name
+
+# 4. After review/approval, merge back to master
 git checkout master
 git merge feature/my-feature-name --no-edit
 
-# 4. Push to remote
+# 5. Push merged master to remote
 git push
 ```
+
+**Always push feature branches to remote** - the user prefers reviewing branches on GitHub before merging.
 
 This ensures:
 - Master remains stable and deployable
 - Changes can be easily rolled back if needed
 - Clean history with logical groupings of changes
+- Code review opportunity before merging
 
 ## Notes for AI Assistants
 
