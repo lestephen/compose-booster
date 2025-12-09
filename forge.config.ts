@@ -36,13 +36,14 @@ const config: ForgeConfig = {
         ? './build/entitlements.mas.inherit.plist'
         : './build/entitlements.mac.plist',
       'hardened-runtime': !isMAS,        // Hardened runtime for notarization (not MAS)
+      strictVerify: false,               // Skip pre-sign verification (Electron has adhoc signature)
     } : undefined,
-    // Notarization for GitHub distribution (not needed for MAS)
-    osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
-      appleId: process.env.APPLE_ID || '',
-      appleIdPassword: process.env.APPLE_ID_PASSWORD || '',
-      teamId: 'NBW65ZYT36',
-    } : undefined,
+    // Notarization disabled - will use xcrun notarytool manually
+    // osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
+    //   appleId: process.env.APPLE_ID || '',
+    //   appleIdPassword: process.env.APPLE_ID_PASSWORD || '',
+    //   teamId: 'NBW65ZYT36',
+    // } : undefined,
   },
   buildIdentifier: process.arch,
   rebuildConfig: {},
@@ -108,17 +109,16 @@ const config: ForgeConfig = {
         },
       ],
     }),
-    // Fuses are used to enable/disable various Electron functionality
-    // at package time, before code signing the application
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
-    }),
+    // Fuses temporarily disabled to debug signing issue
+    // new FusesPlugin({
+    //   version: FuseVersion.V1,
+    //   [FuseV1Options.RunAsNode]: false,
+    //   [FuseV1Options.EnableCookieEncryption]: true,
+    //   [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+    //   [FuseV1Options.EnableNodeCliInspectArguments]: false,
+    //   [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+    //   [FuseV1Options.OnlyLoadAppFromAsar]: true,
+    // }),
   ],
 };
 
