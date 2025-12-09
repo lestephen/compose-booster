@@ -146,9 +146,14 @@ function main() {
 
   // Add Square310x310Logo (Large tile) if not present
   if (!manifest.includes('Square310x310Logo')) {
+    // Handle both self-closing (/>) and regular (>) tags
     manifest = manifest.replace(
-      /(<uap:DefaultTile[^>]*)(>)/,
-      '$1 Square310x310Logo="assets\\Square310x310Logo.png"$2'
+      /(<uap:DefaultTile\s+[^>]*?)(\/?>)/,
+      (match, before, ending) => {
+        // Remove trailing whitespace before the ending
+        const trimmed = before.trimEnd();
+        return `${trimmed} Square310x310Logo="assets\\Square310x310Logo.png"${ending}`;
+      }
     );
     console.log('  ✓ Added Square310x310Logo → assets\\Square310x310Logo.png');
   } else {
