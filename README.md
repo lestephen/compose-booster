@@ -193,6 +193,7 @@ Access settings via **File → Settings** or press `Ctrl/Cmd + ,`
 
 ## 🆘 Support & Help
 
+- **User Guide:** [USER_GUIDE.md](USER_GUIDE.md) - Complete documentation for all features
 - **Documentation:** [Project Wiki](https://github.com/lestephen/compose-booster/wiki)
 - **Bug Reports:** [GitHub Issues](https://github.com/lestephen/compose-booster/issues)
 - **Troubleshooting:** See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)

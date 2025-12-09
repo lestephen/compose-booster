@@ -8,6 +8,7 @@
 
 import './settingsStyles.css';
 import { AppConfig, OutputFormat } from '../../shared/types';
+import { HELP_LINKS, HelpLinkKey } from '../../shared/helpLinks';
 import { TabManager } from './components/tabManager';
 import { ModelsTab } from './tabs/modelsTab';
 import { PromptsTab } from './tabs/promptsTab';
@@ -195,6 +196,22 @@ class SettingsController {
     this.clearHistoryOnExitCheckbox.addEventListener('change', () => this.markDirty());
     this.includeClosingAndSignatureCheckbox.addEventListener('change', () => this.markDirty());
     this.outputFormatSelect.addEventListener('change', () => this.markDirty());
+
+    // Help buttons - open documentation in browser
+    this.setupHelpButtons();
+  }
+
+  private setupHelpButtons(): void {
+    const helpButtons = document.querySelectorAll<HTMLButtonElement>('.help-btn[data-help]');
+    helpButtons.forEach((button) => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const helpKey = button.getAttribute('data-help') as HelpLinkKey;
+        if (helpKey && HELP_LINKS[helpKey]) {
+          window.electronAPI.openExternal(HELP_LINKS[helpKey]);
+        }
+      });
+    });
   }
 
   private populateForm(): void {

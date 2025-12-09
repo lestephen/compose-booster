@@ -136,6 +136,17 @@ npm run make
 - **Renderer changes** (HTML, CSS, TS in `renderer/`) → Auto-reload ✅
 - **Main process changes** (TS in `main/`) → Requires manual restart ⚠️
 
+### After Switching Branches
+
+Always run `npm install` after switching branches to ensure dependencies match:
+
+```bash
+git checkout <branch>
+npm install
+```
+
+Different branches may have different dependencies in package.json. Since node_modules is not tracked by git, switching branches can leave you with mismatched dependencies.
+
 ### Testing
 
 - Use mock mode to avoid consuming API credits during development
