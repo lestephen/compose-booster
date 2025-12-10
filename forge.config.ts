@@ -10,7 +10,8 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 // Determine if this is a Mac App Store build
-const isMAS = process.env.MAS_BUILD === 'true';
+// Check both environment variable and command line argument
+const isMAS = process.env.MAS_BUILD === 'true' || process.argv.includes('--platform=mas');
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -37,6 +38,7 @@ const config: ForgeConfig = {
         : './build/entitlements.mac.plist',
       'hardened-runtime': !isMAS,        // Hardened runtime for notarization (not MAS)
       strictVerify: false,               // Skip pre-sign verification (Electron has adhoc signature)
+      provisioningProfile: isMAS ? './build/embedded.provisionprofile' : undefined,
     } : undefined,
     // Notarization for GitHub distribution (not MAS)
     osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
@@ -71,7 +73,8 @@ const config: ForgeConfig = {
       makeVersionWinStoreCompatible: true,
       devCert: undefined,
     }),
-    new MakerZIP({}, ['darwin']),
+    new MakerZIP({}, ['darwin', 'mas']),
+    // DMG only for GitHub distribution (darwin), not for MAS
     new MakerDMG({
       name: 'Compose Booster',
       icon: './assets/icons/mac/icon.icns',

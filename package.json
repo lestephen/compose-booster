@@ -1,7 +1,7 @@
 {
   "name": "compose-booster",
   "productName": "Compose Booster",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AI-powered email composition assistant - improve, polish, and customize your emails with advanced AI models",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "icons": "node scripts/generate-icons.js",
     "make:store": "electron-forge make --targets=@electron-forge/maker-appx && node scripts/fix-appx-manifest.js",
     "make:mac": "electron-forge make --platform=darwin",
-    "make:mas": "MAS_BUILD=true electron-forge make --platform=darwin"
+    "make:mas": "electron-forge make --platform=mas"
   },
   "keywords": [
     "email",
@@ -52,7 +52,7 @@
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitest/ui": "^4.0.15",
-    "electron": "39.2.6",
+    "electron": "^39.2.6",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
     "icon-gen": "^5.0.0",
