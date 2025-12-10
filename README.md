@@ -68,14 +68,13 @@ Compose Booster helps you write better emails faster using advanced AI models. P
 ### Download
 
 **Windows:**
-- Download `compose-booster-1.0.0-Setup.exe` from [GitHub Releases](https://github.com/lestephen/compose-booster/releases)
-- Run the installer
-- **Note:** You may see a Windows SmartScreen warning (this is normal for unsigned software). Click "More info" → "Run anyway"
+- **Microsoft Store (Recommended):** [Get Compose Booster](https://apps.microsoft.com/detail/9PDL4HH5TWGL) - Signed by Microsoft, automatic updates
+- **Direct Download:** Get `Compose.Booster-1.0.0-Setup.exe` from [GitHub Releases](https://github.com/lestephen/compose-booster/releases)
+  - **Note:** You may see a Windows SmartScreen warning (this is normal for unsigned software). Click "More info" → "Run anyway"
 
 **macOS:**
-Coming soon to the App Store
-
-**Alternative:** Download the latest release from the [Releases page](https://github.com/lestephen/compose-booster/releases)
+- **Direct Download:** Get the DMG from [GitHub Releases](https://github.com/lestephen/compose-booster/releases) - Signed & Notarized by Apple
+- Coming soon to the Mac App Store
 
 ### Requirements
 

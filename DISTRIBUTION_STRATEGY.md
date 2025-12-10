@@ -12,8 +12,9 @@ This document outlines the distribution and code signing approach for this Elect
 - **Frequency**: As needed for bug fixes and features
 - **Advantage**: Immediate releases, no review process
 
-### 2. Microsoft Store (Windows)
+### 2. Microsoft Store (Live ✅)
 - **Platform**: Windows only
+- **Store Link**: [Compose Booster on Microsoft Store](https://apps.microsoft.com/detail/9PDL4HH5TWGL)
 - **Update Method**: Microsoft Store managed updates
 - **Frequency**: Major releases and significant updates
 - **Advantage**: Microsoft-signed, no SmartScreen warnings
@@ -255,13 +256,13 @@ Total: $19 one-time
 ### Initial Setup - Windows
 - [x] Configure Electron Forge for APPX builds
 - [x] Create fix-appx-manifest.js script for Store submission
-- [ ] Submit to Microsoft Store and get approval
+- [x] Submit to Microsoft Store and get approval - **APPROVED!** ✅
 
 ### Initial Setup - macOS (GitHub)
-- [ ] Generate Developer ID Application certificate
-- [ ] Configure code signing in Electron Forge
-- [ ] Set up notarization script
-- [ ] Test signed/notarized build
+- [x] Generate Developer ID Application certificate
+- [x] Configure code signing in Electron Forge
+- [x] Set up notarization script
+- [x] Test signed/notarized build
 
 ### Initial Setup - Mac App Store
 - [ ] Generate Apple Distribution certificate
@@ -271,20 +272,18 @@ Total: $19 one-time
 - [ ] Submit to Mac App Store and get approval
 
 ### Initial Setup - Auto-Updater
-- [ ] Implement distribution detection logic
+- [x] Implement distribution detection logic
 - [ ] Integrate electron-updater for GitHub builds
 - [ ] Disable auto-updater for store builds
 - [ ] Test auto-updater on both platforms
 
-### Each Release
-- [ ] Update version in `package.json`
-- [ ] Update CHANGELOG.md
-- [ ] Create git tag (e.g., `git tag v1.2.0`)
-- [ ] Build and test all distribution packages
-- [ ] Create GitHub release with assets
-- [ ] Submit to Microsoft Store via Partner Center
-- [ ] Submit to Mac App Store via App Store Connect
-- [ ] Monitor store certification status
+### v1.0.0 Release Status
+- [x] Update version in `package.json`
+- [x] Create git tag (v1.0.0)
+- [x] Build and test all distribution packages
+- [x] Create GitHub release with assets
+- [x] Submit to Microsoft Store via Partner Center - **APPROVED!** ✅
+- [ ] Submit to Mac App Store via App Store Connect (pending)
 - [ ] Test updates on all distribution channels
 
 ## Environment Variables
@@ -360,12 +359,12 @@ Consider upgrading to:
 
 **Distribution Matrix**:
 
-| Platform | Channel | Signed | Auto-Update | Cost |
-|----------|---------|--------|-------------|------|
-| Windows  | GitHub  | No     | Yes (electron-updater) | $0 |
-| Windows  | MS Store | Yes (by MS) | Yes (by Store) | $19 one-time |
-| macOS    | GitHub  | Yes (notarized) | Yes (electron-updater) | $99/year |
-| macOS    | Mac App Store | Yes (by Apple) | Yes (by Store) | Included in $99/year |
+| Platform | Channel | Signed | Auto-Update | Cost | Status |
+|----------|---------|--------|-------------|------|--------|
+| Windows  | GitHub  | No     | Yes (electron-updater) | $0 | ✅ Live |
+| Windows  | [MS Store](https://apps.microsoft.com/detail/9PDL4HH5TWGL) | Yes (by MS) | Yes (by Store) | $19 one-time | ✅ Live |
+| macOS    | GitHub  | Yes (notarized) | Yes (electron-updater) | $99/year | ✅ Live |
+| macOS    | Mac App Store | Yes (by Apple) | Yes (by Store) | Included in $99/year | ⏳ Pending |
 
 This approach provides:
 1. **Maximum reach** through both direct download and app stores
