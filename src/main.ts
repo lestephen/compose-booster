@@ -6,7 +6,8 @@
 
 // Main Process Entry Point for Compose Booster
 
-import { app, BrowserWindow, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, nativeImage } from 'electron';
+import * as path from 'path';
 import started from 'electron-squirrel-startup';
 import { createMainWindow, getMainWindow } from './main/windows/mainWindow';
 import { createSettingsWindow } from './main/windows/settingsWindow';
@@ -14,6 +15,8 @@ import { registerIpcHandlers } from './main/ipc/handlers';
 import { IPC_CHANNELS } from './main/ipc/channels';
 import { createApplicationMenu } from './main/services/menuService';
 import { configService } from './main/services/configService';
+import { updateService } from './main/services/updateService';
+import { UPDATE_CHECK_DELAY_MS } from './shared/constants';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -30,6 +33,14 @@ function rebuildMenu(): void {
         createSettingsWindow(mainWin);
       }
     },
+    onCheckForUpdates: () => {
+      // Open settings window to About tab when user clicks Check for Updates
+      const mainWin = getMainWindow();
+      if (mainWin) {
+        createSettingsWindow(mainWin);
+        // Note: The settings window will show update status in the About tab
+      }
+    },
     showDeveloperTools: config.preferences.showDeveloperTools,
   });
   Menu.setApplicationMenu(menu);
@@ -38,6 +49,50 @@ function rebuildMenu(): void {
 // Register all IPC handlers before creating windows
 app.whenReady().then(() => {
   registerIpcHandlers();
+
+  // Configure the macOS About panel and dock icon
+  if (process.platform === 'darwin') {
+    // Get the base path for assets
+    const assetsBase = app.isPackaged
+      ? process.resourcesPath
+      : path.join(app.getAppPath(), 'assets', 'icons');
+
+    // Use PNG for the About panel icon (more reliable than icns)
+    const iconPngPath = app.isPackaged
+      ? path.join(assetsBase, 'app', 'icon-256.png')  // Would need to copy this to resources
+      : path.join(assetsBase, 'png', 'icon-256.png');
+
+    // Create native image for the About panel
+    let aboutIcon: Electron.NativeImage | undefined;
+    try {
+      aboutIcon = nativeImage.createFromPath(iconPngPath);
+      if (aboutIcon.isEmpty()) {
+        aboutIcon = undefined;
+      }
+    } catch {
+      aboutIcon = undefined;
+    }
+
+    app.setAboutPanelOptions({
+      applicationName: 'Compose Booster',
+      applicationVersion: app.getVersion(),
+      version: '', // Hide the Electron version in parentheses
+      copyright: '© 2025 Stephen Le\nLicensed under MPL-2.0',
+      credits: 'Powered by OpenRouter API\nBuilt with Electron, TypeScript, and Vite',
+      website: 'https://github.com/lestephen/compose-booster',
+      ...(aboutIcon && !aboutIcon.isEmpty() ? { icon: aboutIcon } : {}),
+    });
+
+    // Set dock icon in development mode
+    if (!app.isPackaged && app.dock) {
+      try {
+        const pngPath = path.join(assetsBase, 'png', 'icon-256.png');
+        app.dock.setIcon(pngPath);
+      } catch {
+        // Silently ignore if icon fails to load
+      }
+    }
+  }
 
   // Register window management handlers
   ipcMain.handle(IPC_CHANNELS.WINDOW_OPEN_SETTINGS, () => {
@@ -58,8 +113,20 @@ app.whenReady().then(() => {
   // Create application menu with initial settings
   rebuildMenu();
 
+  // Initialize update service (will auto-skip for store distributions)
+  updateService.initialize();
+
   // Create main window
   createMainWindow();
+
+  // Check for updates silently on startup (after a delay to let app fully load)
+  if (updateService.isAvailable()) {
+    setTimeout(() => {
+      updateService.checkForUpdates().catch((err) => {
+        console.error('[Main] Startup update check failed:', err);
+      });
+    }, UPDATE_CHECK_DELAY_MS);
+  }
 });
 
 // Quit when all windows are closed, except on macOS

@@ -11,8 +11,9 @@ import { ipcMain, clipboard, dialog, BrowserWindow, shell } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
+import { updateService } from '../services/updateService';
 import { closeSettingsWindow } from '../windows/settingsWindow';
-import { ProcessEmailRequest, RegenerateRequest, IpcResponse, AppConfig } from '../../shared/types';
+import { ProcessEmailRequest, RegenerateRequest, IpcResponse, AppConfig, UpdateStatus } from '../../shared/types';
 import * as fs from 'fs';
 
 /**
@@ -36,6 +37,9 @@ export function registerIpcHandlers(): void {
 
   // Shell handlers
   registerShellHandlers();
+
+  // Update handlers
+  registerUpdateHandlers();
 }
 
 /**
@@ -506,6 +510,90 @@ function registerShellHandlers(): void {
           message: error instanceof Error ? error.message : 'Failed to open URL',
         },
       } as IpcResponse;
+    }
+  });
+}
+
+/**
+ * Update IPC handlers
+ */
+function registerUpdateHandlers(): void {
+  // Check if auto-update is available for this distribution
+  ipcMain.handle(IPC_CHANNELS.UPDATE_IS_AVAILABLE, async (): Promise<IpcResponse<boolean>> => {
+    try {
+      return { success: true, data: updateService.isAvailable() };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: error instanceof Error ? error.message : 'Failed to check update availability' },
+      };
+    }
+  });
+
+  // Get update info (current version, distribution channel, etc.)
+  ipcMain.handle(IPC_CHANNELS.UPDATE_GET_INFO, async (): Promise<IpcResponse<{
+    currentVersion: string;
+    distributionChannel: string;
+    autoUpdateAvailable: boolean;
+  }>> => {
+    try {
+      return { success: true, data: updateService.getUpdateInfo() };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: error instanceof Error ? error.message : 'Failed to get update info' },
+      };
+    }
+  });
+
+  // Check for updates
+  ipcMain.handle(IPC_CHANNELS.UPDATE_CHECK, async (): Promise<IpcResponse<UpdateStatus>> => {
+    try {
+      const status = await updateService.checkForUpdates();
+      return { success: true, data: status };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: error instanceof Error ? error.message : 'Failed to check for updates' },
+      };
+    }
+  });
+
+  // Download update
+  ipcMain.handle(IPC_CHANNELS.UPDATE_DOWNLOAD, async (): Promise<IpcResponse> => {
+    try {
+      await updateService.downloadUpdate();
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: error instanceof Error ? error.message : 'Failed to download update' },
+      };
+    }
+  });
+
+  // Install update and restart
+  ipcMain.handle(IPC_CHANNELS.UPDATE_INSTALL, async (): Promise<IpcResponse> => {
+    try {
+      updateService.quitAndInstall();
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: error instanceof Error ? error.message : 'Failed to install update' },
+      };
+    }
+  });
+
+  // Get current update status
+  ipcMain.handle(IPC_CHANNELS.UPDATE_GET_STATUS, async (): Promise<IpcResponse<UpdateStatus>> => {
+    try {
+      return { success: true, data: updateService.getStatus() };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: error instanceof Error ? error.message : 'Failed to get update status' },
+      };
     }
   });
 }

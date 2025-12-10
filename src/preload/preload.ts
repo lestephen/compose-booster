@@ -9,7 +9,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../main/ipc/channels';
-import { ProcessEmailRequest, RegenerateRequest, AppConfig, IpcResponse, ApiResponse } from '../shared/types';
+import { ProcessEmailRequest, RegenerateRequest, AppConfig, IpcResponse, ApiResponse, UpdateStatus } from '../shared/types';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -82,6 +82,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onConfigUpdated: (callback: () => void) => {
     ipcRenderer.on(IPC_CHANNELS.CONFIG_UPDATED, callback);
   },
+
+  // Updates (for main window notification banner)
+  getUpdateStatus: (): Promise<IpcResponse<UpdateStatus>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_GET_STATUS),
+
+  installUpdate: (): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_INSTALL),
+
+  onUpdateStatusChanged: (callback: (status: UpdateStatus) => void) => {
+    ipcRenderer.on(IPC_CHANNELS.UPDATE_STATUS_CHANGED, (_, status) => callback(status));
+  },
 });
 
 // TypeScript declaration for window.electronAPI
@@ -104,6 +115,10 @@ declare global {
       closeSettings: () => Promise<void>;
       onMenuEvent: (callback: (event: string) => void) => void;
       onConfigUpdated: (callback: () => void) => void;
+      // Updates
+      getUpdateStatus: () => Promise<IpcResponse<UpdateStatus>>;
+      installUpdate: () => Promise<IpcResponse>;
+      onUpdateStatusChanged: (callback: (status: UpdateStatus) => void) => void;
     };
   }
 }
