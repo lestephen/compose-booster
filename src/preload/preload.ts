@@ -58,6 +58,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeSettings: (): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.WINDOW_CLOSE_SETTINGS),
 
+  // Shell
+  openExternal: (url: string): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, url),
+
   // Menu Events (Renderer listens)
   onMenuEvent: (callback: (event: string) => void) => {
     const events = [
@@ -98,6 +102,7 @@ declare global {
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<IpcResponse>;
       openSettings: () => Promise<void>;
       closeSettings: () => Promise<void>;
+      openExternal: (url: string) => Promise<IpcResponse>;
       onMenuEvent: (callback: (event: string) => void) => void;
       onConfigUpdated: (callback: () => void) => void;
     };

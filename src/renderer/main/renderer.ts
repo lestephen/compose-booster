@@ -30,6 +30,7 @@ class AppController {
   private copyBtn: HTMLButtonElement;
   private clearInputBtn: HTMLButtonElement;
   private clearOutputBtn: HTMLButtonElement;
+  private reportBtn: HTMLButtonElement;
   private processBtn: HTMLButtonElement;
   private cancelBtn: HTMLButtonElement;
   private loadingOverlay: HTMLElement;
@@ -49,6 +50,7 @@ class AppController {
     this.copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
     this.clearInputBtn = document.getElementById('clearInputBtn') as HTMLButtonElement;
     this.clearOutputBtn = document.getElementById('clearOutputBtn') as HTMLButtonElement;
+    this.reportBtn = document.getElementById('reportBtn') as HTMLButtonElement;
     this.processBtn = document.getElementById('processBtn') as HTMLButtonElement;
     this.cancelBtn = document.getElementById('cancelBtn') as HTMLButtonElement;
     this.loadingOverlay = document.getElementById('loadingOverlay') as HTMLElement;
@@ -87,6 +89,9 @@ class AppController {
     // Clear buttons
     this.clearInputBtn.addEventListener('click', () => this.textAreas.clearInput());
     this.clearOutputBtn.addEventListener('click', () => this.textAreas.clearOutput());
+
+    // Report button
+    this.reportBtn.addEventListener('click', () => this.handleReport());
 
     // Process button
     this.processBtn.addEventListener('click', () => this.handleProcess());
@@ -210,6 +215,15 @@ class AppController {
     }
   }
 
+  private async handleReport(): Promise<void> {
+    const reportUrl = 'https://github.com/lestephen/compose-booster/issues/new?template=ai-content-report.md&title=Report:+Inappropriate+AI+Content';
+    try {
+      await window.electronAPI.openExternal(reportUrl);
+    } catch {
+      this.statusBar.setError('Failed to open report page');
+    }
+  }
+
   private async handleProcess(): Promise<void> {
     if (this.isProcessing) return;
 
@@ -326,6 +340,7 @@ class AppController {
     this.copyBtn.disabled = !enabled;
     this.clearInputBtn.disabled = !enabled;
     this.clearOutputBtn.disabled = !enabled;
+    this.reportBtn.disabled = !enabled;
     this.processBtn.disabled = !enabled;
     this.customCombo.setEnabled(enabled);
     this.quickActions.setEnabled(enabled);
