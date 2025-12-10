@@ -38,12 +38,12 @@ const config: ForgeConfig = {
       'hardened-runtime': !isMAS,        // Hardened runtime for notarization (not MAS)
       strictVerify: false,               // Skip pre-sign verification (Electron has adhoc signature)
     } : undefined,
-    // Notarization disabled - will use xcrun notarytool manually
-    // osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
-    //   appleId: process.env.APPLE_ID || '',
-    //   appleIdPassword: process.env.APPLE_ID_PASSWORD || '',
-    //   teamId: 'NBW65ZYT36',
-    // } : undefined,
+    // Notarization for GitHub distribution (not MAS)
+    osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
+      appleId: process.env.APPLE_ID || '',
+      appleIdPassword: process.env.APPLE_APP_PASSWORD || '',
+      teamId: 'NBW65ZYT36',
+    } : undefined,
   },
   buildIdentifier: process.arch,
   rebuildConfig: {},
