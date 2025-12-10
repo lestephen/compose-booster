@@ -171,3 +171,17 @@ export interface ResponseVersion {
   timestamp: number;
   cost?: number;
 }
+
+// Auto-Update Types
+export interface UpdateStatus {
+  available: boolean;
+  checking: boolean;
+  downloading: boolean;
+  downloaded: boolean;
+  error: string | null;
+  progress: number;
+  version: string | null;
+  releaseNotes: string | null;
+}
+
+export type DistributionChannel = 'github' | 'ms-store' | 'mac-store';

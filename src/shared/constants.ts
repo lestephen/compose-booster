@@ -42,3 +42,8 @@ export const OPENROUTER_REFERER = 'https://outlook-ai-assistant.local';
 
 // Environment Variables
 export const MOCK_API_ENV_VAR = 'MOCK_API';
+
+// Auto-Update
+export const UPDATE_CHECK_DELAY_MS = 5000; // Delay before checking for updates on startup
+export const GITHUB_REPO_OWNER = 'lestephen';
+export const GITHUB_REPO_NAME = 'compose-booster';

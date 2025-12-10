@@ -956,3 +956,98 @@ h2 .help-btn {
   width: 18px;
   height: 18px;
 }
+
+/* Update Section Styles */
+.update-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+}
+
+.update-section h3 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-large);
+}
+
+.update-section.store-update {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+#updateStatusContainer {
+  margin-bottom: var(--spacing-md);
+}
+
+#updateStatusText {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.update-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.update-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+#progressText {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.btn-success {
+  background: var(--color-success);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #0d6b0d;
+}
+
+/* About Tab Styles */
+.about-info {
+  margin-bottom: var(--spacing-lg);
+}
+
+.about-info p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.about-info .app-description {
+  color: var(--text-secondary);
+  margin-top: var(--spacing-md);
+}
+
+.about-credits {
+  margin-top: var(--spacing-lg);
+}
+
+.about-credits p {
+  margin-bottom: var(--spacing-sm);
+}

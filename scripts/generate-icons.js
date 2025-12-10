@@ -19,6 +19,7 @@
 
 const sharp = require('sharp');
 const pngToIco = require('png-to-ico').default || require('png-to-ico');
+const iconGen = require('icon-gen');
 const fs = require('fs');
 const path = require('path');
 
@@ -80,6 +81,31 @@ async function generateICO() {
   await fs.promises.writeFile(icoPath, icoBuffer);
 
   console.log('✅ Windows icon.ico generated!\n');
+}
+
+async function generateICNS() {
+  console.log('📦 Generating macOS .icns file...');
+
+  if (!fs.existsSync(MAC_DIR)) {
+    fs.mkdirSync(MAC_DIR, { recursive: true });
+  }
+
+  try {
+    // icon-gen can create icns from SVG or PNG
+    // Using the 256px PNG as the source for best quality
+    await iconGen(SVG_PATH, MAC_DIR, {
+      report: false,
+      icns: {
+        name: 'icon',
+        sizes: [16, 32, 64, 128, 256, 512, 1024]
+      }
+    });
+
+    console.log('✅ macOS icon.icns generated!\n');
+  } catch (error) {
+    console.log('⚠️  macOS .icns generation failed:', error.message);
+    console.log('   This is optional - the app will still work.\n');
+  }
 }
 
 async function generateStoreAssets() {
@@ -145,6 +171,7 @@ async function main() {
     // Generate all formats
     await generatePNGs();
     await generateICO();
+    await generateICNS();
     await generateStoreAssets();
 
     console.log('=' .repeat(50));
@@ -152,8 +179,8 @@ async function main() {
     console.log('\nGenerated files:');
     console.log('  • PNG files:    assets/icons/png/icon-*.png');
     console.log('  • Windows:      assets/icons/win/icon.ico');
+    console.log('  • macOS:        assets/icons/mac/icon.icns');
     console.log('  • Store assets: assets/store/*.png');
-    console.log('\nNote: macOS .icns generation skipped (not needed without Apple Developer account)');
 
   } catch (error) {
     console.error('❌ Error generating icons:', error);

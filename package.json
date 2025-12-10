@@ -49,6 +49,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron-forge/plugin-vite": "^7.10.2",
+    "@electron-forge/publisher-github": "^7.10.2",
     "@electron/fuses": "^1.8.0",
     "@playwright/test": "^1.57.0",
     "@types/electron-squirrel-startup": "^1.0.2",
@@ -72,6 +73,7 @@
     "axios": "^1.6.0",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.6.2",
     "marked": "^17.0.1"
   }
 }

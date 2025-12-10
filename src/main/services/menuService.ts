@@ -9,15 +9,18 @@
 
 import { Menu, app, shell } from 'electron';
 import type { MenuItemConstructorOptions } from 'electron';
+import { updateService } from './updateService';
 
 export interface MenuOptions {
   onOpenSettings: () => void;
+  onCheckForUpdates?: () => void;
   showDeveloperTools?: boolean;
 }
 
 export function createApplicationMenu(options: MenuOptions): Menu {
-  const { onOpenSettings, showDeveloperTools = false } = options;
+  const { onOpenSettings, onCheckForUpdates, showDeveloperTools = false } = options;
   const isMac = process.platform === 'darwin';
+  const isAutoUpdateAvailable = updateService.isAvailable();
 
   const template: MenuItemConstructorOptions[] = [
     // App Menu (macOS only)
@@ -146,6 +149,23 @@ export function createApplicationMenu(options: MenuOptions): Menu {
     {
       role: 'help' as const,
       submenu: [
+        // Check for Updates (only shown for GitHub distribution)
+        ...(isAutoUpdateAvailable
+          ? [
+              {
+                label: 'Check for Updates...',
+                click: () => {
+                  // Trigger update check
+                  updateService.checkForUpdates();
+                  // Open settings to About tab to show status
+                  if (onCheckForUpdates) {
+                    onCheckForUpdates();
+                  }
+                },
+              },
+              { type: 'separator' as const },
+            ]
+          : []),
         {
           label: 'OpenRouter Documentation',
           click: async () => {

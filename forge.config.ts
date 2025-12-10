@@ -7,13 +7,22 @@ import { MakerAppX } from '@electron-forge/maker-appx';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import { PublisherGithub } from '@electron-forge/publisher-github';
+import { execSync } from 'child_process';
+import * as path from 'path';
+
+// Platform-specific icon path
+const iconPath = process.platform === 'darwin'
+  ? './assets/icons/mac/icon.icns'
+  : './assets/icons/win/icon.ico';
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     name: 'Compose Booster',
     executableName: 'Compose Booster',
-    icon: './assets/icons/win/icon', // Electron Forge will add .ico automatically
+    icon: iconPath,
+    appBundleId: 'com.coldray.composebooster',
   },
   buildIdentifier: process.arch,
   rebuildConfig: {},
@@ -86,6 +95,33 @@ const config: ForgeConfig = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  publishers: [
+    new PublisherGithub({
+      repository: {
+        owner: 'lestephen',
+        name: 'compose-booster',
+      },
+      prerelease: false,
+      draft: true, // Create as draft, then publish manually after verification
+    }),
+  ],
+  hooks: {
+    postPackage: async (_config, packageResult) => {
+      // Fix macOS About dialog to not show duplicate version "1.0.0 (1.0.0)"
+      if (process.platform === 'darwin' && packageResult.platform === 'darwin') {
+        for (const outputPath of packageResult.outputPaths) {
+          const plistPath = path.join(outputPath, 'Compose Booster.app', 'Contents', 'Info.plist');
+          try {
+            // Set CFBundleVersion to just "1" (build number)
+            execSync(`/usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1" "${plistPath}"`);
+            console.log('[postPackage] Updated CFBundleVersion to "1"');
+          } catch (error) {
+            console.warn('[postPackage] Failed to update CFBundleVersion:', error);
+          }
+        }
+      }
+    },
+  },
 };
 
 export default config;

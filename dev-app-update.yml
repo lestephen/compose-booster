@@ -1,0 +1,6 @@
+# Development configuration for electron-updater
+# This file is used to test auto-update in development mode
+# In production, the publisher configuration from forge.config.ts is used
+owner: lestephen
+repo: compose-booster
+provider: github

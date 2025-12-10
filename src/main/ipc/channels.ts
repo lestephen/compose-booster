@@ -51,6 +51,15 @@ export const IPC_CHANNELS = {
 
   // Events (broadcasts)
   CONFIG_UPDATED: 'config:updated',
+
+  // Auto-Update
+  UPDATE_CHECK: 'update:check',
+  UPDATE_DOWNLOAD: 'update:download',
+  UPDATE_INSTALL: 'update:install',
+  UPDATE_GET_STATUS: 'update:get-status',
+  UPDATE_IS_AVAILABLE: 'update:is-available',
+  UPDATE_GET_INFO: 'update:get-info',
+  UPDATE_STATUS_CHANGED: 'update:status-changed', // Event (main → renderer)
 } as const;
 
 export type IpcChannel = typeof IPC_CHANNELS[keyof typeof IPC_CHANNELS];
