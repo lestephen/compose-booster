@@ -59,8 +59,8 @@ export function createMainWindow(): BrowserWindow {
     mainWindow = null;
   });
 
-  // Open DevTools in development
-  if (process.env.NODE_ENV === 'development') {
+  // Open DevTools in development (but not in screenshot mode)
+  if (process.env.NODE_ENV === 'development' && !process.env.SCREENSHOT_MODE) {
     mainWindow.webContents.openDevTools();
   }
 

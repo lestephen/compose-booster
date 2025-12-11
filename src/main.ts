@@ -20,6 +20,14 @@ if (started) {
   app.quit();
 }
 
+// Enable remote debugging if SCREENSHOT_MODE is set (for automated screenshot capture)
+if (process.env.SCREENSHOT_MODE) {
+  const debugPort = process.env.DEBUG_PORT || '9222';
+  app.commandLine.appendSwitch('remote-debugging-port', debugPort);
+  app.commandLine.appendSwitch('remote-allow-origins', '*');
+  console.log(`[Screenshot Mode] Remote debugging enabled on port ${debugPort}`);
+}
+
 // Helper function to rebuild the application menu
 function rebuildMenu(): void {
   const config = configService.getConfig();
