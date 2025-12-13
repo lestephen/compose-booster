@@ -34,8 +34,11 @@ const IS_WINDOWS = process.platform === 'win32';
 const PLATFORM_DIR = IS_WINDOWS ? 'windows' : 'mac';
 const OUTPUT_DIR = path.join(__dirname, '..', 'assets', 'store', 'screenshots', PLATFORM_DIR);
 
-// Mac App Store screenshot dimensions - use 1x for dev, but capture window at good size
-const TARGET_SIZE = { width: 1280, height: 800 };
+// App Store screenshot dimensions
+// Mac App Store accepts: 1280×800, 1440×900, 2560×1600, 2880×1800
+// We use 1280×800 which captures at 2560×1600 on Retina (2x) displays
+const SCREENSHOT_WIDTH = 1280;
+const SCREENSHOT_HEIGHT = 800;
 
 // Sample content for screenshots
 const SAMPLE_INPUT = `Hi John,
@@ -211,6 +214,18 @@ async function setContent(page) {
   }
 }
 
+async function setWindowSize(page, width, height) {
+  // Set the viewport size - this controls what gets captured in screenshots
+  await page.setViewport({
+    width,
+    height,
+    deviceScaleFactor: 1  // Use 1 for exact pixel dimensions (not Retina 2x)
+  });
+
+  await delay(500);
+  console.log(`  Viewport set to: ${width}x${height}`);
+}
+
 async function captureScreenshot(page, filename) {
   const filepath = path.join(OUTPUT_DIR, filename);
   console.log(`  Capturing: ${filename}...`);
@@ -278,6 +293,10 @@ async function main() {
 
     console.log('\nMain page URL:', page.url());
 
+    // Resize window to exact screenshot dimensions
+    console.log(`\nResizing window to ${SCREENSHOT_WIDTH}x${SCREENSHOT_HEIGHT}...`);
+    await setWindowSize(page, SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT);
+
     // Set up sample content
     await setContent(page);
     await delay(1000);
@@ -324,6 +343,9 @@ async function main() {
     if (settingsPage) {
       console.log('  Found settings page!');
       await delay(500);
+
+      // Resize settings window to exact dimensions
+      await setWindowSize(settingsPage, SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT);
 
       // Apply theme to settings window too
       await settingsPage.evaluate((themeName) => {
