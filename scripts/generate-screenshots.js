@@ -36,9 +36,10 @@ const OUTPUT_DIR = path.join(__dirname, '..', 'assets', 'store', 'screenshots', 
 
 // App Store screenshot dimensions
 // Mac App Store accepts: 1280×800, 1440×900, 2560×1600, 2880×1800
-// We use 1280×800 which captures at 2560×1600 on Retina (2x) displays
+// We use 1280×800 viewport with 2x scale to capture crisp 2560×1600 screenshots
 const SCREENSHOT_WIDTH = 1280;
 const SCREENSHOT_HEIGHT = 800;
+const DEVICE_SCALE_FACTOR = 2;  // 2x for Retina-quality screenshots (2560×1600)
 
 // Sample content for screenshots
 const SAMPLE_INPUT = `Hi John,
@@ -216,14 +217,17 @@ async function setContent(page) {
 
 async function setWindowSize(page, width, height) {
   // Set the viewport size - this controls what gets captured in screenshots
+  // deviceScaleFactor: 2 produces 2560×1600 from 1280×800 viewport (Retina quality)
   await page.setViewport({
     width,
     height,
-    deviceScaleFactor: 1  // Use 1 for exact pixel dimensions (not Retina 2x)
+    deviceScaleFactor: DEVICE_SCALE_FACTOR
   });
 
   await delay(500);
-  console.log(`  Viewport set to: ${width}x${height}`);
+  const actualWidth = width * DEVICE_SCALE_FACTOR;
+  const actualHeight = height * DEVICE_SCALE_FACTOR;
+  console.log(`  Viewport set to: ${width}x${height} (captures at ${actualWidth}x${actualHeight})`);
 }
 
 async function captureScreenshot(page, filename) {
