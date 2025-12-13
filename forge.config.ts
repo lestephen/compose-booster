@@ -25,6 +25,12 @@ const config: ForgeConfig = {
     // macOS specific configuration
     appBundleId: 'com.coldray.compose-booster',
     appCategoryType: 'public.app-category.productivity',
+    // Extend Info.plist with additional keys
+    extendInfo: {
+      // Declare no custom encryption (only uses OS-provided TLS/HTTPS)
+      // This avoids the export compliance prompt in App Store Connect
+      ITSAppUsesNonExemptEncryption: false,
+    },
     // Code signing for macOS (uses environment variables or keychain)
     osxSign: process.platform === 'darwin' ? {
       identity: isMAS
