@@ -21,7 +21,8 @@ class ApiService {
   private useMock: boolean;
 
   constructor() {
-    this.useMock = process.env[MOCK_API_ENV_VAR] === 'true';
+    // Enable mock mode for MOCK_API=true or SCREENSHOT_MODE=1
+    this.useMock = process.env[MOCK_API_ENV_VAR] === 'true' || process.env.SCREENSHOT_MODE === '1';
   }
 
   /**

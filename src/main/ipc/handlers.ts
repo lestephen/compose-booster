@@ -277,7 +277,9 @@ function registerApiHandlers(): void {
       const config = configService.getConfig();
       const apiKey = config.apiKey;
 
-      if (!apiKey || apiKey.trim() === '') {
+      // Skip API key check in mock/screenshot mode
+      const isMockMode = process.env.MOCK_API === 'true' || process.env.SCREENSHOT_MODE === '1';
+      if (!isMockMode && (!apiKey || apiKey.trim() === '')) {
         return {
           success: false,
           error: {
