@@ -20,6 +20,13 @@ if (started) {
   app.quit();
 }
 
+// Disable Fontations backend for MAS builds to prevent crash
+// The Fontations Rust font library can crash in the MAS sandbox environment
+// See: https://groups.google.com/a/chromium.org/g/blink-dev/c/4xUt73fxCrU
+if (process.mas) {
+  app.commandLine.appendSwitch('disable-features', 'FontationsBackend');
+}
+
 // Enable remote debugging if SCREENSHOT_MODE is set (for automated screenshot capture)
 if (process.env.SCREENSHOT_MODE) {
   const debugPort = process.env.DEBUG_PORT || '9222';
