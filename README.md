@@ -6,7 +6,7 @@ Compose Booster helps you write better emails faster using advanced AI models. P
 
 ![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.12-green.svg)
 
 ---
 
@@ -69,12 +69,12 @@ Compose Booster helps you write better emails faster using advanced AI models. P
 
 **Windows:**
 - **Microsoft Store (Recommended):** [Get Compose Booster](https://apps.microsoft.com/detail/9PDL4HH5TWGL) - Signed by Microsoft, automatic updates
-- **Direct Download:** Get `Compose.Booster-1.0.0-Setup.exe` from [GitHub Releases](https://github.com/lestephen/compose-booster/releases)
+- **Direct Download:** Get the latest installer from [GitHub Releases](https://github.com/lestephen/compose-booster/releases)
   - **Note:** You may see a Windows SmartScreen warning (this is normal for unsigned software). Click "More info" → "Run anyway"
 
 **macOS:**
+- **Mac App Store:** Pending approval
 - **Direct Download:** Get the DMG from [GitHub Releases](https://github.com/lestephen/compose-booster/releases) - Signed & Notarized by Apple
-- Coming soon to the Mac App Store
 
 ### Requirements
 

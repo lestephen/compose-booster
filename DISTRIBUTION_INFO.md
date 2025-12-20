@@ -45,7 +45,7 @@ This text should appear in your application's Help → About menu or About dialo
 ### About Screen Text (Copy-Paste Ready)
 
 ```
-Compose Booster v1.0.0
+Compose Booster
 Copyright (c) 2025 Stephen Le
 
 An AI-powered email composition assistant.

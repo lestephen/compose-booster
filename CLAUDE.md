@@ -223,18 +223,19 @@ Different branches may have different dependencies in package.json. Since node_m
 
 ## Current Release
 
-**v1.0.0** - Initial public release (December 2025)
+**v1.0.12** - Store releases (December 2025)
 
-- Available on GitHub Releases (Windows x64 unsigned)
-- Microsoft Store submission pending approval
+- **Microsoft Store**: Published and available
+- **Mac App Store**: Submitted, pending approval
+- **GitHub Releases**: Windows (x64/ARM64) and macOS (ARM64) installers
 
-**Post-release features in development:**
-- Style Profiles - Custom writing styles with example emails
-- Output Format Options - Plain text, Markdown, or HTML clipboard output
-- Context Window Warnings - Visual alerts for large inputs
-- Response Regeneration - Try Again button with version navigation
-
-See ROADMAP.md for planned features and CHANGELOG.md for version history.
+**Recent fixes (v1.0.0 - v1.0.12):**
+- MAS entitlements fix for V8 JIT on ARM64
+- Config recovery for sandbox environment
+- Model list UI improvements (custom dropdown, detailed view)
+- API key validation improvements
+- Automated screenshot generation for store submissions
+- Report button for store compliance
 
 ## File Headers
 

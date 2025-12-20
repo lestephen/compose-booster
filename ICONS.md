@@ -2,7 +2,7 @@
 
 ## Status: ✅ COMPLETE
 
-Application icons have been created and configured for Windows distribution. macOS .icns generation is deferred until Apple Developer account is available.
+Application icons have been created and configured for Windows and macOS distribution.
 
 ## Implemented Icons
 
@@ -21,9 +21,11 @@ Application icons have been created and configured for Windows distribution. mac
 - Location: `assets/icons/icon.svg`
 - Design: Blue envelope (#0078D4 gradient) with gold AI sparkle
 
-### 🔜 macOS (.icns)
-- Status: Deferred (requires Apple Developer account for signing)
-- Will be generated when macOS distribution is ready
+### ✅ macOS (.icns)
+- **icon.icns** - macOS icon bundle
+- **icon.iconset/** - Source iconset folder with all required sizes
+- Location: `assets/icons/mac/`
+- Status: Generated and configured for both GitHub and Mac App Store distribution
 
 ### 🔜 Linux (.png)
 - Status: Not needed (no Linux distribution planned currently)
