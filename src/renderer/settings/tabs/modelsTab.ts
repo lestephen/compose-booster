@@ -15,16 +15,17 @@ export class ModelsTab {
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
   private availableModels: any[] = [];
-  private showDetailedView: boolean = false;
-  private isLoadingModels: boolean = false;
-  private modelsLoadError: string | null = null;
+  private showDetailedView = false;
+  private dropdownVisible = false;
+  private selectedDropdownIndex = -1;
+  private filteredModels: any[] = [];
 
   constructor(container: HTMLElement, config: AppConfig, onConfigChange: (config: AppConfig) => void) {
     this.container = container;
     this.config = config;
     this.onConfigChange = onConfigChange;
     this.render();
-    this.loadAvailableModels(false); // Don't force refresh on initial load
+    this.reloadModels();
   }
 
   public updateConfig(config: AppConfig): void {
@@ -62,66 +63,185 @@ export class ModelsTab {
         <h3>Add Model from OpenRouter</h3>
         <div class="form-group">
           <label for="modelSearchInput">Search and Select Model</label>
-          <input
-            type="text"
-            id="modelSearchInput"
-            class="form-control"
-            list="modelDatalist"
-            placeholder="Type to search models..."
-            autocomplete="off"
-          >
-          <datalist id="modelDatalist"></datalist>
-          <small class="form-text" id="loadingModelsText">${this.getLoadingStatusText()}</small>
+          <div class="model-search-container">
+            <input
+              type="text"
+              id="modelSearchInput"
+              class="form-control"
+              placeholder="Type to search models..."
+              autocomplete="off"
+            >
+            <div id="modelDropdown" class="model-dropdown hidden"></div>
+          </div>
+          <small class="form-text" id="loadingModelsText">Loading models from OpenRouter...</small>
         </div>
         <button id="addModelBtn" class="btn btn-primary" disabled>Add Model</button>
-        <button id="refreshModelsBtn" class="btn btn-secondary" style="margin-left: 8px;" ${this.isLoadingModels ? 'disabled' : ''}>
-          ${this.isLoadingModels ? 'Refreshing...' : 'Refresh Models'}
-        </button>
         <button id="resetModelsBtn" class="btn btn-secondary" style="margin-left: 8px;">Reset to Defaults</button>
       </div>
     `;
 
     this.populateModelsTable();
     this.setupEventListeners();
-    this.populateDatalistFromCache(); // Repopulate datalist from cached models
+    this.populateDatalistFromCache(); // Repopulate datalist from cached models after render
   }
 
   /**
-   * Get the status text for the loading indicator
-   */
-  private getLoadingStatusText(): string {
-    if (this.isLoadingModels) {
-      return 'Loading models from OpenRouter...';
-    }
-    if (this.modelsLoadError) {
-      return this.modelsLoadError;
-    }
-    if (this.availableModels.length > 0) {
-      return `${this.availableModels.length} models available - type to search`;
-    }
-    return 'Click "Refresh Models" to load available models';
-  }
-
-  /**
-   * Populate the datalist from cached models (called after render)
+   * Update the loading text from cached models (called after render)
+   * This ensures the status text persists when the view is re-rendered
    */
   private populateDatalistFromCache(): void {
-    const datalist = document.getElementById('modelDatalist') as HTMLDataListElement;
     const loadingText = document.getElementById('loadingModelsText');
 
-    if (datalist && this.availableModels.length > 0) {
-      datalist.innerHTML = '';
-      this.availableModels.forEach((model: any) => {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.textContent = `${model.name} - ${model.id}`;
-        datalist.appendChild(option);
-      });
+    if (this.availableModels.length > 0 && loadingText) {
+      loadingText.textContent = `${this.availableModels.length} models available - type to search`;
+    }
+  }
+
+  /**
+   * Sort models alphabetically by name
+   */
+  private sortModelsAlphabetically(models: any[]): any[] {
+    return [...models].sort((a, b) => {
+      const nameA = (a.name || a.id).toLowerCase();
+      const nameB = (b.name || b.id).toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }
+
+  /**
+   * Filter and update the dropdown based on search input
+   */
+  private updateDropdown(searchTerm: string): void {
+    const dropdown = document.getElementById('modelDropdown');
+    if (!dropdown) return;
+
+    // Filter models based on search term
+    const term = searchTerm.toLowerCase();
+    this.filteredModels = this.sortModelsAlphabetically(
+      this.availableModels.filter(m =>
+        m.name.toLowerCase().includes(term) ||
+        m.id.toLowerCase().includes(term)
+      )
+    );
+
+    // Reset selection
+    this.selectedDropdownIndex = -1;
+
+    if (this.filteredModels.length === 0) {
+      dropdown.classList.add('hidden');
+      this.dropdownVisible = false;
+      return;
     }
 
-    // Update loading text styling for errors
-    if (loadingText && this.modelsLoadError) {
-      loadingText.style.color = 'var(--error-color)';
+    // Populate dropdown
+    dropdown.innerHTML = '';
+    this.filteredModels.forEach((model, index) => {
+      const item = document.createElement('div');
+      item.className = 'model-dropdown-item';
+      item.setAttribute('data-index', index.toString());
+      item.setAttribute('data-model-id', model.id);
+      item.innerHTML = `
+        <span class="model-dropdown-name">${this.escapeHtml(model.name)}</span>
+        <span class="model-dropdown-id">${this.escapeHtml(model.id)}</span>
+      `;
+      item.addEventListener('click', () => this.selectModelFromDropdown(model));
+      dropdown.appendChild(item);
+    });
+
+    dropdown.classList.remove('hidden');
+    this.dropdownVisible = true;
+  }
+
+  /**
+   * Select a model from the dropdown
+   */
+  private selectModelFromDropdown(model: any): void {
+    const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
+    const addBtn = document.getElementById('addModelBtn') as HTMLButtonElement;
+    const dropdown = document.getElementById('modelDropdown');
+
+    if (searchInput) {
+      searchInput.value = model.id;
+    }
+    if (addBtn) {
+      addBtn.disabled = false;
+    }
+    if (dropdown) {
+      dropdown.classList.add('hidden');
+      this.dropdownVisible = false;
+    }
+  }
+
+  /**
+   * Handle keyboard navigation in dropdown
+   */
+  private handleDropdownKeydown(e: KeyboardEvent): void {
+    if (!this.dropdownVisible || this.filteredModels.length === 0) return;
+
+    const dropdown = document.getElementById('modelDropdown');
+    if (!dropdown) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        this.selectedDropdownIndex = Math.min(
+          this.selectedDropdownIndex + 1,
+          this.filteredModels.length - 1
+        );
+        this.updateDropdownSelection();
+        break;
+
+      case 'ArrowUp':
+        e.preventDefault();
+        this.selectedDropdownIndex = Math.max(this.selectedDropdownIndex - 1, 0);
+        this.updateDropdownSelection();
+        break;
+
+      case 'Enter':
+        e.preventDefault();
+        if (this.selectedDropdownIndex >= 0 && this.selectedDropdownIndex < this.filteredModels.length) {
+          this.selectModelFromDropdown(this.filteredModels[this.selectedDropdownIndex]);
+        }
+        break;
+
+      case 'Escape':
+        e.preventDefault();
+        dropdown.classList.add('hidden');
+        this.dropdownVisible = false;
+        break;
+    }
+  }
+
+  /**
+   * Update visual selection in dropdown
+   */
+  private updateDropdownSelection(): void {
+    const dropdown = document.getElementById('modelDropdown');
+    if (!dropdown) return;
+
+    const items = dropdown.querySelectorAll('.model-dropdown-item');
+    items.forEach((item, index) => {
+      if (index === this.selectedDropdownIndex) {
+        item.classList.add('selected');
+        // Scroll into view if needed
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+  }
+
+  /**
+   * Hide dropdown when clicking outside
+   */
+  private handleDocumentClick(e: MouseEvent): void {
+    const searchContainer = document.querySelector('.model-search-container');
+    if (searchContainer && !searchContainer.contains(e.target as Node)) {
+      const dropdown = document.getElementById('modelDropdown');
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+        this.dropdownVisible = false;
+      }
     }
   }
 
@@ -214,23 +334,33 @@ export class ModelsTab {
     // Setup drag-and-drop
     this.setupDragAndDrop();
 
-    // Model search input
+    // Model search input with custom dropdown
     const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
     const addBtn = document.getElementById('addModelBtn') as HTMLButtonElement;
     if (searchInput && addBtn) {
+      // Update dropdown as user types
       searchInput.addEventListener('input', () => {
+        this.updateDropdown(searchInput.value);
         // Enable button only if input matches a valid model ID
-        const modelExists = this.availableModels.some(m => m.id === searchInput.value || m.name === searchInput.value);
+        const modelExists = this.availableModels.some(m => m.id === searchInput.value);
         addBtn.disabled = !modelExists;
       });
+
+      // Show dropdown on focus (show all models if empty)
+      searchInput.addEventListener('focus', () => {
+        if (this.availableModels.length > 0) {
+          this.updateDropdown(searchInput.value);
+        }
+      });
+
+      // Handle keyboard navigation
+      searchInput.addEventListener('keydown', (e) => this.handleDropdownKeydown(e));
+
       addBtn.addEventListener('click', () => this.handleAddModel());
     }
 
-    // Refresh models button
-    const refreshBtn = document.getElementById('refreshModelsBtn');
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', () => this.loadAvailableModels(true));
-    }
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => this.handleDocumentClick(e));
 
     // Reset button
     const resetBtn = document.getElementById('resetModelsBtn');
@@ -249,7 +379,7 @@ export class ModelsTab {
   private setupDragAndDrop(): void {
     const rows = this.container.querySelectorAll<HTMLTableRowElement>('.draggable-row');
     let draggedRow: HTMLTableRowElement | null = null;
-    let draggedIndex: number = -1;
+    let draggedIndex = -1;
 
     rows.forEach((row) => {
       row.addEventListener('dragstart', (e) => {
@@ -361,7 +491,6 @@ export class ModelsTab {
         input: `$${(parseFloat(selectedModel.pricing?.prompt || '0') * 1000000).toFixed(2)}/M`,
         output: `$${(parseFloat(selectedModel.pricing?.completion || '0') * 1000000).toFixed(2)}/M`,
       },
-      contextLength: selectedModel.context_length || undefined,
       enabled: true,
     };
 
@@ -388,36 +517,35 @@ export class ModelsTab {
     return DEFAULT_CONFIG.models.some(m => m.id === modelId);
   }
 
-  private async loadAvailableModels(forceRefresh: boolean = false): Promise<void> {
-    // If we already have cached models and not forcing refresh, just repopulate
-    if (!forceRefresh && this.availableModels.length > 0) {
-      this.populateDatalistFromCache();
-      return;
-    }
-
-    // Prevent multiple simultaneous requests
-    if (this.isLoadingModels) {
-      return;
-    }
-
-    this.isLoadingModels = true;
-    this.modelsLoadError = null;
-    this.render(); // Re-render to show loading state
+  /**
+   * Public method to reload available models from OpenRouter
+   * Call this after API key is validated/changed
+   */
+  public async reloadModels(): Promise<void> {
+    const loadingText = document.getElementById('loadingModelsText');
 
     try {
-      const result = await window.electronAPI.getAvailableModels(forceRefresh);
+      const result = await window.electronAPI.getAvailableModels();
 
       if (result.success && result.data) {
-        this.availableModels = result.data;
-        this.modelsLoadError = null;
+        // Sort models alphabetically by name
+        this.availableModels = this.sortModelsAlphabetically(result.data);
+
+        if (loadingText) {
+          loadingText.textContent = `${this.availableModels.length} models available - type to search`;
+          loadingText.style.color = '';
+        }
       } else {
-        this.modelsLoadError = result.error?.message || 'Failed to load models. Please check your API key.';
+        if (loadingText) {
+          loadingText.textContent = 'Failed to load models. Please check your API key.';
+          loadingText.style.color = 'var(--error-color)';
+        }
       }
-    } catch (error) {
-      this.modelsLoadError = 'Error loading models from OpenRouter';
-    } finally {
-      this.isLoadingModels = false;
-      this.render(); // Re-render to show results
+    } catch {
+      if (loadingText) {
+        loadingText.textContent = 'Error loading models from OpenRouter';
+        loadingText.style.color = 'var(--error-color)';
+      }
     }
   }
 

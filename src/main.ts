@@ -23,6 +23,22 @@ if (started) {
   app.quit();
 }
 
+// Disable Fontations backend to prevent crash in MAS sandbox environment
+// The Fontations Rust font library crashes during V8 init on macOS MAS builds
+// See: https://groups.google.com/a/chromium.org/g/blink-dev/c/4xUt73fxCrU
+// Note: This may not work as crash occurs before JS runs - see GitHub issue #2
+if (process.platform === 'darwin') {
+  app.commandLine.appendSwitch('disable-features', 'FontationsBackend');
+}
+
+// Enable remote debugging if SCREENSHOT_MODE is set (for automated screenshot capture)
+if (process.env.SCREENSHOT_MODE) {
+  const debugPort = process.env.DEBUG_PORT || '9222';
+  app.commandLine.appendSwitch('remote-debugging-port', debugPort);
+  app.commandLine.appendSwitch('remote-allow-origins', '*');
+  console.log(`[Screenshot Mode] Remote debugging enabled on port ${debugPort}`);
+}
+
 // Helper function to rebuild the application menu
 function rebuildMenu(): void {
   const config = configService.getConfig();

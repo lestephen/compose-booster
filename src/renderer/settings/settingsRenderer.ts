@@ -258,6 +258,15 @@ class SettingsController {
 
       if (result.success) {
         this.showApiKeyStatus('✓ API key is valid!', 'success');
+        // Save the API key immediately and reload models
+        if (this.config) {
+          this.config.apiKey = apiKey;
+          await window.electronAPI.setConfig({ apiKey });
+          // Reload models now that we have a valid API key
+          if (this.modelsTab) {
+            this.modelsTab.reloadModels();
+          }
+        }
       } else {
         this.showApiKeyStatus(`✗ ${result.error?.message || 'Invalid API key'}`, 'error');
       }

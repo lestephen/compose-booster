@@ -8,7 +8,7 @@
 // Handles OpenRouter API integration with mock mode support
 
 import axios, { AxiosError } from 'axios';
-import { ApiResponse, Tone, StyleProfile } from '../../shared/types';
+import { ApiResponse, Tone } from '../../shared/types';
 import {
   OPENROUTER_API_URL,
   OPENROUTER_REFERER,
@@ -17,37 +17,27 @@ import {
   MOCK_API_ENV_VAR,
 } from '../../shared/constants';
 
-// Cache TTL for model list (5 minutes)
-const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
-
-interface ModelCache {
-  data: any[];
-  timestamp: number;
-}
-
 class ApiService {
   private useMock: boolean;
-  private modelCache: ModelCache | null = null;
 
   constructor() {
-    this.useMock = process.env[MOCK_API_ENV_VAR] === 'true';
+    // Enable mock mode for MOCK_API=true or SCREENSHOT_MODE=1
+    this.useMock = process.env[MOCK_API_ENV_VAR] === 'true' || process.env.SCREENSHOT_MODE === '1';
   }
 
   /**
    * Process email through OpenRouter API
-   * @param temperature - Optional temperature for response variety (0.0-2.0, default undefined uses model default)
    */
   async processEmail(
     apiKey: string,
     model: string,
-    finalPrompt: string,
-    temperature?: number
+    finalPrompt: string
   ): Promise<ApiResponse> {
     if (this.useMock) {
-      return this.mockResponse(finalPrompt, temperature);
+      return this.mockResponse(finalPrompt);
     }
 
-    return this.callOpenRouter(apiKey, model, finalPrompt, temperature);
+    return this.callOpenRouter(apiKey, model, finalPrompt);
   }
 
   /**
@@ -56,30 +46,22 @@ class ApiService {
   private async callOpenRouter(
     apiKey: string,
     model: string,
-    prompt: string,
-    temperature?: number
+    prompt: string
   ): Promise<ApiResponse> {
     const startTime = Date.now();
 
     try {
-      const requestBody: Record<string, unknown> = {
-        model,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      };
-
-      // Add temperature if specified
-      if (temperature !== undefined) {
-        requestBody.temperature = temperature;
-      }
-
       const response = await axios.post(
         OPENROUTER_API_URL,
-        requestBody,
+        {
+          model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
         {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -107,16 +89,11 @@ class ApiService {
       // Extract usage information if available
       const usage = response.data.usage;
 
-      // Extract cost - OpenRouter returns this in usage.total_cost or as a separate field
-      // Cost is in USD
-      const cost = usage?.total_cost ?? response.data.cost ?? undefined;
-
       return {
         success: true,
         data: content,
         model,
         time,
-        cost,
         usage: usage
           ? {
               promptTokens: usage.prompt_tokens || 0,
@@ -229,17 +206,15 @@ class ApiService {
   /**
    * Mock API response for development
    */
-  private async mockResponse(prompt: string, temperature?: number): Promise<ApiResponse> {
+  private async mockResponse(prompt: string): Promise<ApiResponse> {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const tempInfo = temperature !== undefined ? `Temperature: ${temperature}` : 'Temperature: default';
     const mockContent = `[MOCK RESPONSE]
 
 This is a simulated AI response for development purposes.
 
 Your original prompt was ${prompt.length} characters long.
-${tempInfo}
 
 In production, this would be replaced with the actual OpenRouter API response.
 
@@ -279,28 +254,33 @@ Mock AI Assistant`;
     }
 
     try {
-      // Make a minimal API call to test the key
-      const response = await axios.post(
-        OPENROUTER_API_URL,
-        {
-          model: 'openai/gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'test' }],
-          max_tokens: 1,
-        },
+      // Use the /auth/key endpoint to validate the key without consuming credits
+      // This is more reliable than making a model call
+      const response = await axios.get(
+        'https://openrouter.ai/api/v1/auth/key',
         {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
             'HTTP-Referer': OPENROUTER_REFERER,
             'X-Title': APP_NAME,
-            'Content-Type': 'application/json',
           },
           timeout: 10000,
         }
       );
 
+      // If we get a response, the key is valid
       return { valid: true };
     } catch (error) {
       const axiosError = error as AxiosError;
+
+      // Log detailed error for debugging
+      console.error('[ApiService] testApiKey error:', {
+        message: axiosError.message,
+        code: axiosError.code,
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data,
+      });
 
       if (axiosError.response?.status === 401) {
         return { valid: false, error: 'Invalid API key' };
@@ -311,43 +291,66 @@ Mock AI Assistant`;
         return { valid: true };
       }
 
-      // Other errors might be network issues
-      return { valid: false, error: 'Could not verify API key. Check your connection.' };
+      // Provide more specific error messages
+      if (axiosError.code === 'ENOTFOUND') {
+        return { valid: false, error: 'DNS lookup failed. Check your internet connection.' };
+      }
+      if (axiosError.code === 'ECONNREFUSED') {
+        return { valid: false, error: 'Connection refused. The server may be down.' };
+      }
+      if (axiosError.code === 'ETIMEDOUT' || axiosError.code === 'ECONNABORTED') {
+        return { valid: false, error: 'Connection timed out. Try again later.' };
+      }
+      if (axiosError.code === 'CERT_HAS_EXPIRED' || axiosError.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE') {
+        return { valid: false, error: 'SSL certificate error. Check your system date/time.' };
+      }
+
+      // Include error code in message for debugging
+      const errorDetail = axiosError.code ? ` (${axiosError.code})` : '';
+      return { valid: false, error: `Could not verify API key${errorDetail}. Check your connection.` };
     }
   }
 
   /**
    * Fetch available models from OpenRouter API
-   * Note: The /models endpoint is public but we include auth for consistency
-   * @param forceRefresh - If true, bypass cache and fetch fresh data
    */
-  async getAvailableModels(apiKey: string, forceRefresh: boolean = false): Promise<{ success: boolean; data?: any[]; error?: string }> {
+  async getAvailableModels(apiKey: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
     if (this.useMock) {
-      // Return mock models for development with context_length and modality
-      return {
-        success: true,
-        data: [
-          { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', context_length: 200000, architecture: { modality: 'text->text' }, pricing: { prompt: '0.000015', completion: '0.000075' } },
-          { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', context_length: 128000, architecture: { modality: 'text+image->text' }, pricing: { prompt: '0.00001', completion: '0.00003' } },
-          { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', context_length: 131072, architecture: { modality: 'text->text' }, pricing: { prompt: '0.0000008', completion: '0.0000008' } },
-        ],
-      };
-    }
-
-    // Check cache first (unless force refresh requested)
-    if (!forceRefresh && this.modelCache) {
-      const cacheAge = Date.now() - this.modelCache.timestamp;
-      if (cacheAge < MODEL_CACHE_TTL_MS) {
-        console.log(`[ApiService] Returning cached models (${this.modelCache.data.length} models, cache age: ${Math.round(cacheAge / 1000)}s)`);
-        return { success: true, data: this.modelCache.data };
-      } else {
-        console.log('[ApiService] Model cache expired, fetching fresh data...');
+      // Return mock models for development/screenshots
+      // Generate realistic count (~350 models like production)
+      const mockModels = [
+        { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', pricing: { prompt: '0.000003', completion: '0.000015' } },
+        { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', pricing: { prompt: '0.000015', completion: '0.000075' } },
+        { id: 'anthropic/claude-3-sonnet', name: 'Claude 3 Sonnet', pricing: { prompt: '0.000003', completion: '0.000015' } },
+        { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', pricing: { prompt: '0.00000025', completion: '0.00000125' } },
+        { id: 'openai/gpt-4o', name: 'GPT-4o', pricing: { prompt: '0.000005', completion: '0.000015' } },
+        { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', pricing: { prompt: '0.00001', completion: '0.00003' } },
+        { id: 'openai/gpt-4', name: 'GPT-4', pricing: { prompt: '0.00003', completion: '0.00006' } },
+        { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo', pricing: { prompt: '0.0000005', completion: '0.0000015' } },
+        { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5', pricing: { prompt: '0.0000025', completion: '0.0000075' } },
+        { id: 'google/gemini-flash-1.5', name: 'Gemini Flash 1.5', pricing: { prompt: '0.00000025', completion: '0.00000075' } },
+        { id: 'meta-llama/llama-3.1-405b-instruct', name: 'Llama 3.1 405B', pricing: { prompt: '0.000003', completion: '0.000003' } },
+        { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', pricing: { prompt: '0.0000008', completion: '0.0000008' } },
+        { id: 'mistralai/mistral-large', name: 'Mistral Large', pricing: { prompt: '0.000003', completion: '0.000009' } },
+        { id: 'mistralai/mixtral-8x22b', name: 'Mixtral 8x22B', pricing: { prompt: '0.0000009', completion: '0.0000009' } },
+        { id: 'cohere/command-r-plus', name: 'Command R+', pricing: { prompt: '0.000003', completion: '0.000015' } },
+      ];
+      // Pad to ~350 models for realistic screenshot
+      const providers = ['openai', 'anthropic', 'google', 'meta-llama', 'mistralai', 'cohere', 'deepseek', 'qwen', 'nvidia', 'microsoft'];
+      const variants = ['base', 'instruct', 'chat', 'vision', 'code', 'math', 'reasoning', 'fast', 'preview', 'experimental'];
+      for (let i = mockModels.length; i < 350; i++) {
+        const provider = providers[i % providers.length];
+        const variant = variants[Math.floor(i / providers.length) % variants.length];
+        mockModels.push({
+          id: `${provider}/model-${variant}-${i}`,
+          name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Model ${variant} ${i}`,
+          pricing: { prompt: '0.000001', completion: '0.000002' }
+        });
       }
+      return { success: true, data: mockModels };
     }
 
     try {
-      console.log('[ApiService] Fetching models from OpenRouter...');
-
       const response = await axios.get(
         'https://openrouter.ai/api/v1/models',
         {
@@ -356,60 +359,45 @@ Mock AI Assistant`;
             'HTTP-Referer': OPENROUTER_REFERER,
             'X-Title': APP_NAME,
           },
-          timeout: 15000, // Increased timeout for large model list
+          timeout: 10000,
         }
       );
 
       if (response.data && response.data.data) {
-        // Filter to only include models that output text
-        // Modality format: "input->output" e.g., "text->text", "text+image->text", "text->image"
-        const textOutputModels = response.data.data.filter((model: any) => {
-          const modality = model.architecture?.modality;
-          if (!modality) return true; // Include if no modality info (safer default)
-          // Include models that output text (modality ends with "->text")
-          return modality.endsWith('->text');
-        });
-
-        console.log(`[ApiService] Successfully fetched ${response.data.data.length} models, ${textOutputModels.length} are text-output models`);
-
-        // Update cache with filtered models
-        this.modelCache = {
-          data: textOutputModels,
-          timestamp: Date.now(),
-        };
-
-        return { success: true, data: textOutputModels };
+        return { success: true, data: response.data.data };
       }
 
-      console.error('[ApiService] Invalid response structure:', JSON.stringify(response.data).substring(0, 200));
       return { success: false, error: 'Invalid response from OpenRouter API' };
     } catch (error) {
       const axiosError = error as AxiosError;
 
-      console.error('[ApiService] Model fetch error:', {
+      // Log detailed error for debugging
+      console.error('[ApiService] getAvailableModels error:', {
+        message: axiosError.message,
         code: axiosError.code,
         status: axiosError.response?.status,
-        message: axiosError.message,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data,
       });
 
       if (axiosError.response?.status === 401) {
         return { success: false, error: 'Invalid API key' };
       }
 
-      if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
-        return { success: false, error: 'Request timed out. OpenRouter may be slow to respond.' };
+      // Provide more specific error messages
+      if (axiosError.code === 'ENOTFOUND') {
+        return { success: false, error: 'DNS lookup failed. Check your internet connection.' };
+      }
+      if (axiosError.code === 'ECONNREFUSED') {
+        return { success: false, error: 'Connection refused. The server may be down.' };
+      }
+      if (axiosError.code === 'ETIMEDOUT' || axiosError.code === 'ECONNABORTED') {
+        return { success: false, error: 'Connection timed out. Try again later.' };
       }
 
-      return { success: false, error: `Failed to fetch models: ${axiosError.message}` };
+      const errorDetail = axiosError.code ? ` (${axiosError.code})` : '';
+      return { success: false, error: `Failed to fetch models${errorDetail}. Check your connection.` };
     }
-  }
-
-  /**
-   * Clear the model cache (useful when API key changes)
-   */
-  clearModelCache(): void {
-    this.modelCache = null;
-    console.log('[ApiService] Model cache cleared');
   }
 
   /**
@@ -418,7 +406,6 @@ Mock AI Assistant`;
   buildPrompt(
     template: string,
     tone: Tone | undefined,
-    style: StyleProfile | undefined,
     content: string,
     includeClosingAndSignature: boolean
   ): string {
@@ -429,25 +416,6 @@ Mock AI Assistant`;
       .replace(/\$\{content\}/g, content)
       .replace(/\$\{tone\}/g, toneDescription)
       .replace(/\$\{date\}/g, date);
-
-    // Add style instructions if a style is selected (and it has content)
-    if (style && (style.description || (style.samples && style.samples.length > 0))) {
-      prompt += '\n\n--- WRITING STYLE GUIDANCE ---';
-
-      if (style.description) {
-        prompt += `\nStyle description: ${style.description}`;
-      }
-
-      // Add sample emails for few-shot learning
-      if (style.samples && style.samples.length > 0) {
-        prompt += '\n\nHere are examples of emails written in my preferred style. Please match this writing style:';
-        style.samples.forEach((sample, index) => {
-          prompt += `\n\n[Example ${index + 1}]\n${sample}`;
-        });
-      }
-
-      prompt += '\n\n--- END STYLE GUIDANCE ---';
-    }
 
     // Add instruction about closing and signature
     if (!includeClosingAndSignature) {

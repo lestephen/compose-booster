@@ -39,6 +39,9 @@ export const IPC_CHANNELS = {
   // Shell
   SHELL_OPEN_EXTERNAL: 'shell:open-external',
 
+  // App Info
+  APP_GET_VERSION: 'app:get-version',
+
   // Menu Events (Main → Renderer)
   MENU_UNDO: 'menu:undo',
   MENU_CLEAR_INPUT: 'menu:clear-input',

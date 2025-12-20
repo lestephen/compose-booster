@@ -4,25 +4,69 @@ import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
 import { MakerAppX } from '@electron-forge/maker-appx';
+import { MakerDMG } from '@electron-forge/maker-dmg';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import { PublisherGithub } from '@electron-forge/publisher-github';
-import { execSync } from 'child_process';
-import * as path from 'path';
 
-// Platform-specific icon path
-const iconPath = process.platform === 'darwin'
-  ? './assets/icons/mac/icon.icns'
-  : './assets/icons/win/icon.ico';
+// Determine if this is a Mac App Store build
+// Check both environment variable and command line argument
+const isMAS = process.env.MAS_BUILD === 'true' || process.argv.includes('--platform=mas');
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     name: 'Compose Booster',
     executableName: 'Compose Booster',
-    icon: iconPath,
-    appBundleId: 'com.coldray.composebooster',
+    // Platform-specific icons
+    icon: process.platform === 'darwin'
+      ? './assets/icons/mac/icon'
+      : './assets/icons/win/icon',
+    // macOS specific configuration
+    appBundleId: 'com.coldray.compose-booster',
+    appCategoryType: 'public.app-category.productivity',
+    // Extend Info.plist with additional keys
+    extendInfo: {
+      // Declare no custom encryption (only uses OS-provided TLS/HTTPS)
+      // This avoids the export compliance prompt in App Store Connect
+      ITSAppUsesNonExemptEncryption: false,
+      // Minimum macOS version - required for ARM-only builds (no Intel)
+      LSMinimumSystemVersion: '12.0',
+    },
+    // Code signing for macOS (uses environment variables or keychain)
+    osxSign: process.platform === 'darwin' ? {
+      identity: isMAS
+        ? 'Apple Distribution'           // For Mac App Store
+        : 'Developer ID Application',    // For GitHub distribution
+      'hardened-runtime': !isMAS,        // Hardened runtime for notarization (not MAS)
+      strictVerify: false,               // Skip pre-sign verification (Electron has adhoc signature)
+      provisioningProfile: isMAS ? './build/embedded.provisionprofile' : undefined,
+      // Use optionsForFile to specify entitlements - required for MAS builds
+      // The old top-level entitlements/entitlements-inherit properties are ignored by @electron/osx-sign
+      optionsForFile: (filePath: string) => {
+        // Main app bundle gets full entitlements, helper apps/frameworks get inherit entitlements
+        // The main app path ends with .app but doesn't contain .app/ (not nested inside another .app)
+        const isMainApp = filePath.endsWith('.app') && !filePath.includes('.app/');
+
+        if (isMAS) {
+          return {
+            entitlements: isMainApp
+              ? './build/entitlements.mas.plist'
+              : './build/entitlements.mas.inherit.plist',
+          };
+        } else {
+          return {
+            entitlements: './build/entitlements.mac.plist',
+          };
+        }
+      },
+    } : undefined,
+    // Notarization for GitHub distribution (not MAS)
+    osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
+      appleId: process.env.APPLE_ID || '',
+      appleIdPassword: process.env.APPLE_APP_PASSWORD || '',
+      teamId: 'NBW65ZYT36',
+    } : undefined,
   },
   buildIdentifier: process.arch,
   rebuildConfig: {},
@@ -40,8 +84,8 @@ const config: ForgeConfig = {
       // App metadata
       applicationDescription: 'AI-powered email composition assistant - improve, polish, and customize your emails with advanced AI models',
       backgroundColor: '#f18138', // Orange from logo
-      // Assets
-      assets: './assets/store',
+      // Assets - use appx folder for APPX package tiles (separate from store display images)
+      assets: './assets/appx',
       // Package settings
       packageName: 'ComposeBooster',
       packageDisplayName: 'Compose Booster',
@@ -50,7 +94,13 @@ const config: ForgeConfig = {
       makeVersionWinStoreCompatible: true,
       devCert: undefined,
     }),
-    new MakerZIP({}, ['darwin']),
+    new MakerZIP({}, ['darwin', 'mas']),
+    // DMG only for GitHub distribution (darwin), not for MAS
+    new MakerDMG({
+      name: 'Compose Booster',
+      icon: './assets/icons/mac/icon.icns',
+      format: 'ULFO', // ULFO = lzfse compression, good balance of size and compatibility
+    }),
     new MakerRpm({}),
     new MakerDeb({}),
   ],
@@ -83,45 +133,17 @@ const config: ForgeConfig = {
         },
       ],
     }),
-    // Fuses are used to enable/disable various Electron functionality
-    // at package time, before code signing the application
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
-    }),
+    // Fuses temporarily disabled to debug signing issue
+    // new FusesPlugin({
+    //   version: FuseVersion.V1,
+    //   [FuseV1Options.RunAsNode]: false,
+    //   [FuseV1Options.EnableCookieEncryption]: true,
+    //   [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+    //   [FuseV1Options.EnableNodeCliInspectArguments]: false,
+    //   [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+    //   [FuseV1Options.OnlyLoadAppFromAsar]: true,
+    // }),
   ],
-  publishers: [
-    new PublisherGithub({
-      repository: {
-        owner: 'lestephen',
-        name: 'compose-booster',
-      },
-      prerelease: false,
-      draft: true, // Create as draft, then publish manually after verification
-    }),
-  ],
-  hooks: {
-    postPackage: async (_config, packageResult) => {
-      // Fix macOS About dialog to not show duplicate version "1.0.0 (1.0.0)"
-      if (process.platform === 'darwin' && packageResult.platform === 'darwin') {
-        for (const outputPath of packageResult.outputPaths) {
-          const plistPath = path.join(outputPath, 'Compose Booster.app', 'Contents', 'Info.plist');
-          try {
-            // Set CFBundleVersion to just "1" (build number)
-            execSync(`/usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1" "${plistPath}"`);
-            console.log('[postPackage] Updated CFBundleVersion to "1"');
-          } catch (error) {
-            console.warn('[postPackage] Failed to update CFBundleVersion:', error);
-          }
-        }
-      }
-    },
-  },
 };
 
 export default config;

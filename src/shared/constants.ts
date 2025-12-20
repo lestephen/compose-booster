@@ -8,7 +8,8 @@
 
 // Application Info
 export const APP_NAME = 'Compose Booster';
-export const APP_VERSION = '1.0.0';
+// Note: Version is read from package.json via app.getVersion() in main process
+// Use window.electronAPI.getAppVersion() in renderer to get the version
 
 // Window Dimensions
 export const MAIN_WINDOW_DEFAULT_WIDTH = 1000;

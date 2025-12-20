@@ -37,6 +37,7 @@ class AppController {
   private copyBtn: HTMLButtonElement;
   private clearInputBtn: HTMLButtonElement;
   private clearOutputBtn: HTMLButtonElement;
+  private reportBtn: HTMLButtonElement;
   private processBtn: HTMLButtonElement;
   private cancelBtn: HTMLButtonElement;
   private regenerateBtn: HTMLButtonElement;
@@ -62,6 +63,7 @@ class AppController {
     this.copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
     this.clearInputBtn = document.getElementById('clearInputBtn') as HTMLButtonElement;
     this.clearOutputBtn = document.getElementById('clearOutputBtn') as HTMLButtonElement;
+    this.reportBtn = document.getElementById('reportBtn') as HTMLButtonElement;
     this.processBtn = document.getElementById('processBtn') as HTMLButtonElement;
     this.cancelBtn = document.getElementById('cancelBtn') as HTMLButtonElement;
     this.regenerateBtn = document.getElementById('regenerateBtn') as HTMLButtonElement;
@@ -105,6 +107,9 @@ class AppController {
     // Clear buttons
     this.clearInputBtn.addEventListener('click', () => this.textAreas.clearInput());
     this.clearOutputBtn.addEventListener('click', () => this.handleClearOutput());
+
+    // Report button
+    this.reportBtn.addEventListener('click', () => this.handleReport());
 
     // Process button
     this.processBtn.addEventListener('click', () => this.handleProcess());
@@ -241,6 +246,15 @@ class AppController {
       }
     } catch {
       this.statusBar.setError('Failed to copy to clipboard');
+    }
+  }
+
+  private async handleReport(): Promise<void> {
+    const reportUrl = 'https://github.com/lestephen/compose-booster/issues/new?template=ai-content-report.md&title=Report:+Inappropriate+AI+Content';
+    try {
+      await window.electronAPI.openExternal(reportUrl);
+    } catch {
+      this.statusBar.setError('Failed to open report page');
     }
   }
 
@@ -410,6 +424,7 @@ class AppController {
     this.copyBtn.disabled = !enabled;
     this.clearInputBtn.disabled = !enabled;
     this.clearOutputBtn.disabled = !enabled;
+    this.reportBtn.disabled = !enabled;
     this.processBtn.disabled = !enabled;
     this.regenerateBtn.disabled = !enabled;
     this.customCombo.setEnabled(enabled);

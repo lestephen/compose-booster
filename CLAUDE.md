@@ -273,6 +273,39 @@ npm run icons                # Regenerate icons from SVG
 3. **Settings not saving**: Check electron-store initialization, verify config path
 4. **Mock mode not working**: Verify environment variable set before `npm start`
 
+### Mac App Store (MAS) Build Issues
+
+#### MAS app crashes on launch (V8/Fontations crash)
+
+**Symptoms**: App crashes immediately on launch in TestFlight with `EXC_BREAKPOINT` in `fontations_ffi` during V8 initialization.
+
+**Root Cause**: Missing entitlements for V8 JIT compilation on ARM64 in sandboxed environment.
+
+**Required Entitlements** (in both `entitlements.mas.plist` and `entitlements.mas.inherit.plist`):
+- `com.apple.security.cs.allow-jit` - Required for V8 JIT
+- `com.apple.security.cs.allow-unsigned-executable-memory` - Required for V8 JIT on ARM64
+- `com.apple.security.cs.disable-library-validation` - Required for Electron helper processes
+
+**Critical Configuration**: In `forge.config.ts`, you MUST use `optionsForFile` callback to specify entitlements. The old top-level `entitlements` and `entitlements-inherit` properties are **ignored** by `@electron/osx-sign`:
+
+```typescript
+osxSign: {
+  optionsForFile: (filePath: string) => {
+    const isMainApp = filePath.endsWith('.app') && !filePath.includes('.app/');
+    return {
+      entitlements: isMainApp
+        ? './build/entitlements.mas.plist'
+        : './build/entitlements.mas.inherit.plist',
+    };
+  },
+}
+```
+
+**Verification**: After building, verify entitlements are applied:
+```bash
+codesign -d --entitlements :- "path/to/App.app" 2>/dev/null | grep -o '<key>[^<]*</key>'
+```
+
 ### Debug Tools
 
 - **DevTools**: Automatically open in development mode

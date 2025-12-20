@@ -7,13 +7,12 @@
 // IPC Handlers
 // Central registration of all IPC handlers
 
-import { ipcMain, clipboard, dialog, BrowserWindow, shell } from 'electron';
+import { ipcMain, clipboard, dialog, BrowserWindow, shell, app } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
-import { updateService } from '../services/updateService';
 import { closeSettingsWindow } from '../windows/settingsWindow';
-import { ProcessEmailRequest, RegenerateRequest, IpcResponse, AppConfig, UpdateStatus } from '../../shared/types';
+import { ProcessEmailRequest, IpcResponse, AppConfig } from '../../shared/types';
 import * as fs from 'fs';
 
 /**
@@ -38,8 +37,8 @@ export function registerIpcHandlers(): void {
   // Shell handlers
   registerShellHandlers();
 
-  // Update handlers
-  registerUpdateHandlers();
+  // App info handlers
+  registerAppInfoHandlers();
 }
 
 /**
@@ -204,7 +203,7 @@ function registerApiHandlers(): void {
   // Process email
   ipcMain.handle(IPC_CHANNELS.API_PROCESS_EMAIL, async (event, request: ProcessEmailRequest) => {
     try {
-      const { input, model, prompt, tone, style } = request;
+      const { input, model, prompt, tone } = request;
 
       // Validate input
       if (!input || input.trim() === '') {
@@ -242,14 +241,10 @@ function registerApiHandlers(): void {
       // Get tone
       const toneObj = config.tones.find((t) => t.id === tone);
 
-      // Get style
-      const styleObj = style ? config.styles.find((s) => s.id === style) : undefined;
-
       // Build final prompt
       const finalPrompt = apiService.buildPrompt(
         promptTemplate.text,
         toneObj,
-        styleObj,
         input,
         config.preferences.includeClosingAndSignature
       );
@@ -264,83 +259,8 @@ function registerApiHandlers(): void {
 
       // Update last used
       if (result.success) {
-        configService.updateLastUsed(model, prompt, tone, style);
+        configService.updateLastUsed(model, prompt, tone);
       }
-
-      return result;
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
-          code: 'UNKNOWN_ERROR',
-        },
-      };
-    }
-  });
-
-  // Regenerate response with higher temperature
-  ipcMain.handle(IPC_CHANNELS.API_REGENERATE, async (event, request: RegenerateRequest) => {
-    try {
-      const { input, model, prompt, tone, style, temperature } = request;
-
-      // Validate input
-      if (!input || input.trim() === '') {
-        return {
-          success: false,
-          error: { message: 'Please enter some text to process', code: 'EMPTY_INPUT' },
-        };
-      }
-
-      // Get config
-      const config = configService.getConfig();
-
-      // Validate API key (skip check in mock mode)
-      const isMockMode = process.env.MOCK_API === 'true';
-      if (!isMockMode && (!config.apiKey || config.apiKey.trim() === '')) {
-        return {
-          success: false,
-          error: {
-            message: 'API key not configured. Please set your OpenRouter API key in Settings.',
-            code: 'NO_API_KEY',
-            action: 'OPEN_SETTINGS',
-          },
-        };
-      }
-
-      // Get prompt template
-      const promptTemplate = config.prompts[prompt];
-      if (!promptTemplate) {
-        return {
-          success: false,
-          error: { message: `Prompt "${prompt}" not found`, code: 'INVALID_PROMPT' },
-        };
-      }
-
-      // Get tone
-      const toneObj = config.tones.find((t) => t.id === tone);
-
-      // Get style
-      const styleObj = style ? config.styles.find((s) => s.id === style) : undefined;
-
-      // Build final prompt
-      const finalPrompt = apiService.buildPrompt(
-        promptTemplate.text,
-        toneObj,
-        styleObj,
-        input,
-        config.preferences.includeClosingAndSignature
-      );
-
-      // Make API call with temperature
-      const result = await apiService.processEmail(config.apiKey, model, finalPrompt, temperature);
-
-      // Update statistics if successful
-      if (result.success && result.cost) {
-        configService.incrementStatistics(result.cost);
-      }
-
-      // Note: We don't update lastUsed for regenerate since we want to preserve the original settings
 
       return result;
     } catch (error) {
@@ -355,12 +275,17 @@ function registerApiHandlers(): void {
   });
 
   // Get available models from OpenRouter
-  ipcMain.handle(IPC_CHANNELS.API_GET_MODELS, async (event, forceRefresh: boolean = false) => {
+  ipcMain.handle(IPC_CHANNELS.API_GET_MODELS, async () => {
     try {
       const config = configService.getConfig();
       const apiKey = config.apiKey;
 
-      if (!apiKey || apiKey.trim() === '') {
+      console.log('[IPC:API_GET_MODELS] Fetching models, apiKey present:', !!apiKey, 'length:', apiKey?.length || 0);
+
+      // Skip API key check in mock/screenshot mode
+      const isMockMode = process.env.MOCK_API === 'true' || process.env.SCREENSHOT_MODE === '1';
+      if (!isMockMode && (!apiKey || apiKey.trim() === '')) {
+        console.log('[IPC:API_GET_MODELS] No API key configured');
         return {
           success: false,
           error: {
@@ -369,7 +294,8 @@ function registerApiHandlers(): void {
         } as IpcResponse;
       }
 
-      const result = await apiService.getAvailableModels(apiKey, forceRefresh);
+      const result = await apiService.getAvailableModels(apiKey);
+      console.log('[IPC:API_GET_MODELS] Result:', result.success, result.error || `${result.data?.length} models`);
 
       if (result.success) {
         return {
@@ -414,18 +340,10 @@ function registerClipboardHandlers(): void {
     }
   });
 
-  // Write to clipboard (supports text and HTML)
-  ipcMain.handle(IPC_CHANNELS.CLIPBOARD_WRITE, async (event, content: { text: string; html?: string }) => {
+  // Write to clipboard
+  ipcMain.handle(IPC_CHANNELS.CLIPBOARD_WRITE, async (event, text: string) => {
     try {
-      if (content.html) {
-        // Write both HTML and plain text for rich-text support
-        clipboard.write({
-          text: content.text,
-          html: content.html,
-        });
-      } else {
-        clipboard.writeText(content.text);
-      }
+      clipboard.writeText(text);
       return { success: true } as IpcResponse;
     } catch (error) {
       return {
@@ -515,85 +433,20 @@ function registerShellHandlers(): void {
 }
 
 /**
- * Update IPC handlers
+ * App Info IPC handlers
  */
-function registerUpdateHandlers(): void {
-  // Check if auto-update is available for this distribution
-  ipcMain.handle(IPC_CHANNELS.UPDATE_IS_AVAILABLE, async (): Promise<IpcResponse<boolean>> => {
+function registerAppInfoHandlers(): void {
+  // Get app version from package.json
+  ipcMain.handle(IPC_CHANNELS.APP_GET_VERSION, async () => {
     try {
-      return { success: true, data: updateService.isAvailable() };
+      return { success: true, data: app.getVersion() } as IpcResponse<string>;
     } catch (error) {
       return {
         success: false,
-        error: { message: error instanceof Error ? error.message : 'Failed to check update availability' },
-      };
-    }
-  });
-
-  // Get update info (current version, distribution channel, etc.)
-  ipcMain.handle(IPC_CHANNELS.UPDATE_GET_INFO, async (): Promise<IpcResponse<{
-    currentVersion: string;
-    distributionChannel: string;
-    autoUpdateAvailable: boolean;
-  }>> => {
-    try {
-      return { success: true, data: updateService.getUpdateInfo() };
-    } catch (error) {
-      return {
-        success: false,
-        error: { message: error instanceof Error ? error.message : 'Failed to get update info' },
-      };
-    }
-  });
-
-  // Check for updates
-  ipcMain.handle(IPC_CHANNELS.UPDATE_CHECK, async (): Promise<IpcResponse<UpdateStatus>> => {
-    try {
-      const status = await updateService.checkForUpdates();
-      return { success: true, data: status };
-    } catch (error) {
-      return {
-        success: false,
-        error: { message: error instanceof Error ? error.message : 'Failed to check for updates' },
-      };
-    }
-  });
-
-  // Download update
-  ipcMain.handle(IPC_CHANNELS.UPDATE_DOWNLOAD, async (): Promise<IpcResponse> => {
-    try {
-      await updateService.downloadUpdate();
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: { message: error instanceof Error ? error.message : 'Failed to download update' },
-      };
-    }
-  });
-
-  // Install update and restart
-  ipcMain.handle(IPC_CHANNELS.UPDATE_INSTALL, async (): Promise<IpcResponse> => {
-    try {
-      updateService.quitAndInstall();
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: { message: error instanceof Error ? error.message : 'Failed to install update' },
-      };
-    }
-  });
-
-  // Get current update status
-  ipcMain.handle(IPC_CHANNELS.UPDATE_GET_STATUS, async (): Promise<IpcResponse<UpdateStatus>> => {
-    try {
-      return { success: true, data: updateService.getStatus() };
-    } catch (error) {
-      return {
-        success: false,
-        error: { message: error instanceof Error ? error.message : 'Failed to get update status' },
-      };
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to get version',
+        },
+      } as IpcResponse;
     }
   });
 }

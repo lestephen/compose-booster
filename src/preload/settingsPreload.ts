@@ -9,7 +9,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../main/ipc/channels';
-import { AppConfig, IpcResponse, UpdateStatus } from '../shared/types';
+import { AppConfig, IpcResponse } from '../shared/types';
 
 // Expose settings-specific API
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -36,8 +36,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke(IPC_CHANNELS.CONFIG_TEST_API_KEY, apiKey),
 
   // Models
-  getAvailableModels: (forceRefresh: boolean = false): Promise<IpcResponse> =>
-    ipcRenderer.invoke(IPC_CHANNELS.API_GET_MODELS, forceRefresh),
+  getAvailableModels: (): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.API_GET_MODELS),
 
   // Theme
   getTheme: (): Promise<IpcResponse<string>> =>
@@ -64,31 +64,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url: string): Promise<IpcResponse> =>
     ipcRenderer.invoke(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, url),
 
-  // Updates
-  isUpdateAvailable: (): Promise<IpcResponse<boolean>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_IS_AVAILABLE),
-
-  getUpdateInfo: (): Promise<IpcResponse<{
-    currentVersion: string;
-    distributionChannel: string;
-    autoUpdateAvailable: boolean;
-  }>> => ipcRenderer.invoke(IPC_CHANNELS.UPDATE_GET_INFO),
-
-  checkForUpdates: (): Promise<IpcResponse<UpdateStatus>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_CHECK),
-
-  downloadUpdate: (): Promise<IpcResponse> =>
-    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_DOWNLOAD),
-
-  installUpdate: (): Promise<IpcResponse> =>
-    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_INSTALL),
-
-  getUpdateStatus: (): Promise<IpcResponse<UpdateStatus>> =>
-    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_GET_STATUS),
-
-  onUpdateStatusChanged: (callback: (status: UpdateStatus) => void) => {
-    ipcRenderer.on(IPC_CHANNELS.UPDATE_STATUS_CHANGED, (_, status) => callback(status));
-  },
+  // App Info
+  getAppVersion: (): Promise<IpcResponse<string>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.APP_GET_VERSION),
 });
 
 // TypeScript declaration for window.electronAPI
@@ -102,25 +80,14 @@ declare global {
       exportConfig: () => Promise<IpcResponse<string>>;
       importConfig: () => Promise<IpcResponse>;
       testApiKey: (apiKey: string) => Promise<IpcResponse>;
-      getAvailableModels: (forceRefresh?: boolean) => Promise<IpcResponse>;
+      getAvailableModels: () => Promise<IpcResponse>;
       getTheme: () => Promise<IpcResponse<string>>;
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<IpcResponse>;
       onConfigUpdated: (callback: () => void) => void;
       rebuildMenu: () => Promise<IpcResponse>;
       closeWindow: () => void;
       openExternal: (url: string) => Promise<IpcResponse>;
-      // Updates
-      isUpdateAvailable: () => Promise<IpcResponse<boolean>>;
-      getUpdateInfo: () => Promise<IpcResponse<{
-        currentVersion: string;
-        distributionChannel: string;
-        autoUpdateAvailable: boolean;
-      }>>;
-      checkForUpdates: () => Promise<IpcResponse<UpdateStatus>>;
-      downloadUpdate: () => Promise<IpcResponse>;
-      installUpdate: () => Promise<IpcResponse>;
-      getUpdateStatus: () => Promise<IpcResponse<UpdateStatus>>;
-      onUpdateStatusChanged: (callback: (status: UpdateStatus) => void) => void;
+      getAppVersion: () => Promise<IpcResponse<string>>;
     };
   }
 }
