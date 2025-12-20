@@ -188,7 +188,7 @@ export const DEFAULT_HOT_COMBOS: QuickAction[] = [
   {
     name: 'Professional Email',
     icon: '👔',
-    model: 'anthropic/claude-3.5-sonnet',
+    model: 'anthropic/claude-sonnet-4.5',
     prompt: 'professional',
     tone: 'professional',
     position: 2,
@@ -196,7 +196,7 @@ export const DEFAULT_HOT_COMBOS: QuickAction[] = [
   {
     name: 'Draft Reply',
     icon: '💬',
-    model: 'anthropic/claude-3.5-sonnet',
+    model: 'anthropic/claude-sonnet-4.5',
     prompt: 'reply',
     tone: 'friendly',
     position: 3,
@@ -210,7 +210,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   tones: DEFAULT_TONES,
   quickActions: DEFAULT_HOT_COMBOS,
   lastUsed: {
-    model: 'anthropic/claude-3.5-sonnet',
+    model: 'anthropic/claude-sonnet-4.5',
     prompt: 'improve',
     tone: 'neutral',
   },

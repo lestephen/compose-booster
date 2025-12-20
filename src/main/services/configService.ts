@@ -158,16 +158,37 @@ class ConfigService {
 
   /**
    * Validate and merge config with defaults
-   * Ensures all required fields exist
+   * Ensures all required fields exist and model IDs are valid
    */
   private validateAndMergeConfig(config: Partial<AppConfig>): AppConfig {
+    const models = config.models || DEFAULT_CONFIG.models;
+    const enabledModelIds = models.filter(m => m.enabled).map(m => m.id);
+    const defaultModelId = models.find(m => m.isDefault)?.id || enabledModelIds[0] || DEFAULT_CONFIG.models[0].id;
+
+    // Validate quick actions - ensure model IDs exist in enabled models
+    let quickActions = config.quickActions || DEFAULT_CONFIG.quickActions;
+    quickActions = quickActions.map(action => {
+      if (!enabledModelIds.includes(action.model)) {
+        console.log(`[ConfigService] Quick action "${action.name}" has invalid model "${action.model}", replacing with "${defaultModelId}"`);
+        return { ...action, model: defaultModelId };
+      }
+      return action;
+    });
+
+    // Validate lastUsed model
+    let lastUsed = config.lastUsed || DEFAULT_CONFIG.lastUsed;
+    if (!enabledModelIds.includes(lastUsed.model)) {
+      console.log(`[ConfigService] lastUsed has invalid model "${lastUsed.model}", replacing with "${defaultModelId}"`);
+      lastUsed = { ...lastUsed, model: defaultModelId };
+    }
+
     return {
       apiKey: config.apiKey || DEFAULT_CONFIG.apiKey,
-      models: config.models || DEFAULT_CONFIG.models,
+      models,
       prompts: config.prompts || DEFAULT_CONFIG.prompts,
       tones: config.tones || DEFAULT_CONFIG.tones,
-      quickActions: config.quickActions || DEFAULT_CONFIG.quickActions,
-      lastUsed: config.lastUsed || DEFAULT_CONFIG.lastUsed,
+      quickActions,
+      lastUsed,
       preferences: {
         ...DEFAULT_CONFIG.preferences,
         ...config.preferences,
