@@ -316,15 +316,38 @@ Mock AI Assistant`;
    */
   async getAvailableModels(apiKey: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
     if (this.useMock) {
-      // Return mock models for development
-      return {
-        success: true,
-        data: [
-          { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', pricing: { prompt: '0.000015', completion: '0.000075' } },
-          { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', pricing: { prompt: '0.00001', completion: '0.00003' } },
-          { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', pricing: { prompt: '0.0000008', completion: '0.0000008' } },
-        ],
-      };
+      // Return mock models for development/screenshots
+      // Generate realistic count (~350 models like production)
+      const mockModels = [
+        { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', pricing: { prompt: '0.000003', completion: '0.000015' } },
+        { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', pricing: { prompt: '0.000015', completion: '0.000075' } },
+        { id: 'anthropic/claude-3-sonnet', name: 'Claude 3 Sonnet', pricing: { prompt: '0.000003', completion: '0.000015' } },
+        { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', pricing: { prompt: '0.00000025', completion: '0.00000125' } },
+        { id: 'openai/gpt-4o', name: 'GPT-4o', pricing: { prompt: '0.000005', completion: '0.000015' } },
+        { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', pricing: { prompt: '0.00001', completion: '0.00003' } },
+        { id: 'openai/gpt-4', name: 'GPT-4', pricing: { prompt: '0.00003', completion: '0.00006' } },
+        { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo', pricing: { prompt: '0.0000005', completion: '0.0000015' } },
+        { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5', pricing: { prompt: '0.0000025', completion: '0.0000075' } },
+        { id: 'google/gemini-flash-1.5', name: 'Gemini Flash 1.5', pricing: { prompt: '0.00000025', completion: '0.00000075' } },
+        { id: 'meta-llama/llama-3.1-405b-instruct', name: 'Llama 3.1 405B', pricing: { prompt: '0.000003', completion: '0.000003' } },
+        { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', pricing: { prompt: '0.0000008', completion: '0.0000008' } },
+        { id: 'mistralai/mistral-large', name: 'Mistral Large', pricing: { prompt: '0.000003', completion: '0.000009' } },
+        { id: 'mistralai/mixtral-8x22b', name: 'Mixtral 8x22B', pricing: { prompt: '0.0000009', completion: '0.0000009' } },
+        { id: 'cohere/command-r-plus', name: 'Command R+', pricing: { prompt: '0.000003', completion: '0.000015' } },
+      ];
+      // Pad to ~350 models for realistic screenshot
+      const providers = ['openai', 'anthropic', 'google', 'meta-llama', 'mistralai', 'cohere', 'deepseek', 'qwen', 'nvidia', 'microsoft'];
+      const variants = ['base', 'instruct', 'chat', 'vision', 'code', 'math', 'reasoning', 'fast', 'preview', 'experimental'];
+      for (let i = mockModels.length; i < 350; i++) {
+        const provider = providers[i % providers.length];
+        const variant = variants[Math.floor(i / providers.length) % variants.length];
+        mockModels.push({
+          id: `${provider}/model-${variant}-${i}`,
+          name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Model ${variant} ${i}`,
+          pricing: { prompt: '0.000001', completion: '0.000002' }
+        });
+      }
+      return { success: true, data: mockModels };
     }
 
     try {
