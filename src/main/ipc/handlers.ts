@@ -7,7 +7,7 @@
 // IPC Handlers
 // Central registration of all IPC handlers
 
-import { ipcMain, clipboard, dialog, BrowserWindow, shell } from 'electron';
+import { ipcMain, clipboard, dialog, BrowserWindow, shell, app } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
@@ -36,6 +36,9 @@ export function registerIpcHandlers(): void {
 
   // Shell handlers
   registerShellHandlers();
+
+  // App info handlers
+  registerAppInfoHandlers();
 }
 
 /**
@@ -419,6 +422,25 @@ function registerShellHandlers(): void {
         success: false,
         error: {
           message: error instanceof Error ? error.message : 'Failed to open URL',
+        },
+      } as IpcResponse;
+    }
+  });
+}
+
+/**
+ * App Info IPC handlers
+ */
+function registerAppInfoHandlers(): void {
+  // Get app version from package.json
+  ipcMain.handle(IPC_CHANNELS.APP_GET_VERSION, async () => {
+    try {
+      return { success: true, data: app.getVersion() } as IpcResponse<string>;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to get version',
         },
       } as IpcResponse;
     }

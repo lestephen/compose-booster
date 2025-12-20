@@ -254,28 +254,33 @@ Mock AI Assistant`;
     }
 
     try {
-      // Make a minimal API call to test the key
-      const response = await axios.post(
-        OPENROUTER_API_URL,
-        {
-          model: 'openai/gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'test' }],
-          max_tokens: 1,
-        },
+      // Use the /auth/key endpoint to validate the key without consuming credits
+      // This is more reliable than making a model call
+      const response = await axios.get(
+        'https://openrouter.ai/api/v1/auth/key',
         {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
             'HTTP-Referer': OPENROUTER_REFERER,
             'X-Title': APP_NAME,
-            'Content-Type': 'application/json',
           },
           timeout: 10000,
         }
       );
 
+      // If we get a response, the key is valid
       return { valid: true };
     } catch (error) {
       const axiosError = error as AxiosError;
+
+      // Log detailed error for debugging
+      console.error('[ApiService] testApiKey error:', {
+        message: axiosError.message,
+        code: axiosError.code,
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data,
+      });
 
       if (axiosError.response?.status === 401) {
         return { valid: false, error: 'Invalid API key' };
@@ -286,8 +291,23 @@ Mock AI Assistant`;
         return { valid: true };
       }
 
-      // Other errors might be network issues
-      return { valid: false, error: 'Could not verify API key. Check your connection.' };
+      // Provide more specific error messages
+      if (axiosError.code === 'ENOTFOUND') {
+        return { valid: false, error: 'DNS lookup failed. Check your internet connection.' };
+      }
+      if (axiosError.code === 'ECONNREFUSED') {
+        return { valid: false, error: 'Connection refused. The server may be down.' };
+      }
+      if (axiosError.code === 'ETIMEDOUT' || axiosError.code === 'ECONNABORTED') {
+        return { valid: false, error: 'Connection timed out. Try again later.' };
+      }
+      if (axiosError.code === 'CERT_HAS_EXPIRED' || axiosError.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE') {
+        return { valid: false, error: 'SSL certificate error. Check your system date/time.' };
+      }
+
+      // Include error code in message for debugging
+      const errorDetail = axiosError.code ? ` (${axiosError.code})` : '';
+      return { valid: false, error: `Could not verify API key${errorDetail}. Check your connection.` };
     }
   }
 
