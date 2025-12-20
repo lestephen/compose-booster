@@ -25,7 +25,7 @@ export class ModelsTab {
     this.config = config;
     this.onConfigChange = onConfigChange;
     this.render();
-    this.loadAvailableModels();
+    this.reloadModels();
   }
 
   public updateConfig(config: AppConfig): void {
@@ -127,7 +127,7 @@ export class ModelsTab {
     // Reset selection
     this.selectedDropdownIndex = -1;
 
-    if (this.filteredModels.length === 0 || searchTerm.trim() === '') {
+    if (this.filteredModels.length === 0) {
       dropdown.classList.add('hidden');
       this.dropdownVisible = false;
       return;
@@ -346,9 +346,9 @@ export class ModelsTab {
         addBtn.disabled = !modelExists;
       });
 
-      // Show dropdown on focus if there's text
+      // Show dropdown on focus (show all models if empty)
       searchInput.addEventListener('focus', () => {
-        if (searchInput.value.trim() && this.availableModels.length > 0) {
+        if (this.availableModels.length > 0) {
           this.updateDropdown(searchInput.value);
         }
       });
@@ -517,7 +517,11 @@ export class ModelsTab {
     return DEFAULT_CONFIG.models.some(m => m.id === modelId);
   }
 
-  private async loadAvailableModels(): Promise<void> {
+  /**
+   * Public method to reload available models from OpenRouter
+   * Call this after API key is validated/changed
+   */
+  public async reloadModels(): Promise<void> {
     const loadingText = document.getElementById('loadingModelsText');
 
     try {

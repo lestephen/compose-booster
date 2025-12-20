@@ -280,9 +280,12 @@ function registerApiHandlers(): void {
       const config = configService.getConfig();
       const apiKey = config.apiKey;
 
+      console.log('[IPC:API_GET_MODELS] Fetching models, apiKey present:', !!apiKey, 'length:', apiKey?.length || 0);
+
       // Skip API key check in mock/screenshot mode
       const isMockMode = process.env.MOCK_API === 'true' || process.env.SCREENSHOT_MODE === '1';
       if (!isMockMode && (!apiKey || apiKey.trim() === '')) {
+        console.log('[IPC:API_GET_MODELS] No API key configured');
         return {
           success: false,
           error: {
@@ -292,6 +295,7 @@ function registerApiHandlers(): void {
       }
 
       const result = await apiService.getAvailableModels(apiKey);
+      console.log('[IPC:API_GET_MODELS] Result:', result.success, result.error || `${result.data?.length} models`);
 
       if (result.success) {
         return {

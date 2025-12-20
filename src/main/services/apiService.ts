@@ -348,11 +348,32 @@ Mock AI Assistant`;
     } catch (error) {
       const axiosError = error as AxiosError;
 
+      // Log detailed error for debugging
+      console.error('[ApiService] getAvailableModels error:', {
+        message: axiosError.message,
+        code: axiosError.code,
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data,
+      });
+
       if (axiosError.response?.status === 401) {
         return { success: false, error: 'Invalid API key' };
       }
 
-      return { success: false, error: 'Failed to fetch models. Check your connection.' };
+      // Provide more specific error messages
+      if (axiosError.code === 'ENOTFOUND') {
+        return { success: false, error: 'DNS lookup failed. Check your internet connection.' };
+      }
+      if (axiosError.code === 'ECONNREFUSED') {
+        return { success: false, error: 'Connection refused. The server may be down.' };
+      }
+      if (axiosError.code === 'ETIMEDOUT' || axiosError.code === 'ECONNABORTED') {
+        return { success: false, error: 'Connection timed out. Try again later.' };
+      }
+
+      const errorDetail = axiosError.code ? ` (${axiosError.code})` : '';
+      return { success: false, error: `Failed to fetch models${errorDetail}. Check your connection.` };
     }
   }
 
