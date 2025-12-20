@@ -8,9 +8,11 @@
 // Manages application configuration using electron-store
 
 import Store from 'electron-store';
+import { app } from 'electron';
 import { createHash } from 'crypto';
 import { homedir, hostname, userInfo } from 'os';
 import { unlinkSync, existsSync } from 'fs';
+import { join } from 'path';
 import { AppConfig } from '../../shared/types';
 import { DEFAULT_CONFIG } from '../config/defaultConfig';
 
@@ -32,6 +34,35 @@ function generateMachineKey(): string {
   // Create a SHA-256 hash of the combined identifiers
   // This produces a consistent key for the same machine/user
   return createHash('sha256').update(machineIdentifiers).digest('hex');
+}
+
+/**
+ * Get the config file path without creating a Store
+ * This avoids triggering deserialization of a potentially corrupted file
+ */
+function getConfigFilePath(): string {
+  // electron-store uses app.getPath('userData') as the base directory
+  // and the 'name' option (defaulting to 'config') as the filename
+  return join(app.getPath('userData'), 'config.json');
+}
+
+/**
+ * Delete corrupted config file if it exists
+ * Returns true if file was deleted or didn't exist, false if deletion failed
+ */
+function deleteCorruptedConfig(): boolean {
+  const configPath = getConfigFilePath();
+  if (existsSync(configPath)) {
+    try {
+      unlinkSync(configPath);
+      console.log('[ConfigService] Deleted corrupted config file:', configPath);
+      return true;
+    } catch (deleteError) {
+      console.error('[ConfigService] Failed to delete corrupted config:', deleteError);
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -58,22 +89,24 @@ function createStoreWithRecovery(): Store<AppConfig> {
     // 1. Upgrading from a version with a different encryption key
     // 2. Config file is corrupted
     // 3. User copied config from another machine
+    // 4. Sandbox environment changed the encryption key inputs
+    console.error('[ConfigService] Failed to read config, attempting recovery:', error);
 
-    // Create a temporary store just to get the path
-    const tempStore = new Store<AppConfig>({ name: 'config', defaults: DEFAULT_CONFIG });
-    const configPath = tempStore.path;
-
-    // Delete the corrupted config file
-    if (existsSync(configPath)) {
-      try {
-        unlinkSync(configPath);
-      } catch {
-        // If we can't delete, try to proceed anyway
-      }
-    }
+    // Delete the corrupted config file using the path we can get without Store
+    deleteCorruptedConfig();
 
     // Create a fresh store with defaults
-    return new Store<AppConfig>(storeOptions);
+    try {
+      return new Store<AppConfig>(storeOptions);
+    } catch (retryError) {
+      // If we still can't create a store, try without encryption as last resort
+      console.error('[ConfigService] Recovery failed, trying without encryption:', retryError);
+      return new Store<AppConfig>({
+        name: 'config',
+        defaults: DEFAULT_CONFIG,
+        // No encryption key - store will be unencrypted but at least functional
+      });
+    }
   }
 }
 
