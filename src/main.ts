@@ -20,10 +20,11 @@ if (started) {
   app.quit();
 }
 
-// Disable Fontations backend for MAS builds to prevent crash
-// The Fontations Rust font library can crash in the MAS sandbox environment
+// Disable Fontations backend to prevent crash in MAS sandbox environment
+// The Fontations Rust font library crashes during V8 init on macOS MAS builds
 // See: https://groups.google.com/a/chromium.org/g/blink-dev/c/4xUt73fxCrU
-if (process.mas) {
+// Note: This may not work as crash occurs before JS runs - see GitHub issue #2
+if (process.platform === 'darwin') {
   app.commandLine.appendSwitch('disable-features', 'FontationsBackend');
 }
 

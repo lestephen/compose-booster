@@ -30,21 +30,36 @@ const config: ForgeConfig = {
       // Declare no custom encryption (only uses OS-provided TLS/HTTPS)
       // This avoids the export compliance prompt in App Store Connect
       ITSAppUsesNonExemptEncryption: false,
+      // Minimum macOS version - required for ARM-only builds (no Intel)
+      LSMinimumSystemVersion: '12.0',
     },
     // Code signing for macOS (uses environment variables or keychain)
     osxSign: process.platform === 'darwin' ? {
       identity: isMAS
         ? 'Apple Distribution'           // For Mac App Store
         : 'Developer ID Application',    // For GitHub distribution
-      entitlements: isMAS
-        ? './build/entitlements.mas.plist'
-        : './build/entitlements.mac.plist',
-      'entitlements-inherit': isMAS
-        ? './build/entitlements.mas.inherit.plist'
-        : './build/entitlements.mac.plist',
       'hardened-runtime': !isMAS,        // Hardened runtime for notarization (not MAS)
       strictVerify: false,               // Skip pre-sign verification (Electron has adhoc signature)
       provisioningProfile: isMAS ? './build/embedded.provisionprofile' : undefined,
+      // Use optionsForFile to specify entitlements - required for MAS builds
+      // The old top-level entitlements/entitlements-inherit properties are ignored by @electron/osx-sign
+      optionsForFile: (filePath: string) => {
+        // Main app bundle gets full entitlements, helper apps/frameworks get inherit entitlements
+        // The main app path ends with .app but doesn't contain .app/ (not nested inside another .app)
+        const isMainApp = filePath.endsWith('.app') && !filePath.includes('.app/');
+
+        if (isMAS) {
+          return {
+            entitlements: isMainApp
+              ? './build/entitlements.mas.plist'
+              : './build/entitlements.mas.inherit.plist',
+          };
+        } else {
+          return {
+            entitlements: './build/entitlements.mac.plist',
+          };
+        }
+      },
     } : undefined,
     // Notarization for GitHub distribution (not MAS)
     osxNotarize: (process.platform === 'darwin' && !isMAS) ? {
