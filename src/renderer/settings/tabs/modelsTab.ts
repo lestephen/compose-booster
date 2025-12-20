@@ -78,6 +78,30 @@ export class ModelsTab {
 
     this.populateModelsTable();
     this.setupEventListeners();
+    this.populateDatalistFromCache(); // Repopulate datalist from cached models after render
+  }
+
+  /**
+   * Populate the datalist from cached models (called after render)
+   * This ensures the model list persists when the view is re-rendered
+   */
+  private populateDatalistFromCache(): void {
+    const datalist = document.getElementById('modelDatalist') as HTMLDataListElement;
+    const loadingText = document.getElementById('loadingModelsText');
+
+    if (datalist && this.availableModels.length > 0) {
+      datalist.innerHTML = '';
+      this.availableModels.forEach((model: any) => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = `${model.name} - ${model.id}`;
+        datalist.appendChild(option);
+      });
+
+      if (loadingText) {
+        loadingText.textContent = `${this.availableModels.length} models available - type to search`;
+      }
+    }
   }
 
   private populateModelsTable(): void {
