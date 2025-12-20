@@ -1,7 +1,7 @@
 {
   "name": "compose-booster",
   "productName": "Compose Booster",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "AI-powered email composition assistant - improve, polish, and customize your emails with advanced AI models",
   "main": ".vite/build/main.js",
   "scripts": {
