@@ -105,24 +105,20 @@ export class ModelsTab {
               class="form-control"
               placeholder="Type to search models..."
               autocomplete="off"
-              ${this.addModelProvider === 'openai-compatible' ? 'style="display: none;"' : ''}
             >
             <div id="modelDropdown" class="model-dropdown hidden"></div>
           </div>
-          ${this.addModelProvider === 'openai-compatible' ? `
-            <input
-              type="text"
-              id="customModelIdInput"
-              class="form-control"
-              placeholder="Enter model ID (e.g., gpt-4, claude-3-opus)"
-              autocomplete="off"
-            >
-            <small class="form-text">Enter the model ID supported by your endpoint.</small>
-          ` : `
-            <small class="form-text" id="loadingModelsText">${this.getLoadingText()}</small>
-          `}
+          <input
+            type="text"
+            id="customModelIdInput"
+            class="form-control"
+            placeholder="Enter model ID (e.g., gpt-4, claude-3-opus)"
+            autocomplete="off"
+            style="display: none;"
+          >
+          <small class="form-text" id="loadingModelsText">${this.getLoadingText()}</small>
         </div>
-        <button id="addModelBtn" class="btn btn-primary" ${this.addModelProvider === 'openai-compatible' ? '' : 'disabled'}>Add Model</button>
+        <button id="addModelBtn" class="btn btn-primary" disabled>Add Model</button>
         <button id="resetModelsBtn" class="btn btn-secondary" style="margin-left: 8px;">Reset to Defaults</button>
       </div>
     `;
@@ -554,13 +550,17 @@ export class ModelsTab {
   }
 
   private handleAddModel(): void {
-    // Handle custom model entry for OpenAI-compatible provider
-    if (this.addModelProvider === 'openai-compatible') {
+    const customInput = document.getElementById('customModelIdInput') as HTMLInputElement;
+    const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
+
+    // Check if user is in custom entry mode (custom input is visible and has value)
+    const isCustomMode = customInput && customInput.style.display !== 'none' && customInput.value.trim();
+
+    if (isCustomMode) {
       this.handleAddCustomModel();
       return;
     }
 
-    const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
     const inputValue = searchInput?.value;
 
     if (!inputValue) {
@@ -605,7 +605,7 @@ export class ModelsTab {
   }
 
   /**
-   * Handle adding a custom model for OpenAI-compatible provider
+   * Handle adding a custom model (manual entry mode)
    */
   private handleAddCustomModel(): void {
     const customInput = document.getElementById('customModelIdInput') as HTMLInputElement;
@@ -622,12 +622,17 @@ export class ModelsTab {
       return;
     }
 
+    // Try to get static pricing if known
+    const staticPricing = this.getStaticPricing(modelId);
+    const costTier = staticPricing?.costTier || (this.addModelProvider === 'ollama' ? 'Free' : 'N/A');
+    const costDetails = staticPricing?.costDetails || (this.addModelProvider === 'ollama' ? { input: 'Free', output: 'Free' } : undefined);
+
     const newModel: Model = {
       id: modelId,
       name: modelId, // Use ID as name since we don't know the display name
-      provider: 'openai-compatible',
-      cost: 'N/A',
-      costDetails: undefined, // No pricing info for custom endpoints
+      provider: this.addModelProvider,
+      cost: costTier,
+      costDetails: costDetails,
       enabled: true,
     };
 
@@ -747,12 +752,6 @@ export class ModelsTab {
   public async reloadModels(): Promise<void> {
     const loadingText = document.getElementById('loadingModelsText');
 
-    // Skip loading for openai-compatible (manual entry)
-    if (this.addModelProvider === 'openai-compatible') {
-      this.availableModels = [];
-      return;
-    }
-
     this.isLoadingModels = true;
     if (loadingText) {
       loadingText.textContent = `Loading models from ${PROVIDER_NAMES[this.addModelProvider]}...`;
@@ -783,24 +782,89 @@ export class ModelsTab {
           if (this.availableModels.length > 0) {
             loadingText.textContent = `${this.availableModels.length} models available - type to search`;
           } else {
-            loadingText.textContent = 'No models available. Check provider configuration.';
+            // No models returned - show custom entry option
+            loadingText.innerHTML = 'No models found. <a href="#" id="showCustomEntryLink">Enter model ID manually</a>';
+            this.setupCustomEntryLink();
           }
           loadingText.style.color = '';
         }
+        // Update UI to show/hide custom entry based on results
+        this.updateModelInputVisibility();
       } else {
+        this.availableModels = [];
         if (loadingText) {
           const errorMsg = result.error || 'Failed to load models. Please check your API key.';
-          loadingText.textContent = errorMsg;
+          loadingText.innerHTML = `${errorMsg} <a href="#" id="showCustomEntryLink">Enter model ID manually</a>`;
           loadingText.style.color = 'var(--error-color)';
+          this.setupCustomEntryLink();
         }
+        this.updateModelInputVisibility();
       }
     } catch (error) {
+      this.availableModels = [];
       if (loadingText) {
-        loadingText.textContent = `Error loading models from ${PROVIDER_NAMES[this.addModelProvider]}`;
+        loadingText.innerHTML = `Error loading models. <a href="#" id="showCustomEntryLink">Enter model ID manually</a>`;
         loadingText.style.color = 'var(--error-color)';
+        this.setupCustomEntryLink();
       }
+      this.updateModelInputVisibility();
     } finally {
       this.isLoadingModels = false;
+    }
+  }
+
+  /**
+   * Setup click handler for "Enter model ID manually" link
+   */
+  private setupCustomEntryLink(): void {
+    const link = document.getElementById('showCustomEntryLink');
+    if (link) {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showCustomEntryMode();
+      });
+    }
+  }
+
+  /**
+   * Switch to custom entry mode (hide dropdown, show text input)
+   */
+  private showCustomEntryMode(): void {
+    const searchInput = document.getElementById('modelSearchInput');
+    const dropdown = document.getElementById('modelDropdown');
+    const customInput = document.getElementById('customModelIdInput');
+    const loadingText = document.getElementById('loadingModelsText');
+
+    if (searchInput) searchInput.style.display = 'none';
+    if (dropdown) dropdown.classList.add('hidden');
+    if (customInput) customInput.style.display = 'block';
+    if (loadingText) loadingText.style.display = 'none';
+
+    // Enable add button based on custom input
+    const addBtn = document.getElementById('addModelBtn') as HTMLButtonElement;
+    if (addBtn && customInput) {
+      addBtn.disabled = !(customInput as HTMLInputElement).value.trim();
+    }
+  }
+
+  /**
+   * Update visibility of model search vs custom entry based on available models
+   */
+  private updateModelInputVisibility(): void {
+    const searchInput = document.getElementById('modelSearchInput') as HTMLInputElement;
+    const customInput = document.getElementById('customModelIdInput') as HTMLInputElement;
+
+    if (this.availableModels.length > 0) {
+      // Show search dropdown
+      if (searchInput) searchInput.style.display = 'block';
+      if (customInput) customInput.style.display = 'none';
+    } else {
+      // Show custom entry - but only switch if openai-compatible or user clicked the link
+      // For other providers, keep showing the search (user can click the link to switch)
+      if (this.addModelProvider === 'openai-compatible') {
+        if (searchInput) searchInput.style.display = 'none';
+        if (customInput) customInput.style.display = 'block';
+      }
     }
   }
 
