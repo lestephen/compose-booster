@@ -740,6 +740,43 @@ input:checked + .toggle-slider:before {
   font-size: 14px;
 }
 
+/* Help Button Styles */
+.help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: var(--spacing-sm);
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.help-btn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.help-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
+}
+
+.help-btn:active {
+  transform: scale(0.95);
+}
+
 /* Quick Actions Configuration Styles */
 .quick-action-config-card {
   background: var(--bg-secondary);

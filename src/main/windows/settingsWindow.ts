@@ -48,13 +48,27 @@ export function createSettingsWindow(parent: BrowserWindow): BrowserWindow {
   });
 
   // Load the settings page
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    // In development, load from dev server
-    settingsWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/src/renderer/settings/settings.html`);
-  } else {
-    // In production, load from built files
-    settingsWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/src/renderer/settings/settings.html`));
-  }
+  const loadSettings = async () => {
+    try {
+      if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+        // In development, load from dev server
+        const url = `${MAIN_WINDOW_VITE_DEV_SERVER_URL}/src/renderer/settings/settings.html`;
+        console.log('[SettingsWindow] Loading URL:', url);
+        await settingsWindow!.loadURL(url);
+      } else {
+        // In production, load from built files
+        const filePath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/src/renderer/settings/settings.html`);
+        console.log('[SettingsWindow] Loading file:', filePath);
+        await settingsWindow!.loadFile(filePath);
+      }
+    } catch (error) {
+      console.error('[SettingsWindow] Failed to load settings page:', error);
+      // Show the window anyway so user can see something went wrong
+      settingsWindow?.show();
+    }
+  };
+
+  loadSettings();
 
   // Show when ready
   settingsWindow.once('ready-to-show', () => {

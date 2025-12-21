@@ -12,7 +12,6 @@ import { BrowserWindow, app } from 'electron';
 import { IPC_CHANNELS } from '../ipc/channels';
 import { isAutoUpdateAvailable, getDistributionChannel, getDistributionChannelName } from '../utils/distributionDetector';
 import { UpdateStatus, DistributionChannel } from '../../shared/types';
-import { APP_VERSION } from '../../shared/constants';
 
 class UpdateService {
   private status: UpdateStatus = {
@@ -188,7 +187,7 @@ class UpdateService {
    * Get the current app version
    */
   getCurrentVersion(): string {
-    return app.getVersion() || APP_VERSION;
+    return app.getVersion();
   }
 
   /**

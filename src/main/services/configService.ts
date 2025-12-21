@@ -187,6 +187,7 @@ class ConfigService {
       models,
       prompts: config.prompts || DEFAULT_CONFIG.prompts,
       tones: config.tones || DEFAULT_CONFIG.tones,
+      styles: config.styles || DEFAULT_CONFIG.styles,
       quickActions,
       lastUsed,
       preferences: {
@@ -197,6 +198,7 @@ class ConfigService {
         ...DEFAULT_CONFIG.windowBounds,
         ...config.windowBounds,
       },
+      settingsWindowBounds: config.settingsWindowBounds,
       statistics: {
         ...DEFAULT_CONFIG.statistics,
         ...config.statistics,

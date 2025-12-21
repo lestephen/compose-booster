@@ -204,11 +204,16 @@ class SettingsController {
   private setupHelpButtons(): void {
     const helpButtons = document.querySelectorAll<HTMLButtonElement>('.help-btn[data-help]');
     helpButtons.forEach((button) => {
-      button.addEventListener('click', (e) => {
+      button.addEventListener('click', async (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const helpKey = button.getAttribute('data-help') as HelpLinkKey;
         if (helpKey && HELP_LINKS[helpKey]) {
-          window.electronAPI.openExternal(HELP_LINKS[helpKey]);
+          try {
+            await window.electronAPI.openExternal(HELP_LINKS[helpKey]);
+          } catch (error) {
+            console.error('Failed to open help link:', error);
+          }
         }
       });
     });
