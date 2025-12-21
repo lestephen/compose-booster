@@ -11,8 +11,10 @@ import { ipcMain, clipboard, dialog, BrowserWindow, shell, app } from 'electron'
 import { IPC_CHANNELS } from './channels';
 import { configService } from '../services/configService';
 import { apiService } from '../services/apiService';
+import { updateService } from '../services/updateService';
+import { providerRegistry } from '../services/providers';
 import { closeSettingsWindow } from '../windows/settingsWindow';
-import { ProcessEmailRequest, IpcResponse, AppConfig } from '../../shared/types';
+import { ProcessEmailRequest, IpcResponse, AppConfig, UpdateStatus, ProviderId, ProviderConfig } from '../../shared/types';
 import * as fs from 'fs';
 
 /**
@@ -39,6 +41,12 @@ export function registerIpcHandlers(): void {
 
   // App info handlers
   registerAppInfoHandlers();
+
+  // Update handlers
+  registerUpdateHandlers();
+
+  // Provider handlers
+  registerProviderHandlers();
 }
 
 /**
@@ -445,6 +453,169 @@ function registerAppInfoHandlers(): void {
         success: false,
         error: {
           message: error instanceof Error ? error.message : 'Failed to get version',
+        },
+      } as IpcResponse;
+    }
+  });
+}
+
+/**
+ * Update IPC handlers
+ */
+function registerUpdateHandlers(): void {
+  // Check for updates
+  ipcMain.handle(IPC_CHANNELS.UPDATE_CHECK, async () => {
+    try {
+      const status = await updateService.checkForUpdates();
+      return { success: true, data: status } as IpcResponse<UpdateStatus>;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to check for updates',
+        },
+      } as IpcResponse;
+    }
+  });
+
+  // Download update
+  ipcMain.handle(IPC_CHANNELS.UPDATE_DOWNLOAD, async () => {
+    try {
+      await updateService.downloadUpdate();
+      return { success: true } as IpcResponse;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to download update',
+        },
+      } as IpcResponse;
+    }
+  });
+
+  // Install update (quit and install)
+  ipcMain.handle(IPC_CHANNELS.UPDATE_INSTALL, async () => {
+    try {
+      updateService.quitAndInstall();
+      return { success: true } as IpcResponse;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to install update',
+        },
+      } as IpcResponse;
+    }
+  });
+
+  // Get current update status
+  ipcMain.handle(IPC_CHANNELS.UPDATE_GET_STATUS, async () => {
+    try {
+      const status = updateService.getStatus();
+      return { success: true, data: status } as IpcResponse<UpdateStatus>;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to get update status',
+        },
+      } as IpcResponse;
+    }
+  });
+
+  // Check if auto-update is available for this distribution
+  ipcMain.handle(IPC_CHANNELS.UPDATE_IS_AVAILABLE, async () => {
+    try {
+      const available = updateService.isAvailable();
+      return { success: true, data: available } as IpcResponse<boolean>;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to check update availability',
+        },
+      } as IpcResponse;
+    }
+  });
+
+  // Get update info (version, distribution channel, etc.)
+  ipcMain.handle(IPC_CHANNELS.UPDATE_GET_INFO, async () => {
+    try {
+      const info = updateService.getUpdateInfo();
+      return { success: true, data: info } as IpcResponse<{
+        currentVersion: string;
+        distributionChannel: string;
+        autoUpdateAvailable: boolean;
+      }>;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to get update info',
+        },
+      } as IpcResponse;
+    }
+  });
+}
+
+/**
+ * Provider IPC handlers
+ */
+function registerProviderHandlers(): void {
+  // Test provider connection
+  ipcMain.handle(IPC_CHANNELS.PROVIDER_TEST, async (_event, providerId: ProviderId, config: ProviderConfig) => {
+    try {
+      const result = await providerRegistry.testConnection(providerId, config);
+      if (result.success) {
+        return { success: true } as IpcResponse;
+      } else {
+        return {
+          success: false,
+          error: { message: result.error || 'Connection test failed' },
+        } as IpcResponse;
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to test provider connection',
+        },
+      } as IpcResponse;
+    }
+  });
+
+  // Get models for a specific provider
+  ipcMain.handle(IPC_CHANNELS.PROVIDER_GET_MODELS, async (_event, providerId: ProviderId, config: ProviderConfig) => {
+    try {
+      const result = await providerRegistry.getAvailableModels(providerId, config);
+      if (result.success) {
+        return { success: true, data: result.data } as IpcResponse;
+      } else {
+        return {
+          success: false,
+          error: { message: result.error || 'Failed to fetch models' },
+        } as IpcResponse;
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to get provider models',
+        },
+      } as IpcResponse;
+    }
+  });
+
+  // Get all provider info
+  ipcMain.handle(IPC_CHANNELS.PROVIDER_GET_ALL_INFO, async () => {
+    try {
+      const info = providerRegistry.getAllProviderInfo();
+      return { success: true, data: info } as IpcResponse;
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to get provider info',
         },
       } as IpcResponse;
     }

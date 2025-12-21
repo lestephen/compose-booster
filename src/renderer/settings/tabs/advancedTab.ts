@@ -28,6 +28,18 @@ export class AdvancedTab {
   private render(): void {
     this.container.innerHTML = `
       <section class="settings-section">
+        <h2>Updates</h2>
+
+        <div class="form-group">
+          <label class="toggle-label">
+            <input type="checkbox" id="checkUpdatesToggle" ${this.config.preferences.checkUpdates ? 'checked' : ''}>
+            <span>Check for updates automatically</span>
+          </label>
+          <small class="form-text">When enabled, the app will check for updates on startup. You can always check manually from the About tab.</small>
+        </div>
+      </section>
+
+      <section class="settings-section">
         <h2>Developer Options</h2>
 
         <div class="form-group">
@@ -65,6 +77,12 @@ export class AdvancedTab {
   }
 
   private setupEventListeners(): void {
+    // Check for updates toggle
+    const checkUpdatesToggle = document.getElementById('checkUpdatesToggle') as HTMLInputElement;
+    if (checkUpdatesToggle) {
+      checkUpdatesToggle.addEventListener('change', () => this.handleCheckUpdatesToggle(checkUpdatesToggle.checked));
+    }
+
     // Developer Tools toggle
     const devToolsToggle = document.getElementById('showDevToolsToggle') as HTMLInputElement;
     if (devToolsToggle) {
@@ -90,6 +108,18 @@ export class AdvancedTab {
     if (resetBtn) {
       resetBtn.addEventListener('click', () => this.handleResetAll());
     }
+  }
+
+  private handleCheckUpdatesToggle(enabled: boolean): void {
+    const updatedConfig: AppConfig = {
+      ...this.config,
+      preferences: {
+        ...this.config.preferences,
+        checkUpdates: enabled,
+      },
+    };
+    this.config = updatedConfig;
+    this.onConfigChange(updatedConfig);
   }
 
   private async handleDevToolsToggle(enabled: boolean): Promise<void> {

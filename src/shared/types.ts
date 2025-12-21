@@ -6,10 +6,32 @@
 
 // Shared TypeScript interfaces for Compose Booster
 
+// Provider Types for Multi-Provider Support
+export type ProviderId = 'openrouter' | 'anthropic' | 'openai' | 'ollama' | 'openai-compatible';
+
+export interface ProviderConfig {
+  id: ProviderId;
+  name: string;
+  enabled: boolean;
+  apiKey?: string;          // API key for the provider (not needed for Ollama)
+  baseUrl?: string;         // Custom base URL (required for Ollama and OpenAI-compatible)
+  isDefault?: boolean;      // True if this is the default provider
+}
+
+export interface ProviderInfo {
+  id: ProviderId;
+  name: string;
+  description: string;
+  requiresApiKey: boolean;
+  requiresBaseUrl: boolean;
+  defaultBaseUrl?: string;
+  helpUrl?: string;
+}
+
 export interface Model {
   id: string;
   name: string;
-  cost: 'Low' | 'Medium' | 'High';
+  cost: 'Low' | 'Medium' | 'High' | 'Free' | 'N/A';  // Free for Ollama, N/A when pricing unknown
   costDetails?: {
     input: string;
     output: string;
@@ -17,6 +39,7 @@ export interface Model {
   contextLength?: number; // Maximum context window size in tokens
   enabled: boolean;
   isDefault?: boolean;
+  provider?: ProviderId;   // Provider for this model (defaults to 'openrouter' if not set)
 }
 
 export interface Prompt {
@@ -85,7 +108,9 @@ export interface Statistics {
 }
 
 export interface AppConfig {
-  apiKey: string;
+  apiKey: string;                      // Legacy: OpenRouter API key (kept for backward compatibility)
+  providers?: ProviderConfig[];        // Multi-provider support (optional for backward compatibility)
+  activeProvider?: ProviderId;         // Currently active provider (defaults to 'openrouter')
   models: Model[];
   prompts: Record<string, Prompt>;
   tones: Tone[];

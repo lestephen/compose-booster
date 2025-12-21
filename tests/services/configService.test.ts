@@ -87,7 +87,7 @@ class MockConfigService {
     return '/mock/path/config.json';
   }
 
-  incrementStatistics(cost: number = 0): void {
+  incrementStatistics(cost = 0): void {
     const stats = this.get('statistics');
     this.set('statistics', {
       ...stats,

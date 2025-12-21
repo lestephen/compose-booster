@@ -17,11 +17,13 @@ import { StylesTab } from './tabs/stylesTab';
 import { QuickActionsTab } from './tabs/quickActionsTab';
 import { AdvancedTab } from './tabs/advancedTab';
 import { AboutTab } from './tabs/aboutTab';
+import { ProvidersTab } from './tabs/providersTab';
 
 class SettingsController {
   private config: AppConfig | null = null;
   private isDirty = false;
   private tabManager: TabManager;
+  private providersTab: ProvidersTab | null = null;
   private modelsTab: ModelsTab | null = null;
   private promptsTab: PromptsTab | null = null;
   private tonesTab: TonesTab | null = null;
@@ -31,9 +33,6 @@ class SettingsController {
   private aboutTab: AboutTab | null = null;
 
   // UI Elements
-  private apiKeyInput: HTMLInputElement;
-  private testApiKeyBtn: HTMLButtonElement;
-  private apiKeyStatus: HTMLElement;
   private themeSelect: HTMLSelectElement;
   private fontSizeSlider: HTMLInputElement;
   private fontSizeValue: HTMLElement;
@@ -43,13 +42,9 @@ class SettingsController {
   private outputFormatSelect: HTMLSelectElement;
   private saveBtn: HTMLButtonElement;
   private cancelBtn: HTMLButtonElement;
-  private openRouterLink: HTMLAnchorElement;
 
   constructor() {
     // Get UI elements
-    this.apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
-    this.testApiKeyBtn = document.getElementById('testApiKeyBtn') as HTMLButtonElement;
-    this.apiKeyStatus = document.getElementById('apiKeyStatus') as HTMLElement;
     this.themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
     this.fontSizeSlider = document.getElementById('fontSize') as HTMLInputElement;
     this.fontSizeValue = document.getElementById('fontSizeValue') as HTMLElement;
@@ -59,7 +54,6 @@ class SettingsController {
     this.outputFormatSelect = document.getElementById('outputFormat') as HTMLSelectElement;
     this.saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     this.cancelBtn = document.getElementById('cancelBtn') as HTMLButtonElement;
-    this.openRouterLink = document.getElementById('openRouterLink') as HTMLAnchorElement;
 
     this.init();
   }
@@ -83,6 +77,16 @@ class SettingsController {
 
   private initializeTabs(): void {
     if (!this.config) return;
+
+    // Initialize providers tab
+    const providersContainer = document.getElementById('providersContainer');
+    if (providersContainer) {
+      this.providersTab = new ProvidersTab(
+        providersContainer,
+        this.config,
+        (updatedConfig) => this.handleConfigChange(updatedConfig)
+      );
+    }
 
     // Initialize models tab
     const modelsContainer = document.getElementById('modelsTableContainer');
@@ -163,28 +167,18 @@ class SettingsController {
         this.config = result.data;
       }
     } catch {
-      this.showApiKeyStatus('Failed to load configuration', 'error');
+      console.error('Failed to load configuration');
     }
   }
 
   private setupEventListeners(): void {
-    // Test API key button
-    this.testApiKeyBtn.addEventListener('click', () => this.handleTestApiKey());
-
     // Save button
     this.saveBtn.addEventListener('click', () => this.handleSave());
 
     // Cancel button
     this.cancelBtn.addEventListener('click', () => this.handleCancel());
 
-    // OpenRouter link
-    this.openRouterLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.electronAPI.openExternal('https://openrouter.ai/keys');
-    });
-
     // Track changes
-    this.apiKeyInput.addEventListener('input', () => this.markDirty());
     this.themeSelect.addEventListener('change', () => this.markDirty());
     this.fontSizeSlider.addEventListener('input', () => {
       const fontSize = this.fontSizeSlider.value;
@@ -222,9 +216,6 @@ class SettingsController {
   private populateForm(): void {
     if (!this.config) return;
 
-    // API Key (show partially for security)
-    this.apiKeyInput.value = this.config.apiKey || '';
-
     // Theme
     this.themeSelect.value = this.config.preferences.theme;
 
@@ -246,48 +237,10 @@ class SettingsController {
     document.documentElement.style.setProperty('--font-size-base', `${size}px`);
   }
 
-  private async handleTestApiKey(): Promise<void> {
-    const apiKey = this.apiKeyInput.value.trim();
-
-    if (!apiKey) {
-      this.showApiKeyStatus('Please enter an API key', 'error');
-      return;
-    }
-
-    this.testApiKeyBtn.disabled = true;
-    this.testApiKeyBtn.textContent = 'Testing...';
-    this.hideApiKeyStatus();
-
-    try {
-      const result = await window.electronAPI.testApiKey(apiKey);
-
-      if (result.success) {
-        this.showApiKeyStatus('✓ API key is valid!', 'success');
-        // Save the API key immediately and reload models
-        if (this.config) {
-          this.config.apiKey = apiKey;
-          await window.electronAPI.setConfig({ apiKey });
-          // Reload models now that we have a valid API key
-          if (this.modelsTab) {
-            this.modelsTab.reloadModels();
-          }
-        }
-      } else {
-        this.showApiKeyStatus(`✗ ${result.error?.message || 'Invalid API key'}`, 'error');
-      }
-    } catch {
-      this.showApiKeyStatus('Failed to test API key', 'error');
-    } finally {
-      this.testApiKeyBtn.disabled = false;
-      this.testApiKeyBtn.textContent = 'Test Key';
-    }
-  }
-
   private async handleSave(): Promise<void> {
     if (!this.config) return;
 
     // Update config with form values
-    this.config.apiKey = this.apiKeyInput.value.trim();
     this.config.preferences.theme = this.themeSelect.value as 'light' | 'dark' | 'system';
     this.config.preferences.fontSize = parseInt(this.fontSizeSlider.value, 10);
     this.config.preferences.saveWindowPosition = this.saveWindowPositionCheckbox.checked;
@@ -311,12 +264,12 @@ class SettingsController {
           window.electronAPI.closeWindow();
         }, 1000);
       } else {
-        this.showApiKeyStatus('Failed to save settings', 'error');
+        alert('Failed to save settings');
         this.saveBtn.disabled = false;
         this.saveBtn.textContent = 'Save Settings';
       }
     } catch {
-      this.showApiKeyStatus('Failed to save settings', 'error');
+      alert('Failed to save settings');
       this.saveBtn.disabled = false;
       this.saveBtn.textContent = 'Save Settings';
     }
@@ -335,16 +288,6 @@ class SettingsController {
   private markDirty(): void {
     this.isDirty = true;
     this.saveBtn.disabled = false;
-  }
-
-  private showApiKeyStatus(message: string, type: 'success' | 'error'): void {
-    this.apiKeyStatus.textContent = message;
-    this.apiKeyStatus.className = `status-message ${type}`;
-    this.apiKeyStatus.classList.remove('hidden');
-  }
-
-  private hideApiKeyStatus(): void {
-    this.apiKeyStatus.classList.add('hidden');
   }
 }
 

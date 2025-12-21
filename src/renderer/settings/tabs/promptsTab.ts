@@ -15,7 +15,7 @@ export class PromptsTab {
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
   private modalElement: HTMLElement | null = null;
-  private editingPromptId: string = '';
+  private editingPromptId = '';
 
   constructor(container: HTMLElement, config: AppConfig, onConfigChange: (config: AppConfig) => void) {
     this.container = container;
@@ -134,7 +134,7 @@ export class PromptsTab {
   private setupDragAndDrop(): void {
     const cards = this.container.querySelectorAll<HTMLElement>('.draggable-card');
     let draggedCard: HTMLElement | null = null;
-    let draggedPromptId: string = '';
+    let draggedPromptId = '';
 
     cards.forEach((card) => {
       card.addEventListener('dragstart', (e) => {
@@ -255,7 +255,7 @@ export class PromptsTab {
     });
   }
 
-  private openModal(editPromptId: string = ''): void {
+  private openModal(editPromptId = ''): void {
     if (!this.modalElement) return;
 
     this.editingPromptId = editPromptId;

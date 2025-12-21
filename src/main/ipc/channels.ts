@@ -63,6 +63,11 @@ export const IPC_CHANNELS = {
   UPDATE_IS_AVAILABLE: 'update:is-available',
   UPDATE_GET_INFO: 'update:get-info',
   UPDATE_STATUS_CHANGED: 'update:status-changed', // Event (main → renderer)
+
+  // Providers
+  PROVIDER_TEST: 'provider:test',
+  PROVIDER_GET_MODELS: 'provider:get-models',
+  PROVIDER_GET_ALL_INFO: 'provider:get-all-info',
 } as const;
 
 export type IpcChannel = typeof IPC_CHANNELS[keyof typeof IPC_CHANNELS];

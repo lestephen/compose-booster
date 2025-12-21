@@ -223,7 +223,7 @@ export class QuickActionsTab {
   private setupDragAndDrop(): void {
     const cards = this.container.querySelectorAll<HTMLElement>('.draggable-card');
     let draggedCard: HTMLElement | null = null;
-    let draggedIndex: number = -1;
+    let draggedIndex = -1;
 
     cards.forEach((card) => {
       card.addEventListener('dragstart', (e) => {

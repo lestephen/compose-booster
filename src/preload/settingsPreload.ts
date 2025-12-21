@@ -9,7 +9,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../main/ipc/channels';
-import { AppConfig, IpcResponse } from '../shared/types';
+import { AppConfig, IpcResponse, UpdateStatus, ProviderId, ProviderConfig, ProviderInfo } from '../shared/types';
 
 // Expose settings-specific API
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -67,6 +67,43 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // App Info
   getAppVersion: (): Promise<IpcResponse<string>> =>
     ipcRenderer.invoke(IPC_CHANNELS.APP_GET_VERSION),
+
+  // Auto-Update
+  checkForUpdates: (): Promise<IpcResponse<UpdateStatus>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_CHECK),
+
+  downloadUpdate: (): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_DOWNLOAD),
+
+  installUpdate: (): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_INSTALL),
+
+  getUpdateStatus: (): Promise<IpcResponse<UpdateStatus>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_GET_STATUS),
+
+  isAutoUpdateAvailable: (): Promise<IpcResponse<boolean>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_IS_AVAILABLE),
+
+  getUpdateInfo: (): Promise<IpcResponse<{
+    currentVersion: string;
+    distributionChannel: string;
+    autoUpdateAvailable: boolean;
+  }>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.UPDATE_GET_INFO),
+
+  onUpdateStatusChanged: (callback: (status: UpdateStatus) => void) => {
+    ipcRenderer.on(IPC_CHANNELS.UPDATE_STATUS_CHANGED, (_event, status) => callback(status));
+  },
+
+  // Providers
+  testProvider: (providerId: ProviderId, config: ProviderConfig): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.PROVIDER_TEST, providerId, config),
+
+  getProviderModels: (providerId: ProviderId, config: ProviderConfig): Promise<IpcResponse> =>
+    ipcRenderer.invoke(IPC_CHANNELS.PROVIDER_GET_MODELS, providerId, config),
+
+  getAllProviderInfo: (): Promise<IpcResponse<ProviderInfo[]>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.PROVIDER_GET_ALL_INFO),
 });
 
 // TypeScript declaration for window.electronAPI
@@ -88,6 +125,22 @@ declare global {
       closeWindow: () => void;
       openExternal: (url: string) => Promise<IpcResponse>;
       getAppVersion: () => Promise<IpcResponse<string>>;
+      // Auto-Update
+      checkForUpdates: () => Promise<IpcResponse<UpdateStatus>>;
+      downloadUpdate: () => Promise<IpcResponse>;
+      installUpdate: () => Promise<IpcResponse>;
+      getUpdateStatus: () => Promise<IpcResponse<UpdateStatus>>;
+      isAutoUpdateAvailable: () => Promise<IpcResponse<boolean>>;
+      getUpdateInfo: () => Promise<IpcResponse<{
+        currentVersion: string;
+        distributionChannel: string;
+        autoUpdateAvailable: boolean;
+      }>>;
+      onUpdateStatusChanged: (callback: (status: UpdateStatus) => void) => void;
+      // Providers
+      testProvider: (providerId: ProviderId, config: ProviderConfig) => Promise<IpcResponse>;
+      getProviderModels: (providerId: ProviderId, config: ProviderConfig) => Promise<IpcResponse>;
+      getAllProviderInfo: () => Promise<IpcResponse<ProviderInfo[]>>;
     };
   }
 }

@@ -138,7 +138,7 @@ class ApiService {
             },
           };
 
-        case 429:
+        case 429: {
           const retryAfter = Number(error.response.headers['retry-after']) || 60;
           return {
             success: false,
@@ -148,6 +148,7 @@ class ApiService {
               retryAfter,
             },
           };
+        }
 
         case 402:
           return {

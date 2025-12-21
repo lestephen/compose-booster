@@ -7,12 +7,42 @@
 // Default configuration for Compose Booster
 // Based on SPEC.md requirements
 
-import { AppConfig, Model, Prompt, Tone, StyleProfile, QuickAction } from '../../shared/types';
+import { AppConfig, Model, Prompt, Tone, StyleProfile, QuickAction, ProviderConfig } from '../../shared/types';
 import {
   DEFAULT_FONT_SIZE,
   MAIN_WINDOW_DEFAULT_WIDTH,
   MAIN_WINDOW_DEFAULT_HEIGHT,
 } from '../../shared/constants';
+
+export const DEFAULT_PROVIDERS: ProviderConfig[] = [
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    enabled: true,
+    isDefault: true,
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic',
+    enabled: false,
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    enabled: false,
+  },
+  {
+    id: 'ollama',
+    name: 'Ollama',
+    enabled: false,
+    baseUrl: 'http://localhost:11434',
+  },
+  {
+    id: 'openai-compatible',
+    name: 'OpenAI-Compatible',
+    enabled: false,
+  },
+];
 
 export const DEFAULT_MODELS: Model[] = [
   {
@@ -22,7 +52,8 @@ export const DEFAULT_MODELS: Model[] = [
     costDetails: { input: '$3.00/M', output: '$15.00/M' },
     contextLength: 200000,
     enabled: true,
-    isDefault: true
+    isDefault: true,
+    provider: 'openrouter',
   },
   {
     id: 'google/gemini-3-pro-preview',
@@ -31,7 +62,8 @@ export const DEFAULT_MODELS: Model[] = [
     costDetails: { input: '$0.35/M', output: '$1.05/M' },
     contextLength: 1000000,
     enabled: true,
-    isDefault: true
+    isDefault: true,
+    provider: 'openrouter',
   },
   {
     id: 'openai/gpt-5',
@@ -40,7 +72,8 @@ export const DEFAULT_MODELS: Model[] = [
     costDetails: { input: '$10.00/M', output: '$30.00/M' },
     contextLength: 128000,
     enabled: true,
-    isDefault: true
+    isDefault: true,
+    provider: 'openrouter',
   },
 ];
 
@@ -217,6 +250,8 @@ export const DEFAULT_HOT_COMBOS: QuickAction[] = [
 
 export const DEFAULT_CONFIG: AppConfig = {
   apiKey: '',
+  providers: DEFAULT_PROVIDERS,
+  activeProvider: 'openrouter',
   models: DEFAULT_MODELS,
   prompts: DEFAULT_PROMPTS,
   tones: DEFAULT_TONES,

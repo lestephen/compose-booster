@@ -8,7 +8,7 @@
 // Handles tab navigation in settings window
 
 export class TabManager {
-  private currentTab: string = 'general';
+  private currentTab = 'general';
   private tabButtons: NodeListOf<HTMLButtonElement>;
   private tabContents: NodeListOf<HTMLDivElement>;
 

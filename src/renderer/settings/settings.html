@@ -23,6 +23,7 @@
       </header>
       <div class="settings-tabs">
         <button class="tab-btn active" data-tab="general">General</button>
+        <button class="tab-btn" data-tab="providers">Providers</button>
         <button class="tab-btn" data-tab="models">Models</button>
         <button class="tab-btn" data-tab="prompts">Prompts</button>
         <button class="tab-btn" data-tab="tones">Tones</button>
@@ -36,27 +37,6 @@
     <main class="settings-content">
       <!-- General Tab -->
       <div class="tab-content active" id="general-tab">
-      <section class="settings-section">
-        <h2>API Configuration <button class="help-btn" data-help="SETTINGS_GENERAL" title="Help">?</button></h2>
-
-        <div class="form-group">
-          <label for="apiKey">OpenRouter API Key</label>
-          <div class="api-key-group">
-            <input
-              type="password"
-              id="apiKey"
-              class="form-control"
-              placeholder="sk-or-v1-..."
-            >
-            <button id="testApiKeyBtn" class="btn btn-secondary">Test Key</button>
-          </div>
-          <small class="form-text">
-            Get your API key from <a href="#" id="openRouterLink">OpenRouter Dashboard</a>
-          </small>
-          <div id="apiKeyStatus" class="status-message hidden"></div>
-        </div>
-      </section>
-
       <section class="settings-section">
         <h2>Appearance</h2>
 
@@ -117,6 +97,11 @@
           <small class="form-help">Choose how AI output is copied to clipboard. "Plain Text" strips all formatting. "HTML" converts Markdown to formatted HTML for rich-text email clients like Outlook.</small>
         </div>
       </section>
+      </div>
+
+      <!-- Providers Tab -->
+      <div class="tab-content" id="providers-tab">
+        <div id="providersContainer"></div>
       </div>
 
       <!-- Models Tab -->

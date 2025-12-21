@@ -13,8 +13,8 @@ import { createHash } from 'crypto';
 import { homedir, hostname, userInfo } from 'os';
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
-import { AppConfig } from '../../shared/types';
-import { DEFAULT_CONFIG } from '../config/defaultConfig';
+import { AppConfig, ProviderConfig } from '../../shared/types';
+import { DEFAULT_CONFIG, DEFAULT_PROVIDERS } from '../config/defaultConfig';
 
 /**
  * Generate a machine-derived encryption key
@@ -159,9 +159,29 @@ class ConfigService {
   /**
    * Validate and merge config with defaults
    * Ensures all required fields exist and model IDs are valid
+   * Also handles migration from older config versions
    */
   private validateAndMergeConfig(config: Partial<AppConfig>): AppConfig {
-    const models = config.models || DEFAULT_CONFIG.models;
+    // Migrate providers: if missing, create from existing apiKey
+    let providers = config.providers;
+    if (!providers || providers.length === 0) {
+      console.log('[ConfigService] Migrating: Creating providers array from existing config');
+      providers = this.migrateProviders(config.apiKey);
+    }
+
+    // Ensure all default providers exist in the config
+    providers = this.ensureAllProviders(providers);
+
+    // Get active provider, defaulting to openrouter
+    const activeProvider = config.activeProvider || 'openrouter';
+
+    // Migrate models: ensure all models have a provider field
+    let models = config.models || DEFAULT_CONFIG.models;
+    models = models.map(model => ({
+      ...model,
+      provider: model.provider || 'openrouter',
+    }));
+
     const enabledModelIds = models.filter(m => m.enabled).map(m => m.id);
     const defaultModelId = models.find(m => m.isDefault)?.id || enabledModelIds[0] || DEFAULT_CONFIG.models[0].id;
 
@@ -184,6 +204,8 @@ class ConfigService {
 
     return {
       apiKey: config.apiKey || DEFAULT_CONFIG.apiKey,
+      providers,
+      activeProvider,
       models,
       prompts: config.prompts || DEFAULT_CONFIG.prompts,
       tones: config.tones || DEFAULT_CONFIG.tones,
@@ -204,6 +226,34 @@ class ConfigService {
         ...config.statistics,
       },
     };
+  }
+
+  /**
+   * Migrate from v1.0 config: create providers array from existing apiKey
+   */
+  private migrateProviders(apiKey?: string): ProviderConfig[] {
+    const providers: ProviderConfig[] = DEFAULT_PROVIDERS.map(p => ({
+      ...p,
+      // If there's an existing API key, assign it to OpenRouter
+      apiKey: p.id === 'openrouter' && apiKey ? apiKey : undefined,
+    }));
+    return providers;
+  }
+
+  /**
+   * Ensure all default providers exist in the config
+   * Adds any missing providers from defaults
+   */
+  private ensureAllProviders(providers: ProviderConfig[]): ProviderConfig[] {
+    const existingIds = new Set(providers.map(p => p.id));
+    const missingProviders = DEFAULT_PROVIDERS.filter(p => !existingIds.has(p.id));
+
+    if (missingProviders.length > 0) {
+      console.log('[ConfigService] Adding missing providers:', missingProviders.map(p => p.id).join(', '));
+      return [...providers, ...missingProviders];
+    }
+
+    return providers;
   }
 
   /**
@@ -252,7 +302,7 @@ class ConfigService {
   /**
    * Update statistics
    */
-  incrementStatistics(cost: number = 0): void {
+  incrementStatistics(cost = 0): void {
     const stats = this.get('statistics');
     this.set('statistics', {
       ...stats,

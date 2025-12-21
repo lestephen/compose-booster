@@ -15,7 +15,7 @@ export class StylesTab {
   private config: AppConfig;
   private onConfigChange: (config: AppConfig) => void;
   private modalElement: HTMLElement | null = null;
-  private editingIndex: number = -1;
+  private editingIndex = -1;
 
   constructor(container: HTMLElement, config: AppConfig, onConfigChange: (config: AppConfig) => void) {
     this.container = container;
@@ -132,7 +132,7 @@ export class StylesTab {
   private setupDragAndDrop(): void {
     const cards = this.container.querySelectorAll<HTMLElement>('.draggable-card');
     let draggedCard: HTMLElement | null = null;
-    let draggedIndex: number = -1;
+    let draggedIndex = -1;
 
     cards.forEach((card) => {
       card.addEventListener('dragstart', (e) => {
@@ -284,7 +284,7 @@ export class StylesTab {
     });
   }
 
-  private openModal(editIndex: number = -1): void {
+  private openModal(editIndex = -1): void {
     if (!this.modalElement) return;
 
     this.editingIndex = editIndex;
