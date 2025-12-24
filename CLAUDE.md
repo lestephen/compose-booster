@@ -226,7 +226,7 @@ Different branches may have different dependencies in package.json. Since node_m
 **v1.0.12** - Store releases (December 2025)
 
 - **Microsoft Store**: Published and available
-- **Mac App Store**: Submitted, pending approval
+- **Mac App Store**: Published and available
 - **GitHub Releases**: Windows (x64/ARM64) and macOS (ARM64) installers
 
 **Recent fixes (v1.0.0 - v1.0.12):**
@@ -387,5 +387,5 @@ This ensures:
 
 ---
 
-**Last Updated**: 2025-12-08
-**Project Status**: v1.0.0 Released, planning v1.1
+**Last Updated**: 2025-12-23
+**Project Status**: v1.0.12 Released - Available on Microsoft Store and Mac App Store

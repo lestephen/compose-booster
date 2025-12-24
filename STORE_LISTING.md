@@ -120,11 +120,27 @@ Initial release of Compose Booster for macOS.
 
 ## Review Notes (For App Store Reviewers)
 
-To test this app, you will need an OpenRouter API key:
+### Demo Account Information
 
-1. Sign up for free at https://openrouter.ai
-2. Create an API key in your dashboard
-3. Enter the API key in the app's Settings > API tab
-4. Add credits to your OpenRouter account (minimum $5)
+**OpenRouter API Key:** [Provide your demo API key here]
 
-The app sends email text to the selected AI model via OpenRouter's API and returns the improved version. No data is stored on external servers beyond what's required for the API call.
+### Setup Instructions
+
+1. Launch Compose Booster
+2. Press ⌘, (Cmd+Comma) to open Settings
+3. Paste the API Key above into the "OpenRouter API Key" field
+4. Click "Validate" to confirm the key is valid
+5. Click "Save"
+
+### Features to Test
+
+- Enter any email text in the input area
+- Click "Process" or press ⌘+Enter to enhance the email
+- Use Quick Action buttons (⌘+1, ⌘+2, ⌘+3) for one-click improvements
+- Switch between AI models in the dropdown menu
+- Change tones and prompts in Settings > Tones/Prompts tabs
+- Test copy-to-clipboard with the Copy button
+
+### Additional Information
+
+The app uses OpenRouter.ai to access various AI models. In production, users provide their own OpenRouter API key (a "Bring Your Own Key" model). The app sends email text to the selected AI model via OpenRouter's API and returns the improved version. No data is stored on external servers beyond what's required for the API call.

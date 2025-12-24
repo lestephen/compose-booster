@@ -73,7 +73,7 @@ Compose Booster helps you write better emails faster using advanced AI models. P
   - **Note:** You may see a Windows SmartScreen warning (this is normal for unsigned software). Click "More info" → "Run anyway"
 
 **macOS:**
-- **Mac App Store:** Pending approval
+- **Mac App Store (Recommended):** [Get Compose Booster](https://apps.apple.com/app/compose-booster/id6756289776) - Signed by Apple, automatic updates
 - **Direct Download:** Get the DMG from [GitHub Releases](https://github.com/lestephen/compose-booster/releases) - Signed & Notarized by Apple
 
 ### Requirements
